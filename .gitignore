@@ -14,3 +14,6 @@ dist-ssr
 # TypeScript build cache
 tsconfig.tsbuildinfo
 *.tsbuildinfo
+
+# Claude Code per-machine local state
+.claude/settings.local.json
