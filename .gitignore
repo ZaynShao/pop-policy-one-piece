@@ -17,3 +17,4 @@ tsconfig.tsbuildinfo
 
 # Claude Code per-machine local state
 .claude/settings.local.json
+.claude/scheduled_tasks.lock
