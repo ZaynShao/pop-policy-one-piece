@@ -8,7 +8,7 @@
 
 ## 任务
 
-为一个企业内部产品起草完整产品需求文档（PRD），文件输出到 `/Users/shaoziyuan/政策大图/docs/PRD-ai-led.md`。
+为一个企业内部产品起草完整产品需求文档（PRD），文件输出到 `/Users/shaoziyuan/政策大图/.claude/worktrees/sad-kalam-a20dee/docs/PRD-ai-led.md`。
 
 你将**独立**完成全部章节，不需要也不应该向使用方反复确认细节——所有判断由你自己拿主意，把推荐方案写进 PRD。**对每个有争议的判断点，可在该段末尾用脚注 `> AI 判断：…，理由：…` 说明你的取舍。**
 
@@ -52,7 +52,7 @@
 ## 输出要求
 
 ### 文件
-- 路径：`/Users/shaoziyuan/政策大图/docs/PRD-ai-led.md`
+- 路径：`/Users/shaoziyuan/政策大图/.claude/worktrees/sad-kalam-a20dee/docs/PRD-ai-led.md`
 - 格式：Markdown
 - 长度：建议 4000–8000 字（不强求）
 
@@ -84,10 +84,11 @@
 
 ### 禁止访问以下路径或读取以下文件
 
-- `/Users/shaoziyuan/政策大图/` 下**除 `docs/PRD-ai-brief.md`（本文件）和 `docs/PRD-ai-led.md`（你的输出文件）以外的任何文件**。包括但不限于：
+- `/Users/shaoziyuan/政策大图/` 下（包含主仓库与所有 worktree，如 `.claude/worktrees/sad-kalam-a20dee/`）**除 `docs/PRD-ai-brief.md`（本文件）和 `docs/PRD-ai-led.md`（你的输出文件）以外的任何文件**。包括但不限于：
   - 现有 demo 代码：`src/`、`public/`、`package.json`、`vite.config.ts`、`tsconfig*.json`、`index.html`、`node_modules/`
   - 任何 `docs/` 下其他文件，特别是：`docs/PRD-user-led.md`、`docs/PRD.md`、`docs/PRD-comparison.md`、`docs/data-model.md`、`docs/permission-matrix.md`、`docs/glossary.md`、`docs/dual-prd-protocol.md`、`docs/dual-prd-retrospective.md`、`docs/HANDOFF*` 任何变体
-- `/Users/shaoziyuan/.claude/plans/` 下任何文件
+  - 任何 `.claude/` 子目录下文件（worktree 配置、agents、commands、hooks 等）
+- `/Users/shaoziyuan/.claude/` 下任何文件（包括 `plans/`、`projects/`、`memory/MEMORY.md` 及各 `*.md` 记忆文件、全局 CLAUDE.md、agents/、commands/ 等）—— 其中含用户全局记忆与项目 meta 信息，严重泄题
 - `/Users/shaoziyuan/Documents/` 全目录（含开发日记、产品规划等可能直接泄题的文件）
 - 任何名为 `HANDOFF*`、`zh-one-piece*`、`政策大图*`、`政策 One Piece*`、`ZOP*`、`zop*` 的文件
 
