@@ -680,6 +680,505 @@ C1-C6、C8、C11 全做(P0);C7 预览 P1;C9/C10/C12 不做或远期
 
 ---
 
+## 第 4 章 · 核心数据模型
+
+### 4.0 编写约定
+
+- **字段格式**:`字段名 | 类型 | 必填 | 含义 | 示例`
+- **状态机**:文字流程图或 mermaid
+- **默认字段**(所有实体隐含):`id`(UUID 或雪花)、`created_at`、`updated_at`、`created_by`(owner,对应 G23 归属转移的主体)、`deleted_at`(软删)—— 后续各实体 schema 不再重复列
+- **行政区划编码**:`Region.code`(6 位中国行政区划码 + 版本号)
+- **本章 schema 为 PRD 级**:字段命名、类型、必填、关系已明确;索引、外键、长度约束等留**技术架构文档**细化
+
+### 4.1 核心实体分组总览
+
+| 分组 | 实体 | 状态机 | 主要兑现的 G 项 |
+|---|---|---|---|
+| **基础** | User / Role + UserRole / Region / AuditLog | - | G13、G24 |
+| **属地** | Pin / Comment / PlanPoint / Visit | Pin(B9)、PlanPoint(G15) | G16、G22、G23 |
+| **政策** | PolicyTheme / ParamTemplate / CoverageItem | PolicyTheme(对称工具) | G18 |
+| **工具** | Tool(Document/Interface)/ ToolBinding / ToolConsumptionLog | Tool(G21) | G14 关闭、G17、G19、G20、G25、G27 |
+| **聚合型** | 周观测聚合(虚拟/派生,无独立存储) | - | G9 |
+| **边界** | ExportRecord(决策层服务导出留痕) | - | G12 |
+
+### 4.2 基础实体
+
+#### 4.2.1 User
+
+| 字段 | 类型 | 必填 | 含义 | 示例 |
+|---|---|---|---|---|
+| `id` | UUID | ✅ | 唯一标识 | `usr_abc123` |
+| `username` | string(32) | ✅ | 登录名(公司域账号或自定义) | `zhanggong` |
+| `display_name` | string(32) | ✅ | 显示名(昵称) | `张工` |
+| `email` | string | ✅ | 工作邮箱 | `zhanggong@company.com` |
+| `avatar_url` | string | ⬜ | 头像 URL | |
+| `mobile` | string(16) | ⬜ | 手机号 | |
+| `status` | enum | ✅ | `active` / `disabled` / `pending` | `active` |
+| `joined_at` | datetime | ⬜ | 入职日期 | |
+| `note` | text | ⬜ | 备注 | |
+
+**说明**
+- `status` 三态:`pending`(待审)→ `active`(启用)→ `disabled`(停用 / 离职);离职后**数据保留、条目 owner_id 不变**,归属转移由 G23 机制独立处理
+- 不存登录密码 —— 默认走公司 SSO / 统一身份;真实对接归第 8 章
+
+#### 4.2.2 Role + UserRole
+
+**Role(预置枚举,MVP 不做 CRUD,对应 G4 P3)**
+
+| role_code | 名称 | 来源 |
+|---|---|---|
+| `local_ga` | 属地 GA | 1.3 |
+| `pmo` | PMO | 1.2 |
+| `lead` | GA 负责人 | 1.1 |
+| `central_ga` | 中台 GA | 1.4 |
+| `sys_admin` | 系统管理员 | 1.5 |
+
+**UserRole 关联**
+
+| 字段 | 类型 | 必填 | 含义 |
+|---|---|---|---|
+| `user_id` | UUID | ✅ | |
+| `role_code` | enum | ✅ | 5 选 1 |
+| `assigned_at` | datetime | ✅ | |
+| `assigned_by` | UUID | ✅ | 分配人(通常 `sys_admin`) |
+
+**说明**
+- **MVP 严格单角色**(2026-04-23 用户拍板):一个 user 只能有 1 个 UserRole;若需兼任(如 PMO 兼负责人),直接给更高权限角色(如 `lead`);多角色兼任属 P3
+- 角色变更 → AuditLog 留痕(场景 5)
+
+#### 4.2.3 Region
+
+| 字段 | 类型 | 必填 | 含义 | 示例 |
+|---|---|---|---|---|
+| `code` | string(6) | ✅ | 6 位行政区划码(GB/T 2260) | `330110` |
+| `name` | string | ✅ | 中文名 | `余杭区` |
+| `level` | enum | ✅ | `country` / `province` / `city` / `district` | `district` |
+| `parent_code` | string(6) | ⬜ | 上级码(country 为空) | `330100` |
+| `version` | string | ✅ | GB 标准版本号(MVP 固定一版,多版本预留) | `2023` |
+| `geo_centroid` | object | ⬜ | 质心坐标 `{lng, lat}` | `{120.30, 30.42}` |
+| `geojson_ref` | string | ⬜ | GeoJSON 路径或 feature ID | |
+
+**说明**
+- **"区"的精确含义(G26)**:`level = district` 涵盖 **县 / 县级市 / 市辖区** 三种形态;`name` 保留中文原名
+- **MVP 版本策略(2026-04-23 用户拍板)**:`version` 字段作为多版本预留,MVP 只装一版(如 `2023`),不启用多版本机制;A5 / G24 的升级能力属 P2
+- **泛地域标签(G27)**:不在 Region 表里表达,而在 ToolBinding / CoverageItem 的关联字段上(见 4.4 / 4.5)
+
+**层级树**
+```
+country (中国)
+  └── province (浙江省 330000)
+       └── city (杭州市 330100)
+            └── district (余杭区 330110)
+```
+
+#### 4.2.4 AuditLog(审计日志,⚠️ 偷懒版)
+
+> ⚠️ **偷懒标记** —— 关键操作清单、保留策略、查询索引等归技术架构文档细化。MVP 先定基本字段结构。
+
+| 字段 | 类型 | 必填 | 含义 |
+|---|---|---|---|
+| `id` | UUID | ✅ | |
+| `actor_id` | UUID | ✅ | 操作人 |
+| `action_code` | enum | ✅ | 操作码(见下) |
+| `target_entity_type` | enum | ✅ | 对象类型(`user` / `pin` / `theme` / `tool` / `region` 等) |
+| `target_entity_id` | UUID | ⬜ | 对象 ID |
+| `diff_snapshot` | JSON | ⬜ | 变更前后差异(关键操作才存) |
+| `occurred_at` | datetime | ✅ | |
+| `ip` / `ua` | string | ⬜ | IP / User-Agent |
+
+**MVP 必须留痕的 action_code(偷懒枚举)**
+- `user_create` / `user_disable` / `user_role_change`
+- `data_owner_transfer`(G23)
+- `pin_status_change` / `planpoint_status_change`
+- `theme_publish` / `theme_archive` / `theme_coverage_refetch`
+- `tool_publish` / `tool_archive` / `tool_update`
+- `region_version_upgrade`(G24)
+- `sensitive_data_edit`(管理员强制改业务数据)
+- `export_action`(对应 ExportRecord,见 4.7.1)
+
+### 4.3 属地相关实体
+
+#### 4.3.1 Pin(图钉)
+
+| 字段 | 类型 | 必填 | 含义 | 示例 |
+|---|---|---|---|---|
+| `id` | UUID | ✅ | | `pin_xyz` |
+| `title` | string(100) | ✅ | 标题 | `深圳 V2G 试点推进` |
+| `description` | text | ⬜ | 详细描述 | |
+| `region_code` | string(6) | ✅ | 所在区划 | `440300` |
+| `lng` / `lat` | float | ⬜ | 精确经纬度(比 region 更精细时用) | |
+| `status` | enum | ✅ | `in_progress` / `completed` / `aborted` | `in_progress` |
+| `aborted_reason` | text | ⬜ | 中止原因(`aborted` 时必填,重开后置空) | |
+| `closed_by` | UUID | ⬜ | 关闭人(完成 / 中止都填,重开后置空) | |
+| `related_theme_ids` | UUID[] | ⬜ | 关联的政策主题 | |
+| `priority` | enum | ⬜ | `high` / `medium` / `low` | `high` |
+| `opened_at` | datetime | ✅ | 创建时间 | |
+| `closed_at` | datetime | ⬜ | 最近一次完成/中止时间(重开后置空) | |
+
+**状态机(B9)** — 2026-04-23 修订:**允许反向**
+
+```
+[in_progress] ⇄ [completed]
+              ⇄ [aborted]   (aborted_reason 必填)
+```
+
+- **关闭后允许重新打开**(2026-04-23 用户拍板):重开时 `closed_at / closed_by / aborted_reason` 置空,历史变更记录去 AuditLog 查
+- 一次 Pin 生命周期可以反复 open/close
+
+**编辑权限(含状态变更)** — 2026-04-23 用户拍板:PMO / 负责人互通
+- `role ∈ {pmo, lead}` 的用户都可编辑任意 Pin 及其状态
+- 其他角色(属地 GA / 中台 GA / 管理员业务侧)不可编辑 Pin
+- `sys_admin` 可通过"数据校正"强制修改,留 AuditLog
+
+#### 4.3.2 Comment(留言)
+
+| 字段 | 类型 | 必填 | 含义 |
+|---|---|---|---|
+| `id` | UUID | ✅ | |
+| `pin_id` | UUID | ✅ | 挂在哪个 Pin |
+| `content` | text | ✅ | 留言内容 |
+| `author_id` | UUID | ✅ | 留言人 |
+| `source` | enum | ✅ | `manual` / `auto_from_planpoint` |
+| `source_planpoint_id` | UUID | ⬜ | 若 `source=auto`,记录源蓝点(G16) |
+
+**说明**
+- G16:子蓝点完成时,系统**自动**创建一条 `source=auto_from_planpoint` 的 Comment 到父 Pin
+- **自动留言模板**(2026-04-23 修订):`content` 直接等于 `PlanPoint → Visit.outcome_summary`(**不加 "来自蓝点" 前缀**);通过 `author_id` 字段知道具体是哪个用户;UI 层根据 `source` 字段决定是否展示"系统自动同步"标识
+- Comment **不可编辑、不可删除**(审计需要)
+
+#### 4.3.3 PlanPoint(蓝点 / 计划点)
+
+| 字段 | 类型 | 必填 | 含义 | 示例 |
+|---|---|---|---|---|
+| `id` | UUID | ✅ | | `pln_abc` |
+| `region_code` | string(6) | ✅ | 所在区划 | `330110` |
+| `lng` / `lat` | float | ⬜ | 精确经纬度 | |
+| `status` | enum | ✅ | `blue` / `red` / `yellow` / `green` | `blue` |
+| `parent_pin_id` | UUID | ⬜ | 父图钉(派生自图钉时填) | |
+| `source` | enum | ✅ | `from_pin` / `self_created_local` / `self_created_policy` | `from_pin` |
+| `note` | text | ⬜ | 备注 | |
+| `planned_at` | datetime | ✅ | 创建时间 | |
+| `visited_at` | datetime | ⬜ | 最近一次拜访时间(转色后填) | |
+| `linked_visit_id` | UUID | ⬜ | 对应 Visit 实体 ID(转色后填) | |
+
+**状态机(G15)** — 2026-04-23 修订:**允许改色**
+
+```
+[blue] ──拜访完成──→ [red] / [yellow] / [green]
+                            ⇄ 互相切换(改色)
+```
+
+- 初次转色:`blue → red/yellow/green`
+- 后续:`red/yellow/green` 之间可自由改色
+- **不允许回到 blue**(防止 Visit 记录孤立)
+- 编辑权限:**仅创建人**(1.3 B11 "他人条目不可编")
+
+#### 4.3.4 Visit(拜访记录)
+
+| 字段 | 类型 | 必填 | 含义 | 示例 |
+|---|---|---|---|---|
+| `id` | UUID | ✅ | | `vst_xyz` |
+| `plan_point_id` | UUID | ✅ | 源蓝点 | |
+| `visitor_id` | UUID | ✅ | 拜访人(= `created_by`) | |
+| `visit_date` | date | ✅ | 拜访日期 | `2026-04-23` |
+| `department` | string | ✅ | 拜访对象部门 | `杭州市发改委` |
+| `contact_person` | string | ✅ | 对接人 | `李主任` |
+| `contact_title` | string | ⬜ | 对接人职务 | `副主任` |
+| `outcome_summary` | text | ✅ | 产出描述 | `达成 V2G 试点意向,Q3 启动` |
+| `color` | enum | ✅ | 颜色(与 PlanPoint 当前状态一致) | `green` |
+| `follow_up` | text | ⬜ | 后续动作 | |
+| `related_theme_ids` | UUID[] | ⬜ | 关联政策主题 | |
+
+**说明**
+- 1 蓝点 : 1 Visit;蓝点转色后才存在
+- `color` 字段与 `PlanPoint.status` 冗余,便于查询
+- 编辑权限:**仅 `visitor_id = 当前用户`**(1.3 B11)
+- PlanPoint 改色(4.3.3)时,对应 Visit 的 `color` 字段同步更新;`outcome_summary` 等其他字段由拜访人自己决定是否一并改
+
+#### 4.3.5 Pin ↔ PlanPoint 父子关系 + 自动留言(G16)
+
+**关系**
+- 1 Pin : N PlanPoint
+- 1 PlanPoint 最多 1 parent Pin
+- 无父 Pin 时 `source` 为 `self_created_local` 或 `self_created_policy`
+
+**自动留言触发规则**
+- 触发条件:`PlanPoint.status` 由 `blue → red/yellow/green` **且** `parent_pin_id` 非空
+- 系统自动在父 Pin 下插入 Comment:
+  - `source = auto_from_planpoint`
+  - `source_planpoint_id` = 当前 planpoint.id
+  - `author_id` = 当前用户(visitor_id)
+  - `content` = 同步自 `Visit.outcome_summary`(纯内容,无前缀)
+- PlanPoint **后续改色** 时是否再触发自动留言?MVP 默认:**只在首次 blue→color 时自动留言**,改色不重复发(避免刷屏)—— 2026-04-23 默认设定,后续可调
+
+### 4.4 政策相关实体
+
+#### 4.4.1 PolicyTheme(政策主题)
+
+| 字段 | 类型 | 必填 | 含义 | 示例 |
+|---|---|---|---|---|
+| `id` | UUID | ✅ | | `thm_xyz` |
+| `name` | string(64) | ✅ | 主题名 | `主线政策 · 新能源补贴` |
+| `category` | enum | ✅ | `mainline` / `risk` / `custom`(P3) | `mainline` |
+| `param_template_code` | enum | ✅ | 使用的参数模板 | `mainline_policy` |
+| `param_values` | JSON | ✅ | 按模板填的字段值 | `{"policy_keyword":"新能源补贴","region_scope":"全国"}` |
+| `coverage_last_fetched_at` | datetime | ⬜ | 最近一次拉取覆盖清单时间 | |
+| `status` | enum | ✅ | `draft` / `published` / `archived` | `published` |
+
+**状态机**
+```
+[draft] ──发布──→ [published] ⇄ [archived]   (下架 ⇄ 恢复,对称工具 G21)
+```
+- 编辑权限:`role = central_ga` 的创建人(1.4);他人不可编辑(对齐 1.4 / 1.3 原则)
+
+#### 4.4.2 ParamTemplate(参数模板,系统预置)
+
+| 字段 | 类型 | 必填 | 含义 |
+|---|---|---|---|
+| `code` | enum | ✅ | `mainline_policy` / `risk` / (远期 `custom`) |
+| `name` | string | ✅ | 展示名 |
+| `fields_schema` | JSON | ✅ | 字段定义(JSON Schema 格式) |
+
+**MVP 预置(偷懒版)**
+- `mainline_policy`:字段 `{ policy_keyword: string, region_scope: enum }`
+- `risk`:字段 `{ risk_category: enum, region_scope: enum }`
+
+> ⚠️ **偷懒标记**:字段完整定义随 G18 细化;MVP 先按 2 套最简模板跑通。
+
+#### 4.4.3 CoverageItem(覆盖清单条目)
+
+| 字段 | 类型 | 必填 | 含义 | 示例 |
+|---|---|---|---|---|
+| `id` | UUID | ✅ | | |
+| `theme_id` | UUID | ✅ | 所属主题 | `thm_xyz` |
+| `region_code` | string(6) | ⬜ | 精细绑定的行政区划(与 `region_scope_tag` 二选一) | `330110` |
+| `region_scope_tag` | enum | ⬜ | 泛地域标签(G27) | `all_cities_in_330000` |
+| `primary_value` | float | ✅ | 主属性值(涂层点大小 / 色深映射用) | `3.0` |
+| `attributes` | JSON | ⬜ | 其他属性(政诉分类明细、时间戳等) | |
+| `fetched_at` | datetime | ✅ | 来自外部系统的拉取时间 | |
+
+**说明**
+- `region_code` 与 `region_scope_tag` **二选一**
+- `primary_value` 语义由主题类别决定(主线 = 区覆盖数;风险 = 政诉数量)
+- 刷新策略:**整版覆盖**(拉取时删本主题全部 CoverageItem,再批量插入)
+
+### 4.5 工具相关实体
+
+#### 4.5.1 Tool(共有字段)
+
+| 字段 | 类型 | 必填 | 含义 | 示例 |
+|---|---|---|---|---|
+| `id` | UUID | ✅ | | `tl_xyz` |
+| `name` | string(64) | ✅ | 工具名 | `浙江省新能源补贴解读 PPT` |
+| `tool_type` | enum | ✅ | `document` / `interface` | `document` |
+| `taxonomy_tag` | enum | ✅ | 类型标签(D11 偷懒枚举) | `ppt_template` |
+| `description` | text | ⬜ | 简介 | |
+| `status` | enum | ✅ | `draft` / `published` / `archived` | `published` |
+
+**状态机(G21)**
+```
+[draft] ──发布──→ [published] ⇄ [archived]
+```
+
+**taxonomy_tag 预置枚举(D11 偷懒版)**
+`ppt_template` / `negotiation_reference` / `local_data` / `collaboration_template` / `policy_interpretation` / `other`
+
+#### 4.5.2 DocumentTool(成品文档,附加字段)
+
+| 字段 | 类型 | 必填 | 含义 |
+|---|---|---|---|
+| `tool_id` | UUID | ✅ | 外键 → Tool.id |
+| `file_url` | string | ✅ | 文件存储路径 |
+| `file_name` | string | ✅ | 原文件名 |
+| `file_size_bytes` | int | ✅ | |
+| `mime_type` | string | ✅ | `application/pdf` / `.pptx` / ... |
+| `last_updated_at` | datetime | ✅ | 最近一次覆盖上传时间 |
+
+**说明**
+- 更新(D4):`file_url` 替换 + `last_updated_at` 刷新;**不保留历史版本**(D19)
+- 属地 GA 已下载的本地文件不受服务端覆盖影响(场景 2 A3)
+
+#### 4.5.3 InterfaceTool(调用接口,附加字段)
+
+| 字段 | 类型 | 必填 | 含义 |
+|---|---|---|---|
+| `tool_id` | UUID | ✅ | 外键 → Tool.id |
+| `endpoint_url` | string | ✅ | 外部系统接口 URL(MVP 指向假系统) |
+| `method` | enum | ✅ | `GET` / `POST` |
+| `param_template` | JSON | ✅ | 参数模板(含 `region_code` 等占位符) |
+| `response_mapping` | JSON | ✅ | 返回字段 → 前端展示字段的映射 |
+| `timeout_ms` | int | ⬜ | 超时设置,默认 5000 |
+
+#### 4.5.4 ToolBinding(工具绑定)
+
+| 字段 | 类型 | 必填 | 含义 | 示例 |
+|---|---|---|---|---|
+| `id` | UUID | ✅ | | |
+| `tool_id` | UUID | ✅ | 外键 → Tool.id | |
+| `region_code` | string(6) | ⬜ | 精细绑定的行政区划(与 `region_scope_tag` 二选一) | `330000`(浙江省整体)/ `330100`(杭州市) / `330110`(余杭区) |
+| `region_scope_tag` | enum | ⬜ | 泛地域标签(集合) | `all_provinces` / `all_cities_in_{prov_code}` / `all_districts_in_{city_code}` |
+
+**说明(含用户 2026-04-23 举例澄清)**
+- `region_code` 可挂到**任意粒度**(province/city/district),举例:
+  - 挂 `330000(浙江省)` = 拜访浙江省级部门时该工具可见 → 属地 GA 录入时"市"下拉框选"**全省**",实际挂到省 level region
+  - 挂 `330100(杭州市)` = 拜访杭州市级部门时可见
+  - 挂 `330110(余杭区)` = 仅余杭可见
+- `region_scope_tag` 表达**集合**(跨多个具体点的通用工具):
+  - `all_provinces` = 全国所有省通用
+  - `all_cities_in_330000` = 浙江省下所有市通用(不含省级本身)
+  - `all_districts_in_330100` = 杭州市下所有区通用(不含市级本身)
+- 一个工具可有多条 ToolBinding
+
+#### 4.5.5 ToolConsumptionLog(工具消费日志,G19)
+
+| 字段 | 类型 | 必填 | 含义 |
+|---|---|---|---|
+| `id` | UUID | ✅ | |
+| `tool_id` | UUID | ✅ | |
+| `consumer_id` | UUID | ✅ | 消费人(属地 GA) |
+| `consumption_type` | enum | ✅ | `download`(成品文档)/ `invoke`(调用接口) |
+| `context_region_code` | string(6) | ⬜ | 消费发生时的地理上下文 |
+| `context_plan_point_id` | UUID | ⬜ | 若从蓝点触发,记录蓝点 ID |
+| `consumed_at` | datetime | ✅ | |
+| `invoke_params` | JSON | ⬜ | 调用接口消费时记录请求参数 |
+
+**说明**
+- G19:下载 = 消费一次;调用 = 消费一次;MVP **不区分采纳 vs 弃用**
+- **不存返回结果摘要**(2026-04-23 设计决策):排查走外部系统日志 + AuditLog,节省存储
+
+#### 4.5.6 工具 ↔ 点的级联匹配规则(G25)
+
+**触发**:属地 GA 在 B15 点详情页请求"可用工具列表"时。
+
+**匹配算法(MVP 文字版)**
+
+1. 取当前点的 `region_code`(如 `330110` 余杭)和对应 `level`(`district`)
+2. 生成**匹配候选集**:
+   - 精细点集:`{当前点, 上级 city, 上级 province}` = `{330110, 330100, 330000}`
+   - 泛地域集:`{all_districts_in_330100, all_cities_in_330000, all_provinces}`(按当前点的层级向上衍生)
+3. 在 `ToolBinding` 表筛选:`region_code ∈ 精细集` 或 `region_scope_tag ∈ 泛集`
+4. 对应 Tool 按 `status=published` 过滤
+5. **去重**(同 tool 多条 binding 匹配只留一条)
+6. **排序(2026-04-23 设计决策)**:按 `taxonomy_tag` **分组**,组内按 `region_code` 精细度降序(district > city > province > 泛地域)+ `tool.created_at` 降序
+7. 结果为空 → UI 展示"**暂无**"
+
+**示例**:属地 GA 点开余杭(330110)的点,可能返回:
+
+```
+PPT 模板(2 个)
+  - 浙江省新能源补贴解读.pptx (绑 330000)
+  - 通用对接模板.pptx (绑 all_provinces)
+谈参参考(1 个)
+  - 某地定制谈参 [调用接口] (绑 all_districts_in_330100)
+```
+
+### 4.6 聚合型数据
+
+#### 4.6.1 周观测聚合逻辑(G9,⚠️ 偷懒版)
+
+> ⚠️ **偷懒标记** —— 周观测的具体指标口径 / 时间窗口 / 字段公式需后续与 E 模块一起细化。MVP 先定数据来源,不定聚合 SQL。
+
+**周观测不是独立实体**,是由系统按固定规则从以下实体派生的聚合视图:
+
+| 指标 | 数据来源 |
+|---|---|
+| 本周新增拜访 | `Visit.visit_date` ∈ 本周 |
+| 本周新增计划点 | `PlanPoint.planned_at` ∈ 本周 |
+| 本周新增完成点 | `PlanPoint.status` 变为 red/yellow/green 且时间 ∈ 本周 |
+| 本周新增图钉 | `Pin.opened_at` ∈ 本周 |
+| 本周工具消费 | `ToolConsumptionLog.consumed_at` ∈ 本周 |
+| 掉队预警 | `User.status=active` 且 `local_ga` 角色 且 最近 7 天无动作 |
+| 长期未更新主题 | `PolicyTheme.coverage_last_fetched_at` 早于阈值(如 30 天前) |
+
+**实现策略(MVP 偷懒)**:每次打开综合看板实时聚合查询;性能优化留规模扩大后(物化视图 / 缓存)
+
+### 4.7 边界实体
+
+#### 4.7.1 ExportRecord(决策层服务导出留痕,G12,⚠️ 偷懒版)
+
+> ⚠️ **偷懒标记** —— 字段 / 存储策略 / 脱敏规则等需结合 I3 后续细化。
+
+| 字段 | 类型 | 必填 | 含义 |
+|---|---|---|---|
+| `id` | UUID | ✅ | |
+| `exporter_id` | UUID | ✅ | 导出人(负责人 / PMO) |
+| `export_type` | enum | ✅ | `screenshot` / `pdf` |
+| `source_view` | string | ✅ | 导出视图(如"综合看板"/"政策大图") |
+| `file_url` | string | ⬜ | 导出件存储路径(若保留) |
+| `watermark_applied` | bool | ✅ | 是否已应用水印(I3) |
+| `sensitive_fields_masked` | bool | ✅ | 是否已脱敏(I3) |
+| `exported_at` | datetime | ✅ | |
+
+**说明**:每次地图截图 / PDF 导出写一条,用于审计"谁在什么时候导出了什么给决策层"
+
+### 4.8 实体关系总图(ER)
+
+```mermaid
+erDiagram
+    User ||--o{ UserRole : "has"
+    Role ||--o{ UserRole : "assigned_to"
+    Region ||--o{ Region : "parent_of"
+
+    User ||--o{ Pin : "created_by"
+    User ||--o{ PlanPoint : "created_by"
+    User ||--o{ Visit : "visitor"
+    User ||--o{ Tool : "created_by"
+    User ||--o{ PolicyTheme : "created_by"
+    User ||--o{ Comment : "author"
+    User ||--o{ ToolConsumptionLog : "consumer"
+
+    Pin ||--o{ Comment : "has"
+    Pin ||--o{ PlanPoint : "parent_of"
+    PlanPoint ||--|| Visit : "becomes"
+    PlanPoint }o--|| Region : "located_at"
+    Pin }o--|| Region : "located_at"
+
+    PolicyTheme ||--o{ CoverageItem : "contains"
+    PolicyTheme }o--|| ParamTemplate : "uses"
+    CoverageItem }o--o| Region : "精细 bind"
+
+    Tool ||--o| DocumentTool : "is_a"
+    Tool ||--o| InterfaceTool : "is_a"
+    Tool ||--o{ ToolBinding : "bound_to"
+    ToolBinding }o--o| Region : "精细 bind"
+    Tool ||--o{ ToolConsumptionLog : "consumed_via"
+
+    User ||--o{ AuditLog : "actor"
+    User ||--o{ ExportRecord : "exporter"
+```
+
+### 4.末 · 兑现的 G 项清单 + 未兑现说明
+
+**本章已兑现 / 处理**
+
+| G 项 | 处理位置 |
+|---|---|
+| G9 周观测聚合 | 4.6.1 偷懒版定数据来源,公式待细化 |
+| G12 决策层服务安全 | 4.7.1 ExportRecord 偷懒版留痕 |
+| G15 蓝点状态机 | 4.3.3 完整定义(允许改色) |
+| G16 图钉-蓝点父子 + 自动留言 | 4.3.5 |
+| G17 点详情工具溯源 | 依赖 4.5.6 级联匹配 |
+| G18 政策主题模型 | 4.4.1-4.4.3 |
+| G19 工具消费触发 | 4.5.5 ToolConsumptionLog |
+| G20 外部系统对接 | 4.5.3 InterfaceTool schema(真实方案归第 8 章) |
+| G21 工具生命周期 | 4.5.1 状态机 |
+| G22 图钉模型 | 4.3.1 |
+| G23 数据归属转移 | 所有实体含 `created_by`;4.2.4 AuditLog `data_owner_transfer` |
+| G24 区划版本升级 | 4.2.3 `version` 字段预留,迁移策略归技术架构 |
+| G25 工具 ↔ 点级联匹配 | 4.5.6 完整算法 |
+| G26 "区"统称 | 4.2.3 说明 |
+| G27 泛地域绑定 | 4.4.3 / 4.5.4 `region_scope_tag` |
+
+**仍未兑现(留给后续章节)**
+
+- **G4 监管风险粒度** → F2 落地时 / 第 8 章外部依赖
+- **G9 具体聚合公式** → E 模块 review 时细化
+- **G12 水印 / 脱敏规则** → 第 7 章非功能需求
+- **G13 种子数据导入** → 第 8 章外部依赖
+- **G28 多涂层叠加** → 第 6 章信息架构 / 或二期
+
+---
+
 ## 备忘箱(待入后续章节)
 
 ### 待入第 4 章 · 核心数据模型
