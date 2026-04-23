@@ -1179,6 +1179,221 @@ erDiagram
 
 ---
 
+## 第 5 章 · 权限矩阵
+
+> ⚠️ **偷懒版声明**(2026-04-23 用户拍板):本章按"第 1 章粗粒度权限基线 + 第 4 章每实体已定 U 权限"**机械汇总补全**,不逐格拍板。MVP 跑通即可;规模扩大后按 F3 / F4 逐格正式化(见 5.4)。
+
+### 5.0 编写约定
+
+**角色代号**(对齐 4.2.2 Role 枚举)
+
+| 代号 | 角色 | 来源 |
+|---|---|---|
+| `local_ga` | 属地 GA | 1.3 |
+| `pmo` | PMO | 1.2 |
+| `lead` | GA 负责人 | 1.1 |
+| `central_ga` | 中台 GA | 1.4 |
+| `sys_admin` | 系统管理员 | 1.5 |
+
+**权限符号**
+
+| 符号 | 含义 |
+|---|---|
+| `R` | 读(查询、展示、下载已可见数据) |
+| `C` | 创建 |
+| `U` | 更新(全字段) |
+| `Uself` | 仅更新自己创建的条目(`created_by = 当前用户`) |
+| `D` / `Dself` | 删除(软删) / 仅自己创建的 |
+| `S` / `Sself` | 状态变更 / 仅对自己创建的条目状态变更 |
+| `—` | 不可 |
+| `✦` | MVP 兜底开放,升级规则见脚注 |
+
+**全读基线**(1.1-1.5 共同约定):5 个角色对所有业务实体**默认 `R`**,主矩阵 5.1 的"R"列按基线填充;只有明确受限的(如 AuditLog 仅 sys_admin 可读、ExportRecord 仅 exporter 本人+sys_admin 可读)会在说明里标出。
+
+**分表思路**
+- 5.1 主矩阵:角色 × 实体 × CRUD(D 大多 —,真正要做的是 C / U 差异)
+- 5.2 状态变更矩阵:仅对有状态机的实体(Pin / PlanPoint / PolicyTheme / Tool)
+- 5.3 特殊操作矩阵:CRUD 表达不了的业务动作(下载 / 调用 / 导出 / 校正 / 归属转移 / 分发 等)
+- 5.4 sys_admin 覆盖原则 + F3/F4 升级路径
+
+---
+
+### 5.1 主矩阵(CRUD 权限)
+
+#### 5.1.1 基础实体
+
+| 实体 | local_ga | pmo | lead | central_ga | sys_admin |
+|---|---|---|---|---|---|
+| **User** | R | R | R | R | **CRUD** |
+| **Role**(预置枚举,MVP 不 CRUD) | R | R | R | R | R |
+| **UserRole** | R | R | R | R | **CRUD** |
+| **Region** | R | R | R | R | **RU✦**(版本升级 P2 / G24) |
+| **AuditLog** | — | — | — | — | **R**(只读) |
+| **ExportRecord** | — | **R**(自己的) | **R**(自己的) | — | **R**(全部,合规) |
+
+**说明**
+- `User / UserRole / Region` 的编辑权由 sys_admin 独占(1.5)
+- `Role` 预置 5 枚举,MVP 阶段任何人都不做 CRUD(对应 4.2.2 说明 + G4 域 P3)
+- `AuditLog` 仅 sys_admin 可读(1.5 "审计日志只读");其他角色需要查变更时走 sys_admin 工单
+  - ⚠️ **未兑现**:lead / pmo 查"自己团队条目变更"的开放度留第 7 章非功能或 F 类候选
+- `ExportRecord` 读取范围:exporter 本人读自己的、sys_admin 读全部(合规审计);其他角色无业务必要,不开放
+  - ⚠️ **未兑现**:跨角色可见性(例:lead 查 pmo 的导出记录)留第 7 章细化
+- `Region` 的 `RU✦`:sys_admin 只有在行政区划版本升级(G24,P2)时才 U;MVP 阶段仅 R
+
+#### 5.1.2 属地实体
+
+| 实体 | local_ga | pmo | lead | central_ga | sys_admin |
+|---|---|---|---|---|---|
+| **Pin**(图钉) | R | **CRUDS** | **CRUDS** | R | **U✦**(校正) |
+| **Comment**(留言) | **C**(手动 + 系统代发 ✦) | **C**(手动 + 系统代发) | **C**(手动 + 系统代发) | R | R |
+| **PlanPoint**(蓝点) | **C + UselfS** | R | R | R | **U✦**(校正) |
+| **Visit**(拜访) | **CUself**(绑蓝点) | R | R | R | **U✦**(校正) |
+
+**说明**
+- **Pin**:1.2 / 1.3 / 1.4 基线 → PMO / lead 互通(4.3.1 拍板),其他角色仅读;sys_admin 数据校正时 U,写 `sensitive_data_edit` AuditLog
+- **Comment**(4.3.2 规则):**不可编辑、不可删除**(审计需要),所有角色都无 U/D
+  - `local_ga` 的 C:手动发言(重点项目多参与方,2026-04-23 用户拍板)+ 蓝点完成触发的系统代发(`source = auto_from_planpoint`,`author_id = 当前用户`)
+    - **MVP 不做参与方过滤**:任意 `local_ga` 可在任意 Pin 下留言(全读基线 + GA 团队规模小,噪音风险低);规模扩大后若出现乱留言再加"按子蓝点 / 主题关联"的过滤,属 F 类候选
+  - `pmo` / `lead` 的 C:手动发言 + 自己触发的系统代发(对齐 1.2 互通)
+  - `central_ga` / `sys_admin` 的 C:— (无业务必要)
+- **PlanPoint**(4.3.3):仅创建人(`local_ga`)可编辑 + 状态变更(blue → red/yellow/green 及改色)
+- **Visit**(4.3.4):仅 `visitor_id = 当前用户` 可编辑,且 Visit 生命周期与 PlanPoint 状态变更联动
+- `Uself` 约束优先于 `U`:local_ga 不可编辑他人的 PlanPoint / Visit(1.3 B11)
+
+#### 5.1.3 政策实体
+
+| 实体 | local_ga | pmo | lead | central_ga | sys_admin |
+|---|---|---|---|---|---|
+| **PolicyTheme**(政策主题) | R | R | R | **CUselfS**(+ D 前需归档) | **U✦**(校正) |
+| **ParamTemplate**(参数模板,系统预置) | R | R | R | R | R(MVP 不 CRUD) |
+| **CoverageItem**(覆盖清单) | R | R | R | **C✦**(触发拉取,系统回写) | — |
+
+**说明**
+- **PolicyTheme**(4.4.1):中台 GA 创建并编辑自己创建的主题;状态机 draft → published ⇄ archived 仅 creator 可操作;删除需先 archived(软删)
+- **ParamTemplate**(4.4.2):系统预置 2 套(`mainline_policy` / `risk`),所有角色只读;后端升级模板属 P3
+- **CoverageItem**(4.4.3):**不由人手动 CRUD**;中台 GA 在 PolicyTheme 下"触发拉取覆盖清单"(见 5.3),系统调外部政策分析工具 → 整版替换写入 CoverageItem(4.4.3 "整版覆盖" 策略)
+- `C✦`:中台 GA 的 C 本质是"发起刷新请求",实际写入由系统执行;sys_admin 不直接 CUD CoverageItem(有问题走"触发重拉"或删主题重建)
+
+#### 5.1.4 工具实体
+
+| 实体 | local_ga | pmo | lead | central_ga | sys_admin |
+|---|---|---|---|---|---|
+| **Tool**(通用字段) | R + 消费 | R | R | **CUselfSD**(D 前需归档) | **U✦**(校正) |
+| **DocumentTool**(成品文档) | R + 下载 | R | R | **C**(上传) + **Uself**(覆盖上传) | **U✦**(校正) |
+| **InterfaceTool**(调用接口) | R + 调用 | R | R | **CUself** | **U✦**(校正) |
+| **ToolBinding**(工具绑定) | R | R | R | **CUselfD** | **U✦**(校正) |
+| **ToolConsumptionLog**(消费日志) | **R**(仅 `consumer_id = self`) | **R**(全部) | **R**(全部) | **R**(仅自己创建的 Tool 的消费数据) | **R**(全部) |
+
+**说明**
+- **Tool / DocumentTool / InterfaceTool**(4.5.1-4.5.3):中台 GA 创建+维护自己创建的工具;状态机 draft → published ⇄ archived(4.5.1 / G21)仅 creator 可操作
+- **DocumentTool 更新策略**(4.5.2 / D4):覆盖上传不保留历史版本;中台 GA 仅可更新自己创建的工具
+- **ToolBinding**(4.5.4):中台 GA 维护绑定关系(精细点 / 泛地域 / 两者混合);和所属 Tool 的 owner 一致时才可编辑
+- **ToolConsumptionLog**(4.5.5 / G19):
+  - `local_ga` 读范围限自己的消费记录(个人中心 / 审计)
+  - `central_ga` 读范围限"自己创建的工具被谁消费了"(1.4 "看到自己的工具被谁用了"核心诉求)
+  - `lead` / `pmo` 读全部(用于综合看板、工具消费排行、一线高频需求识别)
+  - `sys_admin` 读全部(合规 / 审计)
+  - **没有人手动 CUD**:日志由系统在"下载 / 调用"特殊操作时写入(见 5.3)
+
+---
+
+### 5.2 状态变更权限表
+
+仅列有状态机的实体。`Self` = 仅对自己创建的条目。
+
+| 实体 | 状态流转 | local_ga | pmo | lead | central_ga | sys_admin |
+|---|---|---|---|---|---|---|
+| **Pin** | `in_progress ⇄ completed` | — | ✓ | ✓ | — | ✓✦(校正) |
+| **Pin** | `in_progress ⇄ aborted`(需发起人确认 ✦) | — | ✓ | ✓ | — | ✓✦(校正) |
+| **Pin** | `completed → in_progress`(重开) | — | ✓ | ✓ | — | ✓✦(校正) |
+| **PlanPoint** | `blue → red/yellow/green`(初次拜访) | ✓Self | — | — | — | ✓✦(校正) |
+| **PlanPoint** | `red ⇄ yellow ⇄ green`(后续改色) | ✓Self | — | — | — | ✓✦(校正) |
+| **PolicyTheme** | `draft → published` | — | — | — | ✓Self | ✓✦(校正) |
+| **PolicyTheme** | `published ⇄ archived` | — | — | — | ✓Self | ✓✦(校正) |
+| **Tool** | `draft → published` | — | — | — | ✓Self | ✓✦(校正) |
+| **Tool** | `published ⇄ archived` | — | — | — | ✓Self | ✓✦(校正) |
+
+**说明**
+- `Pin aborted` 的**发起人确认**(B9 / 场景 4):若操作人 ≠ Pin 创建人,前端弹框要求确认(MVP 兜底);流程审批属 P2 候选
+- sys_admin 的"校正"路径:全部状态变更都能强制操作,但必写 `sensitive_data_edit` + 对应 `{pin|planpoint|theme|tool}_status_change` AuditLog
+- `PlanPoint` 不允许回到 `blue`(4.3.3),sys_admin 校正也不开(防 Visit 孤立)—— 需要撤销拜访的,只能删 Visit + PlanPoint 重建
+
+---
+
+### 5.3 特殊操作矩阵
+
+CRUD / 状态变更表达不了的业务动作。
+
+| 操作 | local_ga | pmo | lead | central_ga | sys_admin | 说明 / 审计 |
+|---|---|---|---|---|---|---|
+| **下载文档工具** | ✓ | — | — | — | — | 写 ToolConsumptionLog `download`(G19) |
+| **调用接口工具** | ✓ | — | — | — | — | 写 ToolConsumptionLog `invoke`(G19) |
+| **触发覆盖清单拉取**(PolicyTheme) | — | — | — | ✓Self | — | 调外部政策分析工具,整版替换 CoverageItem;写 `theme_coverage_refetch` AuditLog |
+| **H5 快速录入拜访**(B12) | ✓ | — | — | — | — | 移动端简化表单,权限同 Visit.C |
+| **拜访清单批量修订提示**(B11) | ✓Self | — | — | — | — | 清单筛"不完整"→ 一键跳修;仅改自己的 Visit |
+| **导出综合看板截图 / PDF** | — | ✓ | ✓ | — | — | 生成 ExportRecord;MVP 仅标记字段,水印 / 脱敏规则留第 7 章 G12 |
+| **标记周观测**(E3) | — | ✓ | ✓ | — | — | 手动维护周观测数据(4.6.1 偷懒,公式留 E 模块 review) |
+| **生成 / 导出周报**(F7 候选) | — | ✓ | ✓ | — | — | MVP 手动;AI 自动生成属 F7 |
+| **分发监管风险**(F2,P2) | — | — | — | ✓ | — | MVP **不做**,留占位;G4 / F2 |
+| **蓝点完成 → 父图钉自动留言**(G16) | ✓(触发侧) | — | — | — | — | 系统代发 Comment;`author_id = local_ga` |
+| **数据校正**(任意业务实体的 U) | — | — | — | — | ✓✦ | 写 `sensitive_data_edit` AuditLog;非必要不用 |
+| **归属转移**(G23,离职) | — | — | — | — | ✓ | 批量 / 选择性转移 owner_id;写 `data_owner_transfer` AuditLog |
+| **用户 CRUD / 角色分配 / 启停** | — | — | — | — | ✓ | 写 `user_create` / `user_disable` / `user_role_change` AuditLog |
+| **区划版本升级**(G24,P2) | — | — | — | — | ✓ | 写 `region_version_upgrade` AuditLog;MVP **不做** |
+| **查看审计日志** | — | — | — | — | ✓(只读) | 1.5 |
+| **查看工具消费数据** | 仅自己的 | 全部 | 全部 | 自己创建的工具 | 全部 | 见 5.1.4 ToolConsumptionLog |
+
+---
+
+### 5.4 sys_admin 覆盖原则 + F3/F4 升级路径
+
+sys_admin 在 MVP 对业务数据的"可读可编辑"是**兜底权**,不是日常路径。执行原则:
+
+1. **非必要不编辑**:仅限一线提交"数据错了"工单时介入;主动发现异常也应先联系条目 owner
+2. **强制留痕**:所有业务数据修改写 `sensitive_data_edit` AuditLog,含 `target_entity_type` / `target_entity_id` / `diff_snapshot`
+3. **Comment 例外**:Comment 不可编辑、不可删除(4.3.2),sys_admin 也不例外 —— 如果 Comment 内容违规,删整个 Pin 或者让 owner 处理
+4. **ToolConsumptionLog / AuditLog / ExportRecord 不开 U / D**:日志类数据任何人都不能改(审计前提)
+5. **升级路径**(MVP 之后):
+   - **F4**(规模扩大后):业务数据权限从"可读可编辑"收紧为"**只读 + 临时授权**" —— 需要编辑时通过工单走短时限授权
+   - **F3**(敏感操作):`user_disable` / `data_owner_transfer` / `region_version_upgrade` 等高风险操作引入**双人复核**(二人拍板才生效)
+6. **审计日志可读范围**:MVP 仅 sys_admin;lead / pmo 查"自己团队条目变更"的开放度留备忘箱 → 第 7 章或 F 类候选
+
+---
+
+### 5.末 兑现清单 + 未兑现说明
+
+**本章兑现**
+
+| 来源 | 兑现位置 |
+|---|---|
+| 1.1-1.5 粗粒度权限基线 | 5.1 / 5.2 / 5.3 全面细化 |
+| 4.3.1 Pin 编辑权限(PMO / lead 互通) | 5.1.2 + 5.2 |
+| 4.3.2 Comment 不可编辑 / 不可删除 | 5.1.2 |
+| 4.3.3 / 4.3.4 PlanPoint / Visit 仅创建人 | 5.1.2 + 5.2 |
+| 4.4.1 PolicyTheme 状态机 + 创建人约束 | 5.1.3 + 5.2 |
+| 4.5.1 Tool 状态机 + 4.5.4 ToolBinding | 5.1.4 + 5.2 |
+| G19 工具消费触发 | 5.3 下载 / 调用 |
+| G23 归属转移 | 5.3 特殊操作 |
+| G24 区划版本升级(P2) | 5.3 特殊操作 + 5.1.1 Region `U✦` |
+
+**未兑现(留给后续章节)**
+
+- **AuditLog 跨角色可读开放度**(lead / pmo 查自己团队条目变更)→ 第 7 章非功能 或 F 类候选
+- **ExportRecord 跨角色可见性**(例:lead 看 pmo 的导出记录)→ 第 7 章非功能
+- **Pin 中止"发起人确认"的实现形态**(前端弹框 vs 流程审批)→ P2 候选 / 第 6 章信息架构
+- **F3 敏感操作双人复核细则**(哪些操作、复核流程、超时机制)→ F3 落地时
+- **F4 "只读 + 临时授权"流程**(授权申请、时限、撤销)→ F4 落地时
+- **PolicyTheme 删除语义**(软删 vs archived;archived 下的 CoverageItem 是否保留)→ 技术架构文档
+
+**本章开的新悬案**
+- **H1 · AuditLog 读取开放度**:MVP 仅 sys_admin 读 → lead / pmo 开放到什么粒度合理?
+- **H2 · ExportRecord 读取开放度**:MVP 仅 exporter + sys_admin → 跨角色是否开放?
+- **H3 · Pin 中止的发起人确认流程化**:MVP 前端弹框 → 何时升级为流程审批?
+
+H1-H3 留第 7 章非功能需求 / F 类候选再处理。
+
+---
+
 ## 备忘箱(待入后续章节)
 
 ### 待入第 4 章 · 核心数据模型
@@ -1207,6 +1422,9 @@ erDiagram
 
 ### 待入第 7 章 · 非功能需求
 - **G12 决策层服务路径的安全**:负责人导出/截图/转发给决策层的水印、敏感字段脱敏、留痕审计
+- **H1 AuditLog 跨角色可读开放度**(2026-04-23 第 5 章引入):MVP 仅 sys_admin 读 → lead / pmo 查"自己团队条目变更"的合理粒度?开到"查我创建的条目被谁改过"?还是到"本团队全部变更流"?
+- **H2 ExportRecord 跨角色可见性**(2026-04-23 第 5 章引入):MVP 仅 exporter + sys_admin 读 → lead 查 pmo 的导出记录是否开放?反之?与 G12 水印/脱敏规则联动
+- **H3 Pin 中止发起人确认流程化**(2026-04-23 第 5 章引入):MVP 前端弹框兜底 → 何时升级为流程审批(Pin 创建人不在线时、中止涉及政府关系风险时)?属 P2 候选
 
 ### 待入第 8 章 · 外部依赖与未决项
 - **G13 系统管理员初期种子数据导入**:行政区划、初始用户、种子政策主题的导入路径与责任方
