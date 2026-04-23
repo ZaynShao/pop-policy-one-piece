@@ -1,0 +1,86 @@
+[
+  {
+    "id": "p_wind_solar_storage",
+    "name": "风光储一体化",
+    "level": "main",
+    "color": "#13c2c2",
+    "description": "推进风光储一体化项目，鼓励地方电网侧配储",
+    "coverage": [
+      { "provinceCode": "150000" },
+      { "provinceCode": "650000" },
+      { "provinceCode": "540000" },
+      { "provinceCode": "330000", "cityCode": "330100" },
+      { "provinceCode": "330000", "cityCode": "330100", "districtCode": "330108" },
+      { "provinceCode": "330000", "cityCode": "330100", "districtCode": "330110" },
+      { "provinceCode": "330000", "cityCode": "330200" },
+      { "provinceCode": "440000", "cityCode": "440100" },
+      { "provinceCode": "440000", "cityCode": "440300" },
+      { "provinceCode": "440000", "cityCode": "440300", "districtCode": "440305" },
+      { "provinceCode": "440000", "cityCode": "440300", "districtCode": "440306" },
+      { "provinceCode": "320000", "cityCode": "320100" },
+      { "provinceCode": "320000", "cityCode": "320500" }
+    ]
+  },
+  {
+    "id": "p_green_consumption",
+    "name": "绿电消纳",
+    "level": "main",
+    "color": "#52c41a",
+    "description": "绿电直供、绿证交易、可再生能源消纳责任权重",
+    "coverage": [
+      { "provinceCode": "110000" },
+      { "provinceCode": "110000", "cityCode": "110000", "districtCode": "110105" },
+      { "provinceCode": "110000", "cityCode": "110000", "districtCode": "110108" },
+      { "provinceCode": "310000" },
+      { "provinceCode": "310000", "cityCode": "310000", "districtCode": "310115" },
+      { "provinceCode": "330000", "cityCode": "330100" },
+      { "provinceCode": "440000", "cityCode": "440300" },
+      { "provinceCode": "510000", "cityCode": "510100" },
+      { "provinceCode": "370000", "cityCode": "370200" }
+    ]
+  },
+  {
+    "id": "p_charging_rural",
+    "name": "充电下乡",
+    "level": "main",
+    "color": "#faad14",
+    "description": "新能源汽车下乡与充电设施县域覆盖",
+    "coverage": [
+      { "provinceCode": "410000" },
+      { "provinceCode": "410000", "cityCode": "410100" },
+      { "provinceCode": "320000", "cityCode": "320200" },
+      { "provinceCode": "330000", "cityCode": "330400" },
+      { "provinceCode": "340000", "cityCode": "340100" },
+      { "provinceCode": "370000", "cityCode": "370700" },
+      { "provinceCode": "430000", "cityCode": "430100" }
+    ]
+  },
+  {
+    "id": "p_new_infra",
+    "name": "新基建补贴",
+    "level": "main",
+    "color": "#722ed1",
+    "description": "5G、数据中心、充电桩等新型基础设施财政补贴",
+    "coverage": [
+      { "provinceCode": "440000", "cityCode": "440100" },
+      { "provinceCode": "440000", "cityCode": "440300" },
+      { "provinceCode": "310000" },
+      { "provinceCode": "110000" },
+      { "provinceCode": "500000" },
+      { "provinceCode": "500000", "cityCode": "500000", "districtCode": "500105" }
+    ]
+  },
+  {
+    "id": "p_vehicle_grid",
+    "name": "车网互动 V2G",
+    "level": "main",
+    "color": "#f5222d",
+    "description": "电动汽车与电网双向充放电示范与电价政策",
+    "coverage": [
+      { "provinceCode": "320000", "cityCode": "320100" },
+      { "provinceCode": "330000", "cityCode": "330100" },
+      { "provinceCode": "440000", "cityCode": "440300" },
+      { "provinceCode": "310000" }
+    ]
+  }
+]

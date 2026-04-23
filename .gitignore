@@ -1,0 +1,16 @@
+node_modules
+dist
+dist-ssr
+.DS_Store
+*.local
+.env
+.env.*
+!.env.example
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.log
+
+# TypeScript build cache
+tsconfig.tsbuildinfo
+*.tsbuildinfo

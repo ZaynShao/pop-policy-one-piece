@@ -1,0 +1,44 @@
+[
+  {
+    "id": "u_ga_zhejiang",
+    "username": "wang.zj",
+    "nickname": "王浙杭",
+    "email": "wang.zj@example.com",
+    "role": "ga"
+  },
+  {
+    "id": "u_ga_guangdong",
+    "username": "li.gd",
+    "nickname": "李粤深",
+    "email": "li.gd@example.com",
+    "role": "ga"
+  },
+  {
+    "id": "u_pmo",
+    "username": "zhang.pmo",
+    "nickname": "张 PMO",
+    "email": "zhang.pmo@example.com",
+    "role": "pmo"
+  },
+  {
+    "id": "u_lead",
+    "username": "chen.lead",
+    "nickname": "陈总",
+    "email": "chen.lead@example.com",
+    "role": "lead"
+  },
+  {
+    "id": "u_central",
+    "username": "zhou.central",
+    "nickname": "周中台",
+    "email": "zhou.central@example.com",
+    "role": "central_ga"
+  },
+  {
+    "id": "u_exec",
+    "username": "wu.exec",
+    "nickname": "吴决策",
+    "email": "wu.exec@example.com",
+    "role": "exec"
+  }
+]
