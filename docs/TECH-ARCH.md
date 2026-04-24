@@ -352,8 +352,8 @@ defineAbilitiesFor(user: User) {
     can(['create', 'update'], 'Visit', { participants: { $in: [user.id] } });
     // … 对齐 PRD 5.1.2 属地组
   }
-  if (user.role === 'hq_ga') {
-    can('manage', ['Tool', 'PolicyTheme']);        // 中台 GA
+  if (user.role === 'central_ga') {
+    can('manage', ['Tool', 'PolicyTheme']);        // 中台 GA(PRD §4.2.2 role_code)
   }
   // … lead / pmo / sys_admin
   return build();
@@ -374,10 +374,10 @@ defineAbilitiesFor(user: User) {
 
 | PRD 实体 | 表名 | 关键列 |
 |---|---|---|
-| User | users | id (uuid v7), role, region_default |
-| Role | roles | code (enum), name |
-| UserRole | user_roles | user_id, role_id(多对多) |
-| Region | regions | code(国标), level, parent_code, centroid(PostGIS 或 lat/lng) |
+| User | users | id (uuid v7), status, joined_at —— 无 `role` 冗余、无 `region_default`(PRD §4.2.1) |
+| Role | ~~roles~~ | **不建表**:PRD §4.2.2 明确"预置枚举,不做 CRUD",用 pg enum `role_code`;显示名放前端 mapping |
+| UserRole | user_roles | user_id, role_code(pg enum), assigned_by, assigned_at;**unique(user_id)** enforce PRD §4.2.2 MVP 单角色 |
+| Region | regions | code(6 位国标,PK), name, level, parent_code(FK self-ref), version, geo_centroid(jsonb), geojson_ref |
 | Pin | pins | id, region_code, status, lead_user_id, created_at |
 | Comment | comments | id, pin_id, author_id, kind(manual/system), body |
 | PlanPoint | plan_points | id, pin_id(nullable), region_code, status, planned_at |
@@ -399,7 +399,7 @@ defineAbilitiesFor(user: User) {
 
 | 类型 | 规范 |
 |---|---|
-| 主键 | UUID v7(按时间排序 + 无碰撞,优于自增) |
+| 主键 | UUID v7(按时间排序 + 无碰撞,优于自增);**例外**:Region 用 6 位国标 `code` 作 PK(PRD §4.2.3 的 `parent_code` 自引用依赖这个语义) |
 | 时间戳 | `timestamptz`,应用层 UTC,展示层 `dayjs` 转本地 |
 | 枚举 | PostgreSQL `enum` 类型;`status` 字段强类型 |
 | JSON | `jsonb`(ParamTemplate.schema / InterfaceTool.auth_schema / ExportRecord.payload) |

@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { LoggerModule } from 'nestjs-pino';
+import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
+import { RegionsModule } from './regions/regions.module';
 
 @Module({
   imports: [
@@ -18,7 +20,9 @@ import { HealthModule } from './health/health.module';
         customProps: () => ({ service: 'pop-api' }),
       },
     }),
+    DatabaseModule,
     HealthModule,
+    RegionsModule,
   ],
 })
 export class AppModule {}
