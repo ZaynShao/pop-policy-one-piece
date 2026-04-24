@@ -367,7 +367,79 @@
 
 **♻️ PRD 偷懒章节**:第 3 章 D-J / 第 4 章 4.6-4.7 / 第 5-9 章偷懒版 —— 开发中按需回炉,不集中回炉
 
-### 7.7 双轨 PRD 实验全部交付清单(供下次 session 快速定位)
+---
+
+### 7.6.进度快照 · V0.1 Week 1 ✅ + V0.2 起步 ✅(2026-04-24 晚 · 单 session 连续 3 轮)
+
+| 里程碑 | 状态 | commit | 内容摘要 |
+|---|---|---|---|
+| Week 1 前半段 · monorepo 骨架 | ✅ | `38a7d13` | npm workspaces + legacy 归档 + apps/api(NestJS 10 脚手架)+ apps/web(Vite/React/AntD 暗色)+ packages/shared-types + docker-compose.yml(未启动) |
+| Week 1 后半段 · 数据层 | ✅ | `5d077e5` | TypeORM 0.3 + User/UserRole/Region entities + Migration 0001 init schema + Migration 0002 seed 35 regions(国家 + 34 省级)+ /regions API + 文档 bug 修复(shared-types `hq_ga`→`central_ga` + TECH-ARCH §5.1 删 `roles`/`users.role`/`users.region_default`) |
+| V0.2 起步 · auth 闭环 | ✅ | `49742a5` | fake SSO(无密码 username)+ JWT(HS256 7d)+ JwtStrategy + 全局 JwtAuthGuard + @Public/@CurrentUser + CASL 骨架(sys_admin manage all 占位)+ Migration 0003 seed 5 demo 用户(每角色 1 个)+ 前端 axios 拦截器 + zustand persist + Login 页(sysadmin 置顶全权限)+ ProtectedRoute + Dashboard · 冒烟 12 场景全通 |
+
+**开发期基础设施(偏离 TECH-ARCH,本地折中)**
+- 原计划 docker-compose.yml(postgres 15 + redis 7 + minio),本轮未用(Docker 未装)
+- 改为 `brew install postgresql@15` 原生跑,redis/minio 跟业务实体一起再装
+- `.env` 本地有(不进 git),`.env.example` 在 git 里作为样板
+
+**关键决策日志(2026-04-24 晚,Week 1 → Week 2 起步期间的批判性伙伴对齐)**
+- `role_code` 源真相是 PRD §4.2.2(`central_ga`)· TECH-ARCH V0 草稿里 `hq_ga` 是 Claude 自己错,已改
+- `users.region_default` / `roles` 表 / `users.role` 冗余 —— TECH-ARCH §5.1 超出 PRD 的设计,全删(PRD 没有,不凭空加)
+- Region 用 6 位国标 `code` 作 PK 是 UUID v7 规则的例外(`parent_code` 自引用语义依赖)
+- MVP 严格单角色(PRD §4.2.2):`user_roles.user_id` unique constraint DB 层 enforce
+- JWT CASL 当前占位逻辑:sys_admin `manage all`,其他 4 角色 `read all` —— 真写权限随 Pin/Visit 实体逐步加,防规则腐烂
+- Login 页 sysadmin 置顶标"全权限" —— 开发期跑通业务优先入口(a 方案,2026-04-24 · PRD 角色体系不动)
+
+### 7.7 新机器接手 · 5 分钟上手清单(2026-04-24 晚,用户切新电脑)
+
+**前提**:macOS,已装 Homebrew + Node 20+(本 session 用 Node 25 也 OK)+ git。
+
+```bash
+# 1. 克隆 + 进项目
+git clone <repo-url> "policy map" && cd "policy map"
+
+# 2. 装 postgres 15(如已装跳过)
+brew install postgresql@15
+brew services start postgresql@15
+
+# 3. 建 pop 用户 + pop 库(用 Homebrew 默认超级用户 didi 或你的 macOS 用户名)
+/opt/homebrew/opt/postgresql@15/bin/psql -d postgres <<EOF
+CREATE USER pop WITH PASSWORD 'pop_dev_password' SUPERUSER;
+CREATE DATABASE pop OWNER pop;
+EOF
+
+# 4. 复制 env(.env 不在 git)
+cp .env.example .env
+#   默认 DATABASE_URL=postgresql://pop:pop_dev_password@localhost:5432/pop,跟上面 createuser 对齐
+
+# 5. 装依赖(根目录一把装,workspaces 自动 hoist)
+npm install
+
+# 6. 跑 migration(3 个:init schema + seed 35 regions + seed 5 demo 用户)
+npm run migration:run --workspace=@pop/api
+#   成功标志:3 条 "Migration XXX has been executed successfully."
+
+# 7. 起后端(终端 A)
+npm run dev:api   # http://localhost:3001/api/v1
+
+# 8. 起前端(终端 B)
+npm run dev:web   # http://localhost:5173
+```
+
+**冒烟验证(开浏览器 http://localhost:5173):**
+- 自动跳 /login,看到 5 角色卡片
+- 点"系统管理员 · 开发跑通业务入口"(置顶高亮 + 全权限 Tag)→ 跳 / Dashboard
+- Dashboard 显示:用户信息 + "当前是系统管理员 · CASL manage all" 绿色 Alert + API 健康 ok + 省级 Region 34 条
+
+**如果装 postgres 时的 Homebrew 超级用户不是 didi**:
+```bash
+# 用你本机的 macOS 用户名替代,比如 createuser -U <你的用户名> -s pop
+whoami  # 先查
+```
+
+**`.claude/settings.local.json` 不在 git**,是 Claude Code 本机持久化数据 —— 新机器不用管。
+
+### 7.8 双轨 PRD 实验全部交付清单(供下次 session 快速定位)
 
 | 产出 | 路径 | 状态 |
 |---|---|---|
@@ -406,20 +478,32 @@
 
 ---
 
-## 9. 给新会话 Claude 的开场建议(2026-04-24 晚 · 开发策略拍板后)
+## 9. 给新会话 Claude 的开场建议(2026-04-24 晚 · V0.2 auth 完结后更新)
 
 读完本文档 + `docs/TECH-ARCH.md` 后,**先确认理解,再动手**。
 
-1. **一句话确认理解**:"POP PRD 全结 🏁 + TECH-ARCH V0 完稿 🔧 + 开发策略三拍板(柔和版重头搭建 / 界面重新设计 / C 路径 🔷 默认值起骨架)。当前任务:V0.1 Week 1 落地。"
+### 9.1 一句话确认理解(最新)
 
-2. **默认进入 V0.1 Week 1 实装**(不再多版讨论 / 不再探索设计工具):
-   按 §7.6 的 V0.1 Week 1 落地清单推进。第一步是归档 `src/` → `legacy/src/` 并初始化 monorepo 骨架。
-   **先跟用户同步下一步动作清单**,不要擅自大批量动文件。
+"POP PRD 全结 🏁 + TECH-ARCH V0 完稿 🔧 + **V0.1 Week 1 骨架 ✅ + V0.2 起步 auth 闭环 ✅**(三个 commit:`38a7d13` / `5d077e5` / `49742a5`)。本地 postgres 15 原生跑(非 docker),5 demo 用户 seed 齐,sysadmin 开发期跑通业务入口。下一步:业务实体(Pin/Visit / K 模块 / 首屏布局)三选一。"
 
-**不要做的事**:
-- **不要再发起视觉设计探索 / 多版布局对比 / 设计工具推荐**(2026-04-24 晚已拍板不走这条路径,界面在开发中协同拍)
-- **不要直接扩展 `src/` 一期代码** — 柔和版 = `src/` 归档,`apps/web/` 重新搭
+### 9.2 默认动作(**新机器接手**)
+
+**Step 1 · 按 §7.7 新机器接手 checklist 把环境搭起来**(postgres / migration / dev:api / dev:web 一把跑通)· 不要跳过验证。
+
+**Step 2 · 问用户下一步方向**(不要擅自选):
+- **路径 β · Pin + Visit**(PRD §4.3 · 一期 demo 最招眼功能,工作量 2-3 天)
+- **路径 γ · K 模块 GovOrg + GovContact**(PRD §4.3.6 · 2-3 天)
+- **路径 δ · 按 PRD §6 协同拍首屏布局**(设计优先,不写代码先对齐产品形态)
+- 或者别的(比如用户想先补 PRD §5 CASL 真规则,或者先上 Pin 的 API 后补 UI)
+
+### 9.3 不要做的事
+
+- **不要用 Docker**(本机没装);基础设施走 brew 原生路线。redis / minio 要用时现装
+- **不要再发起视觉设计探索 / 多版布局对比 / 设计工具推荐**(2026-04-24 晚已拍板,界面协同拍)
+- **不要扩展 legacy/ 里的一期代码** — 归档只读,有用的组件"复制"到 apps/web/ 再改
 - **不要替用户拍 TECH-ARCH ⚠️ 项**(公司 IT / 法务拍,V0.5 前必须完成)
+- **不要在 sys_admin 之外的角色上随便加 CASL 写权限** —— PRD §5 矩阵逐字段逐角色对过才加,防占位规则腐烂
+- **不要改 JWT 策略**(localStorage / 无 refresh / 单 token 7d)—— 这是 MVP fallback,V0.5 真 OIDC 时才换
 - 不要缩减 `docs/PRD-comparison-notes.md`(用户明确强调不可压缩)
-- 不要在 §7 用户定稿(`PRD-comparison.md §7.1-7.5`)上反向修订(5 题已用户拍板落盘,如需扩展请另开章节)
-- 不要擅自推进 V0.1 实装超过 Week 1 骨架范围(Week 2-4 要用户逐阶段授权)
+- 不要在 §7 用户定稿(`PRD-comparison.md §7.1-7.5`)上反向修订
+- 不要擅自推进业务实体(Pin / Visit / GovOrg 等),需要用户逐阶段授权
