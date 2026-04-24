@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { LoggerModule } from 'nestjs-pino';
+import { AuthModule } from './auth/auth.module';
+import { CaslModule } from './casl/casl.module';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { RegionsModule } from './regions/regions.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -21,8 +26,15 @@ import { RegionsModule } from './regions/regions.module';
       },
     }),
     DatabaseModule,
+    CaslModule,
+    UsersModule,
+    AuthModule,
     HealthModule,
     RegionsModule,
+  ],
+  providers: [
+    // 全局 JWT 守卫,@Public() 可跳过
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],
 })
 export class AppModule {}

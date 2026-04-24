@@ -2,11 +2,13 @@ import { Controller, Get } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import type { HealthDto } from '@pop/shared-types';
+import { Public } from '../common/decorators/public.decorator';
 
 @Controller('health')
 export class HealthController {
   constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
+  @Public()
   @Get()
   async check(): Promise<HealthDto & { db: 'ok' | 'down' }> {
     let db: 'ok' | 'down' = 'down';
