@@ -460,6 +460,56 @@ whoami  # 先查
 
 ---
 
+### 7.9 旧 Mac 接手 session 摘要(2026-04-25 凌晨)
+
+> **背景**:用户 2026-04-24 凌晨在原 Mac 启动夜间自治(B+C 路径,Vercel 部署 + 单 Vite app),Claude 跑了 4 个 commit 在 dev/v0.1 分支。用户随后在另一台机器**重新走了完全不同的方向**(monorepo + NestJS + PostgreSQL,见 §7.6),把 dev/v0.1 那 4 个 commit 全部作废。2026-04-25 凌晨用户回到原 Mac,发出 "git线上的最新版本，接着最新版本继续开干" 指令。本节是这次接手 session 的简短摘要,新 session 入场不必读 dev/v0.1 那段历史。
+
+**已做的清理(本 session)**
+
+- ✅ 主目录 `git pull origin main` fast-forward 到 `db4eb21`(用户在另一台机器上的 7 个 commits 全部进 main)
+- ✅ 删 `origin/dev/v0.1`(用户夜间废弃的 4 commits)
+- ✅ `origin/claude/sad-kalam-a20dee` 本来就不在(只是本地 stale ref,prune 已清)
+- ✅ 主目录本地 stale refs `git fetch --prune` 已清
+
+**用户手动清理待做**(在主目录 Claude session 或终端跑)
+
+```bash
+git worktree remove .claude/worktrees/sad-kalam-a20dee
+git branch -D dev/v0.1
+```
+
+理由:本 session Claude 自己在该 worktree 内,删自己会让 cwd 失效 → 留给用户主目录 session 收尾。
+
+**这台 Mac 的环境状态**(对照 §7.7 checklist)
+
+| Step | 项 | 状态 |
+|---|---|---|
+| 2 | brew install postgresql@15 | ❌ 没装 |
+| 3 | createuser pop + createdb pop | ❌ 没建 |
+| 4 | cp .env.example .env | ❌ 没 cp(.env.example 在,.env 不在) |
+| 5 | npm install | ✅ 已跑(根 node_modules 在,workspaces 已 hoist) |
+| 6 | migration:run | ❌ 没跑(依赖 postgres) |
+| 7 | dev:api | ❌ 没起 |
+| 8 | dev:web | ❌ 没起 |
+
+**新 session 接手 · 第 1 件事 · postgres 环境最后一公里**
+
+新 session 入场后,严格按 §7.7 Step 2-6 跑通,然后 §7.7 Step 7-8 起 dev:api + dev:web 验证。
+
+**重要**:`.claude/settings.local.json`(本机持久化)目前**没有 `Bash(brew *)` / `Bash(psql *)` / `Bash(createuser *)` / `Bash(createdb *)` 许可**(早期用户明确不加 brew install,2026-04-23 凌晨决策)。新 session 启动时若让 Claude 帮跑 §7.7,**先加这 4 条许可**,或 Claude 全程只给命令不执行,由用户手动跑。
+
+**新 session 接手 · 第 2 件事 · 业务方向三选一**
+
+环境跑通后,严格按 §9.2 三选一让用户拍(**Claude 不擅自选**):
+- β · Pin + Visit(2-3 天,demo 最招眼)
+- γ · K 模块 GovOrg + GovContact(2-3 天)
+- δ · 协同拍首屏布局(设计优先)
+- 其他
+
+**本接手 session 没有引入任何新代码 / 新文档 / 新决策**。仅清理 + 摸底 + 写本节。dev/v0.1 那 4 个 commit 完全没进 main,文档 / 类型 / Vercel 部署相关全部跟随删除消失,**新 session 不必追溯**。
+
+---
+
 ## 8. 用户个人协作偏好(覆盖所有项目,不仅本项目)
 
 保存在用户全局记忆:
