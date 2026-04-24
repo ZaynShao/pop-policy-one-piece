@@ -1,31 +1,20 @@
 {
-  "name": "zhengce-one-piece",
-  "private": true,
+  "name": "pop-monorepo",
   "version": "0.1.0",
-  "type": "module",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@ant-design/icons": "^5.5.1",
-    "antd": "^5.22.0",
-    "dayjs": "^1.11.13",
-    "echarts": "^5.5.1",
-    "echarts-for-react": "^3.0.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0",
-    "zustand": "^5.0.2"
-  },
-  "devDependencies": {
-    "@types/node": "^22.10.1",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.3",
-    "typescript": "^5.6.3",
-    "vite": "^5.4.11"
+    "dev:api": "npm run dev --workspace=@pop/api",
+    "dev:web": "npm run dev --workspace=@pop/web",
+    "build:api": "npm run build --workspace=@pop/api",
+    "build:web": "npm run build --workspace=@pop/web",
+    "build:shared": "npm run build --workspace=@pop/shared-types",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f"
   }
 }

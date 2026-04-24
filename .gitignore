@@ -11,6 +11,14 @@ dist-ssr
 .idea
 *.log
 
+# monorepo
+apps/*/node_modules
+packages/*/node_modules
+legacy/node_modules
+apps/*/dist
+packages/*/dist
+legacy/dist
+
 # TypeScript build cache
 tsconfig.tsbuildinfo
 *.tsbuildinfo

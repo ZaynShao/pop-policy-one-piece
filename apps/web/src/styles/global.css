@@ -1,0 +1,37 @@
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at top, #0d2442 0%, #050d18 60%, #03080f 100%);
+  color: #e6f4ff;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'PingFang SC',
+    sans-serif;
+  min-height: 100vh;
+}
+
+.glow-title {
+  color: #00d4ff !important;
+  text-shadow: 0 0 12px rgba(0, 212, 255, 0.6);
+  letter-spacing: 1px;
+}
+
+.glass-panel {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(13, 31, 50, 0.6) !important;
+  border: 1px solid rgba(0, 212, 255, 0.2) !important;
+  border-radius: 12px !important;
+}
