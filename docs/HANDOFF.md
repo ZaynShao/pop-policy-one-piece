@@ -182,6 +182,7 @@
 | 2026-04-24 凌晨 | **关键人档案融入(K 模块,2026-04-24 决策)** 🆕 | T4 §5 借鉴的"GovContact 关键人档案"概念,2026-04-24 用户决定融入。**采纳变体 7 项决策**:1B GovOrg + GovContact 配套 / 2A 不做字段级保护(沿用 7.1.1 水印)/ 3B Visit 双轨关联(`contact_id` 优先 + `contact_person` 字符串兜底)/ 4 V0.5 试点(8 周可能拖到 9-10)/ 5 不做分层 tier / 6 评分作为 F13(V1.2+)/ 7 不做离职跟踪(仅 status 字段)。**跨章修订 9 处**:第 3 章新增 3.12 K 模块(K1-K6)+ 3.末 P0 全景(48 → 53);第 4 章 4.0 加节号说明 + 4.3.4 Visit 加 contact_id + 新增 4.3.6 GovOrg + GovContact + 4.8 ER 图加节点 + 4.末兑现清单加 K1/K2;第 5 章新增 5.1.5 政府端组;第 6 章 6.1 加关系档案入口 + 6.3 加 4 个页面;第 9 章 9.2 V0.5 加 K 模块 + 9.3 加 F13 + 9.4 加 K 模块塞入风险 + 9.末 兑现清单加;第 10 章 加 T16 政府端档案 + T15 候选分类加 K 类;T4 §5 关键人档案改"采纳变体" / 字段级"维持不采纳";T4 §6 整合方向更新。Campaign 跨区域战役议题待用户后续编号(F13 已被关键人评分占用) |
 | 2026-04-24 | **T4 §7 元学习 5 题用户定稿补完 🏁 POP 双轨 PRD 实验完全收官** | 逐题过 + 用户自拟落盘。**5 题核心观点**:(7.1) AI 最意外的揣测不在某一条单项(决策层 / 地域 / SupportRequest),而在整个产品**形式**被 AI 默认为 CRM —— brief 第一句话要钉死产品形式边界;(7.2) Campaign 跨区域战役是真补盲(现模型仅单点实体,缺"多省同一件事"顶层容器),但**放远期不进 MVP** —— 小工具节奏优先,V1.0 真实跑出跨省高频场景再激活;(7.3) 不能让 AI 自由发挥 4 类 —— **0 产品形式边界(最根本前置)** / 1 角色职责 / 2 权限边界 / 3 核心业务哲学;(7.4) 可以让 AI 自由发挥 4 类 —— 字段/状态机 / 非功能数值默认值 / UI 文案 / 技术选型备选清单(仅输入不采用);(7.5) ROI **值但有保留(B)**,下次同类实验压到 1-2h 只做差异速览;**最大遗憾**:AI 在最小 brief 下不会给"绕开标准模板的创意",只会拟合训练分布最常见的模板(本次 = CRM);**元认识**:双轨实验真实价值是"AI 暴露我在反什么 / 原创性在哪",不是"AI 给创意我采纳"。Campaign 新 F 编号留技术架构文档阶段统一排(F13 已被 K6 占用)|
 | 2026-04-24 | **技术架构文档 V0 草稿完稿(`docs/TECH-ARCH.md`,偷懒版一把出)** | 基调贴合 §7.1 "小团队工具 · 反 CRM · 单人+AI"。10 章结构:0 编写约定 / 1 前置选型 10 项(4 核心架构 + PRD §8.4 六项)/ 2 系统架构总图(C4 Context + Container mermaid)/ 3 前端(延续一期栈 + 新增 axios + TanStack Query + Zod)/ 4 后端(NestJS + TypeORM + CASL)/ 5 数据层(PostgreSQL + Redis + MinIO + PRD §4 全表映射 + K 模块)/ 6 外部集成 / 7 部署运维(docker-compose 起步)/ 8 安全(水印 / 审计 / 无字段级)/ 9 工程节奏(V0.1 4 周 / V0.5 8 周 / V1.0 8 周 周级任务)/ 10 风险 + 未决项(10 项汇总)+ 末节兑现 T4 §6 剩余 3 处借鉴(Campaign / F7 月报 / F2 异动)。**关键决策**:后端 NestJS 🔷 / DB PostgreSQL+Redis+MinIO 🔷 / ORM TypeORM 🔷 / SSO OIDC 🔷 / 部署私有云+docker-compose 🔷 / 地图沿用一期 DataV GeoJSON ✅ / H5 响应式不单独建子应用 ✅。**10 项 ⚠️ 待公司 IT / 法务拍板**才能进 V0.1 实装:部署形态 / SSO 协议 / LLM 网关 / 地图在线瓦片 / 邮件 SMTP / 数据存储位置 / 日志平台 / CI 平台 / K 模块加密密钥 / ORM 最终选型 |
+| 2026-04-24 | **开发策略三拍板 · 进入正式开发** | **拍板 1 · 柔和版重头搭建**:一期 demo 代码(`src/`)整体归档到 `legacy/src/`,不直接扩展;但保留已验证的选择(Vite+React+AntD+ECharts+Zustand 栈)+ 资产(`public/geojson/`)+ 视觉 token(深色+青色 #00d4ff + 玻璃拟态)。**拍板 2 · 界面布局重新设计**:不照抄 demo 初步想法(demo 在 PRD 之前,信息架构、角色、术语多处过期),具体新布局在开发过程中按 PRD §6 + §7.1 反 CRM 基调由 AI 和用户协同拍定,不单独做"设计工具探索 + 多版对比"环节(之前讨论过 Claude Design / 羊皮纸等探索已中止,不追溯)。**拍板 3 · C 路径启动**:用 TECH-ARCH §1 的 🔷 AI 默认值先起 V0.1 Week 1 骨架(monorepo + NestJS + PostgreSQL schema + TypeORM migration),⚠️ 项后续拍板后回来改,愿意接受返工。**本次不留废料**:试探性目录 `public/demo-v2/` 已清理 |
 
 ---
 
@@ -294,22 +295,26 @@
   - 略掉 7/8/9/10 章(非功能 / 外部依赖 / 里程碑 / 术语表)
   - **不在 git 仓库内,不参与 commit**
 
-### 7.3 当前进度快照(2026-04-24 TECH-ARCH V0 草稿完稿后收束)
+### 7.3 当前进度快照(2026-04-24 晚 · 开发策略拍板后)
 
-**POP PRD 阶段:全部完结 🏁** + **技术架构文档 V0 草稿完稿 🔧**
+**POP PRD 阶段完结 🏁** + **TECH-ARCH V0 完稿 🔧** + **开发策略三拍板 · 准备进 V0.1 Week 1 🚀**
 
 | 产物 | 状态 |
 |---|---|
-| 用户版 PRD 11 章 + K 模块 | ✅ 100%(`docs/PRD-user-led.md`)+ K 模块跨章融入 9 处 |
-| AI 版 PRD | ✅ 入库(`docs/PRD-ai-led.md`,768 行) |
-| 差异速览笔记 | ✅ 入库(`docs/PRD-comparison-notes.md`,不可缩减) |
-| T4 正式对比矩阵 + §7 用户定稿 | ✅ 完结(`docs/PRD-comparison.md`) |
-| OB 浓缩版(开发日记同步) | ✅ 完结(OB 路径,~200 行,不在 git)|
-| **技术架构文档 V0 草稿** 🆕 | ✅ 产出(`docs/TECH-ARCH.md`,~530 行,10 章)—— **偷懒版一把出,10 项 ⚠️ 待公司 IT / 法务拍板** |
+| 用户版 PRD 11 章 + K 模块 | ✅ 100%(`docs/PRD-user-led.md`)|
+| T4 正式对比矩阵 + §7 用户定稿 | ✅ 完结(`docs/PRD-comparison.md`)|
+| 技术架构文档 V0 草稿 | ✅ 完稿(`docs/TECH-ARCH.md`,10 章)|
+| AI 版 PRD / 差异速览 / OB 浓缩版 | ✅ 入库 / 归档(开发阶段不再常读) |
+| **开发策略三拍板** 🆕 | ✅ **柔和版重头搭建 + 界面重新设计 + C 路径用默认值先起骨架**(决策日志 2026-04-24 晚) |
 
 **备忘箱**:**全部关闭** 🏁
 
-**下一步卡点**:**10 项 ⚠️ 待公司 IT / 法务拍板**(TECH-ARCH §10.2 汇总)—— 部署形态 / SSO / LLM / 邮件 / 数据位置 / 日志 / CI / 在线瓦片 / K 模块加密 / ORM。拍完才进 V0.1 Week 1 实装(NestJS 骨架 + PostgreSQL schema + TypeORM migration)。
+**下一步动作**:**V0.1 Week 1 骨架落地**(不再等 ⚠️ 项公司拍板,用 TECH-ARCH 🔷 默认值先起,后续返工接受):
+1. Monorepo 骨架(npm workspaces)
+2. 一期 `src/` 整体归档 → `legacy/src/`
+3. 新建 `apps/web/`(从 0 搭前端,保留视觉 token + GeoJSON 资产)
+4. 新建 `apps/api/`(NestJS + TypeORM + PostgreSQL schema + seed)
+5. `packages/shared-types/`(前后端共享 DTO / enum)
 
 ### 7.4 下次 session 的 5 分钟入场路径
 
@@ -321,32 +326,46 @@
 
 ### 7.5 下次 session 的入场话术(Claude 的开场)
 
-读完后,先一句话复述:**"POP PRD 阶段全部完结 🏁 + 技术架构 V0 草稿完稿(`docs/TECH-ARCH.md`,2026-04-24)。下一步卡点:10 项 ⚠️ 待公司 IT / 法务拍板(TECH-ARCH §10.2 汇总)。拍完才进 V0.1 Week 1 实装。"**
+读完后,先一句话复述:**"POP PRD 全结 + TECH-ARCH V0 完稿 + 开发策略三拍板(柔和版重头搭建 / 界面重新设计 / C 路径 🔷 默认值起骨架)。下一步:V0.1 Week 1 monorepo + NestJS + PostgreSQL schema 落地。"**
 
-然后问用户:**"本次 session 要做什么?(A 用户拍板/告知公司进展并更新 TECH-ARCH;B 先回炉 PRD 偷懒章节;C 用假定默认值先起 V0.1 Week 1 的 monorepo 骨架 + NestJS 脚手架 + PostgreSQL schema,真决策以后回来改;D 都不做休一下)"**
+然后问用户:**"继续 V0.1 Week 1 骨架落地吗?从 legacy 归档开始,还是你想先调整哪个拍板?"**
 
-### 7.6 技术架构文档阶段(进行中 → V0 草稿已出)
+### 7.6 V0.1 开发阶段(进行中)
 
-**✅ TECH-ARCH V0 已产出**(`docs/TECH-ARCH.md`,2026-04-24):
-- 后端 NestJS + TypeORM 🔷;DB PostgreSQL + Redis + MinIO 🔷;前端延续一期栈 ✅
-- 部署私有云 + docker-compose 🔷(V0.5+ 视公司现有评估升级)
-- 权限 CASL + 无字段级(对齐 PRD §5 + §7.1.1);导出水印 + 3 年审计
-- V0.1 4 周 / V0.5 8 周 / V1.0 8 周 工程节奏(周级任务清单)
-- T4 §6 剩余 3 处借鉴兑现:Campaign 不建表 V1.1 评估 / F7 月报 export 模板预留 / F2 PostGIS 升级路径
+**🚀 开发策略三拍板(2026-04-24 晚):**
+1. **柔和版重头搭建** — `src/` → `legacy/src/` 归档;`apps/web/` 新建;保留视觉 token + GeoJSON 资产 + 技术栈选型
+2. **界面布局重新设计** — 不照抄 demo(demo 在 PRD 之前,多处术语/角色过期);新布局在开发中按 PRD §6 协同拍定
+3. **C 路径 🔷 默认值先起骨架** — 不等公司 IT / 法务拍板 ⚠️ 10 项,返工接受
 
-**⚠️ 待公司 IT / 法务拍板 10 项(V0.1 前置门):**
-1. 部署形态(公司 IT)
-2. SSO 协议 + IdP(公司 IT,V0.5 前)
-3. LLM 网关(公司 IT,V1.1 前)
-4. 地图在线瓦片(设计 / 产品)
-5. 邮件 SMTP(公司 IT,V0.5 前)
-6. 数据存储位置(法务)
-7. 日志平台(公司运维)
-8. CI 平台(公司网络策略)
-9. K 模块敏感字段加密密钥托管(合规)
-10. ORM 最终选型(MVP 先 TypeORM,V0.5 前不回头)
+**V0.1 Week 1 落地清单(当前任务):**
+```
+1. monorepo 骨架(npm workspaces)
+   ├── apps/web/             [新建] 前端从 0 搭
+   ├── apps/api/             [新建] NestJS
+   ├── packages/shared-types/[新建] 前后端共享
+   ├── public/geojson/       [沿用] 地图资产
+   └── legacy/src/           [归档] 一期 demo 代码(只读参考)
 
-**♻️ PRD 偷懒章节回炉**:第 3 章 D-J / 第 4 章 4.6-4.7 / 第 5-9 章偷懒版 —— 本文档推理源已用,回炉时 TECH-ARCH 对应章节同步修订
+2. apps/api 脚手架
+   ├── NestJS 10 + TypeScript + Node 20
+   ├── TypeORM + PostgreSQL schema(PRD §4 全表)
+   ├── 假 SSO 登录 + JWT(MVP fallback,V0.5 前换真 OIDC)
+   └── 基础 CRUD(Visit / Pin / PlanPoint / Comment)
+
+3. apps/web 脚手架
+   ├── Vite + React + TS + AntD 5(暗色算法保留)+ ECharts 5 + Zustand
+   ├── 视觉 token 抽出 `tokens.ts`(色值 / 间距 / 玻璃拟态)
+   ├── 路由骨架(对齐 PRD §6 页面地图)
+   └── axios + TanStack Query 替换一期 localStorage
+
+4. docker-compose.yml(local 开发环境)
+   └── postgres + redis + minio
+```
+
+**⚠️ 仍待公司 IT / 法务拍板**(V0.1 后到 V0.5 前必须拍完,否则 V0.5 进不去):
+部署形态 / SSO 协议 / LLM 网关 / 邮件 SMTP / 数据存储位置 / 日志平台 / CI 平台 / K 模块加密密钥 / 在线瓦片 / ORM 最终锁
+
+**♻️ PRD 偷懒章节**:第 3 章 D-J / 第 4 章 4.6-4.7 / 第 5-9 章偷懒版 —— 开发中按需回炉,不集中回炉
 
 ### 7.7 双轨 PRD 实验全部交付清单(供下次 session 快速定位)
 
@@ -387,20 +406,20 @@
 
 ---
 
-## 9. 给新会话 Claude 的开场建议(2026-04-24 TECH-ARCH V0 后更新)
+## 9. 给新会话 Claude 的开场建议(2026-04-24 晚 · 开发策略拍板后)
 
-读完本文档 + `docs/TECH-ARCH.md` 后,**不要立刻动手干活**。先做两件事:
+读完本文档 + `docs/TECH-ARCH.md` 后,**先确认理解,再动手**。
 
-1. **一句话确认理解**:"POP PRD 阶段全部完结 🏁 + 技术架构 V0 草稿完稿(`docs/TECH-ARCH.md`,2026-04-24,10 章偷懒版)。下一步卡点:10 项 ⚠️ 待公司 IT / 法务拍板(TECH-ARCH §10.2 汇总)。"
+1. **一句话确认理解**:"POP PRD 全结 🏁 + TECH-ARCH V0 完稿 🔧 + 开发策略三拍板(柔和版重头搭建 / 界面重新设计 / C 路径 🔷 默认值起骨架)。当前任务:V0.1 Week 1 落地。"
 
-2. **直接问下一步方向**:
-   - **A · 用户拍板**:把 10 项 ⚠️ 逐项过,更新 TECH-ARCH 对应小节(改 🔷 / ⚠️ → ✅)
-   - **B · 先回炉 PRD 偷懒章节**(PRD 第 3 章 D-J / 第 4 章 4.6-4.7 / 第 5-9 章);需要时同步回炉 TECH-ARCH
-   - **C · 用假定默认值先起 V0.1 Week 1 骨架**(monorepo + NestJS 脚手架 + PostgreSQL schema + TypeORM migration);真决策日后回来改
-   - **D · 都不做,先休一下**
+2. **默认进入 V0.1 Week 1 实装**(不再多版讨论 / 不再探索设计工具):
+   按 §7.6 的 V0.1 Week 1 落地清单推进。第一步是归档 `src/` → `legacy/src/` 并初始化 monorepo 骨架。
+   **先跟用户同步下一步动作清单**,不要擅自大批量动文件。
 
 **不要做的事**:
+- **不要再发起视觉设计探索 / 多版布局对比 / 设计工具推荐**(2026-04-24 晚已拍板不走这条路径,界面在开发中协同拍)
+- **不要直接扩展 `src/` 一期代码** — 柔和版 = `src/` 归档,`apps/web/` 重新搭
+- **不要替用户拍 TECH-ARCH ⚠️ 项**(公司 IT / 法务拍,V0.5 前必须完成)
 - 不要缩减 `docs/PRD-comparison-notes.md`(用户明确强调不可压缩)
 - 不要在 §7 用户定稿(`PRD-comparison.md §7.1-7.5`)上反向修订(5 题已用户拍板落盘,如需扩展请另开章节)
-- 不要擅自推进 V0.1 实装超过 Week 1 骨架范围(后续工作依赖 ⚠️ 项拍板)
-- 不要替用户拍 TECH-ARCH §1 的 ⚠️ 项(需公司 IT / 法务)
+- 不要擅自推进 V0.1 实装超过 Week 1 骨架范围(Week 2-4 要用户逐阶段授权)
