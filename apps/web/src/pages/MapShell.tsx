@@ -62,7 +62,7 @@ export function MapShell() {
       </div>
 
       {/* 左面板 — absolute 浮动玻璃面板,不挤压地图(用户拍) */}
-      {siderOpen ? (
+      {siderOpen && (
         <div
           className="glass-panel"
           style={{
@@ -90,27 +90,29 @@ export function MapShell() {
               ? '· 涂层勾选(多层级联)\n· 时间维度\n· (V0.4 接真涂层)'
               : '· 时间窗口\n· 区划筛选\n· 角色筛选\n· (V0.4 接真热力)'}
           </Paragraph>
-          <div style={{ marginTop: 'auto', textAlign: 'right' }}>
-            <Tooltip title="收起左面板" placement="top">
-              <Button
-                shape="circle"
-                size="small"
-                icon={<LeftOutlined />}
-                onClick={() => setSiderOpen(false)}
-              />
-            </Tooltip>
-          </div>
         </div>
-      ) : (
-        <Tooltip title="展开左面板" placement="right">
-          <Button
-            shape="circle"
-            icon={<RightOutlined />}
-            onClick={() => setSiderOpen(true)}
-            style={{ position: 'absolute', left: 16, top: 16, zIndex: 10 }}
-          />
-        </Tooltip>
       )}
+
+      {/* 左面板 toggle 按钮 — 始终在面板右边缘外的垂直中间(把手位置) */}
+      <Tooltip title={siderOpen ? '收起左面板' : '展开左面板'} placement="right">
+        <Button
+          type="primary"
+          icon={siderOpen ? <LeftOutlined /> : <RightOutlined />}
+          onClick={() => setSiderOpen((v) => !v)}
+          aria-label={siderOpen ? '收起左面板' : '展开左面板'}
+          style={{
+            position: 'absolute',
+            left: 16 + 280, // 面板右边缘 = 16 + 280 = 296,按钮挨着面板右侧
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: 28,
+            height: 64,
+            padding: 0,
+            borderRadius: '0 8px 8px 0', // 右半圆角(把手风)
+            zIndex: 11,
+          }}
+        />
+      </Tooltip>
 
       {/* ➕📌 圆形浮动按钮组 — absolute 叠层贴画布内部右下角 */}
       <div
