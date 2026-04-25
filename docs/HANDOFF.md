@@ -512,52 +512,81 @@ git branch -D dev/v0.1
 
 ### 7.10 旧 Mac 接手 session 续(2026-04-25)
 
-**背景**:接续 §7.9。环境最后一公里 + δ 协同拍 R1+R2 + V0.3 layout 骨架 + Gemini 生图实验,一把跑通。新 session 入场可直接进 V0.3 业务实体(Pin/Visit / K 模块)。
+**背景**:接续 §7.9。环境最后一公里 + δ 协同拍 R1+R2+R3(R3 是纠错)+ V0.3 layout 骨架(基于 R2 错误,需按 R3 refactor)+ 生图实验(放弃)。
 
 **环境(§7.7 Step 2-8 全过)**
 
 | 项 | 状态 | 备注 |
 |---|---|---|
 | brew install postgresql@15 | ✅ | 15.17(brew 5.1.7) |
-| pop 用户 + pop 库 | ✅ | macOS 用户名 = `shaoziyuan`(非 didi),`psql -d postgres` 直连建好 |
+| pop 用户 + pop 库 | ✅ | macOS 用户名 = `shaoziyuan`(非 didi) |
 | cp .env(主 + worktree 各一份) | ✅ | δ 浏览器冒烟需要 worktree 自己跑 dev |
 | npm install · 主目录 | ✅ | **意外**:之前 root `node_modules` 只有 14 前端 bin,没装 typeorm/nestjs;重跑加 492 包才通 |
 | npm install · worktree | ✅ | preview headless 在 worktree cwd 起 vite,需自己 hoist |
 | migration:run | ✅ | 3 migrations · 35 regions · 5 demo 用户齐 |
 | dev:api + dev:web 冒烟 | ✅ | health=ok / db=ok / web 200 |
-| settings.local.json 加 6 条 Bash 许可 | ✅ | brew/psql/createuser/createdb/cp/`/opt/homebrew/*` |
+| settings.local.json 加 Bash 许可若干 | ✅ | brew/psql/createuser/createdb/cp/`/opt/homebrew/*` 等 |
 
-**δ 协同拍 + V0.3 layout 骨架(2026-04-25 全部完成)**
+**δ 协同拍 + V0.3 layout(2026-04-25)**
 
-| 产出 | 路径 | 备注 |
+| 产出 | 路径 | 状态 |
 |---|---|---|
-| Round 1 · 4 全局骨架决策 | `docs/UI-LAYOUT-V0.md` §1 | 全 A:Segmented 大盘切换 / 左侧栏工作台 / 双大盘左抽屉 / 右抽屉浮地图 |
-| Round 2 · 5 角色首屏草图 | `docs/UI-LAYOUT-V0.md` §2 | ASCII 5 张(local_ga / lead/pmo / central_ga / sys_admin / 共用政策大盘) |
-| **A · V0.3 layout 骨架(最小必要)** | `apps/web/src/{layouts,routes,pages}` | 9 新文件 · AppLayout shell + 角色感知路由 + RoleRedirect + 5 stub 页(local/policy 含 SVG 占位热力 + 蓝点 + 图钉 + 涂层) |
-| **A · 浏览器冒烟** | preview headless · viewport 1440×900 dark | AdminHome / ConsoleDashboard / LocalMap / PolicyMap 4 张截图渲染对齐草图 |
-| **B · Gemini Nano Banana 出图** | `docs/mockup-samples/lead-dashboard-gemini.png` | 模型 = `gemini-2.5-flash-image`(GA);`*-preview` 已 404;**结论:LLM 生图布局像但字段瞎编**(85/92/78% 不是 prompt 给的)— 不能上线 |
+| Round 1 · 4 全局骨架决策 | `docs/UI-LAYOUT-V0.md` §1 | ✅ 全 A |
+| Round 2 · 5 角色首屏草图 | `docs/UI-LAYOUT-V0.md` 历史 | ⚠️ **已废**(把工作台 sidebar 当成全局 chrome,大盘视图也带 sidebar 是错的) |
+| **Round 3 · 视图分层重对齐** | `docs/UI-LAYOUT-V0.md` §2 + §3 | ✅ **接手必读**:三视图(大盘 / 工作台 / 管理后台)+ 顶栏按钮可见性 + sidebar 内容拆分 |
+| V0.3 layout 骨架代码 | `apps/web/src/{layouts,routes,pages}` | ⚠️ **基于 R2,需按 R3 refactor**(详见下文断点) |
+| 真简化中国地图占位 | `apps/web/src/lib/china-path.ts` | ✅ 从 datav.aliyun.com GeoJSON RDP 简化到 6 ring / 289 点 / 3.6KB;`lonLatToSvg` + 9 城市坐标常量;**保留** |
+| 5 stub 页(LocalMap / PolicyMap / ConsoleDashboard / ToolConsumption / AdminHome / StubPage) | `apps/web/src/pages/{local,policy,console,admin}/` | ✅ **保留**(只是被 AppLayout 包裹错了) |
+| 生图实验(B 路径) | `docs/mockup-samples/*.png` | ❌ **效果不佳已放弃**:试过 Gemini Nano Banana + Imagen 4,LLM 字段瞎编 / Chinese 渲染不准。**永久放弃 LLM 作为 mockup 路径**,真 mockup 走 dev + preview headless 截图 |
 
-**关键技术决策(2026-04-25)**
+**关键技术决策(2026-04-25 R3 后)**
 
-- **路由结构** · `<ProtectedRoute><AppLayout />` 嵌套 + `<RoleRedirect>` index 按角色跳默认首屏(逻辑集中在 `routes/role-default-route.ts`)
+- **三视图分层**(R3 修正 R2):大盘视图无 sidebar / 工作台视图按角色 sidebar / 管理后台独立 sidebar
+- **顶栏按钮**:[工作台] 所有角色可见,[管理后台] 仅 sysadmin 可见
+- **路由结构** · `<ProtectedRoute><AppLayout />` 嵌套 + `<RoleRedirect>` index 按角色跳默认首屏
 - **Layout 沿用 dark theme + glass-panel**(继承 V0.2,不换 light)
-- **侧栏按角色过滤** · `sidebarItemsForRole(role)`;`sys_admin` 顶栏多"管理后台"入口(R2 #2 拍板,与 §6.1"sys_admin 额外"原文一致)
-- **占位地图** · SVG 画灰色中国轮廓块 + 5 类点(拜访 红/绿/黄 + 蓝点 + 图钉)+ ellipses 涂层 — **不接高德 SDK**(留 V0.3 真接入)
+- **占位地图** · 真简化中国 GeoJSON;**不接高德 SDK**(留 V0.3 真接入)
 
 **Claude 这次踩的坑(下次 session 必读)**
 
-1. **Write path argument 必须用 worktree 路径前缀** `/政策大图/.claude/worktrees/<id>/...`。Bash cwd 在 worktree ≠ Write 自动用 worktree 路径!本次所有新文件先误写到主目录(`/政策大图/...`),然后 rsync 同步到 worktree 才生效。rsync 副作用:覆盖 worktree 已改过的 HANDOFF.md(§7.10 一度被擦,本次重写恢复)。**下次 Write 前先 verify 路径前缀**。
-2. **preview_start 在 worktree 跑需要 worktree 自己的 node_modules**(主目录 hoist 不跨 worktree),npm install ~60s。
-3. **Gemini API 模型名漂移** · `*-preview` 系列已 404,用 GA 名(2026-04 = `gemini-2.5-flash-image`);`v1beta/models?key=...` ListModels 确认当前可用最稳。
+1. **Write path argument 必须用 worktree 路径前缀** `/政策大图/.claude/worktrees/<id>/...`。Bash cwd 在 worktree ≠ Write 自动用 worktree 路径!本次所有新文件先误写到主目录,然后 rsync 同步到 worktree 才生效;rsync 副作用:覆盖 worktree 已改过的 HANDOFF.md(§7.10 一度被擦)。**下次 Write 前先 verify 路径前缀含 `worktrees/<id>/`**。
+2. **preview_start 在 worktree 跑需要 worktree 自己的 node_modules**(npm install ~60s)。
+3. **不要再尝试 LLM 生图作为 mockup** · 已两次实验均失败(字段瞎编 / Chinese 渲染不准),浪费时间。真 mockup 走 dev + preview headless 截图。
+4. **协同拍要 review 视图层级边界** · R2 把"工作台 sidebar"理解成全局 chrome 是错的;PRD §6.1 原文"工作台 = 独立视图区域",sidebar 是它的局部组件。**画 ASCII 时先确认全局 chrome vs 局部组件边界**。
 
-**新 session 接手 · 入场动作**
+---
 
-1. 读完本节 → 不必再搭环境(全跑通);dev 没在跑就 `npm run dev:api` + `npm run dev:web`(worktree cwd)
-2. 进 V0.3 业务实体 · 三选一(用户拍):
-   - **β · Pin + Visit**(PRD §4.3,2-3 天,demo 最招眼)
-   - **γ · K 模块 GovOrg + GovContact**(PRD §4.3.6,2-3 天)
-   - **δ Round 3+** · 各角色卡片字段细节(`UI-LAYOUT-V0.md` §3 待决项)
-3. **不要再让 Claude 自动出图** · B 实验已结束,LLM 生图字段瞎编不能上线;真要 mockup 截图就跑本项目 dev + preview 截图
+### 任务断点(下次 session 接手第 1 件事)
+
+**当前状态**(2026-04-25 晚):
+- PR #2 open,4 commits,**AppLayout 基于 R2 错误设计**,不能 merge
+- `docs/UI-LAYOUT-V0.md` §2 / §3 / §6 = R3 修正版蓝图(接手照此 refactor)
+- `apps/web/src/lib/china-path.ts` 正确,**保留**
+- 5 stub 页代码正确,**保留**(沿用现有,只是被 AppLayout 包错)
+- dev 服务器都已停;localStorage 留有 sysadmin token(用户重新登录刷新即可)
+
+**第 1 件事 · 按 R3 refactor AppLayout**(详见 `UI-LAYOUT-V0.md` §6,工作量 30-60 分钟)
+
+1. `apps/web/src/layouts/AppLayout.tsx`:
+   - `useLocation` 拿 path prefix
+   - 条件 sidebar:`isMap → 不渲染 <Sider>` / `isWorkspace → workspace items` / `isAdmin → admin items`
+   - 顶栏右侧加 `[工作台]` 按钮(所有角色,跳 `workspaceDefaultForRole(role)`)
+   - 顶栏 `[管理后台]` 按钮保持(仅 sysadmin)
+
+2. `apps/web/src/routes/role-default-route.ts`:
+   - 拆 `sidebarItemsForRole` → `workspaceItemsForRole(role)` + `ADMIN_ITEMS`
+   - 加 `workspaceDefaultForRole(role)`(顶栏 [工作台] 跳转目标)
+
+3. PR #2 处理 · 两条路任选(用户拍):
+   - **A · 同分支 add fix commit + force-push 更新 PR**(简单)
+   - **B · close PR + 新分支重做 clean commit**(干净历史)
+
+**第 2 件事 · refactor 完后** · preview 5 角色冒烟,verify R3 落地
+
+**第 3 件事(可选)· V0.3 业务实体三选一**(用户拍):
+- **β · Pin + Visit**(PRD §4.3,2-3 天,demo 最招眼)
+- **γ · K 模块 GovOrg + GovContact**(PRD §4.3.6,2-3 天)
+- **δ Round 4** · 各角色卡片字段细节(`UI-LAYOUT-V0.md` §4 待决项)
 
 **新机器接手二次提醒**:首次 `npm install` 后**务必验**:`ls node_modules/.bin | grep -E 'typeorm|nest'`,应至少有 `typeorm-ts-node-commonjs` / `nest`。若为空说明 hoist 没做完,根目录重跑。
 
