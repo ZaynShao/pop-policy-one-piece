@@ -510,6 +510,47 @@ git branch -D dev/v0.1
 
 ---
 
+### 7.10 δ 重启决策(2026-04-25 晚 · 全弃 + 加护栏)
+
+**接续 §7.9**。环境最后一公里(brew postgresql / cp .env / npm install hoist / migration:run)已跑通。随后启动 δ 协同拍首屏布局(三选一拍 δ),5 commits 全部落在 PR #2(`claude/loving-burnell-acf19d`,未 merge)上 — **2026-04-25 晚用户复盘后决定全弃**。
+
+**为什么全弃**:R2 协同拍画 5 角色首屏 ASCII 时,把「工作台 sidebar」误画为全局 chrome(大盘视图的 ASCII 也带 sidebar),V0.3 代码继承了这个错(`<Sider>` 在所有视图都渲染),代码跑起来 review 才暴露。事后写过 R3 纠错文档 + 代码 refactor 验证,但**根因是「画 ASCII 前没先约定 chrome / view-local 边界」这个流程缺陷** — 只改代码不改流程,下次还会犯。所以整段 δ 弃,加护栏后从 §7.9 后重启。
+
+**已执行清理(2026-04-25 晚)**:
+- PR #2 close,close 评论标明原因
+- 远端 `origin/claude/loving-burnell-acf19d` 删
+- 本地 worktree `.claude/worktrees/loving-burnell-acf19d` + 本地分支 `claude/loving-burnell-acf19d` 删
+- main 始终干净,没有任何 δ 痕迹进 main(本节是 main 上首次出现的 §7.10)
+
+**被弃 5 commits**(供历史追溯;新 session 不必追):
+
+| commit | 内容 |
+|---|---|
+| `53270bf` | feat(web) V0.3 layout 骨架 + R1/R2 协同拍落盘 + 5 stub 页 |
+| `52bf747` | LLM 生图 mockup 实验样张(Gemini Nano Banana) |
+| `699cbe1` | fix(web) 真简化中国 GeoJSON 占位地图 `apps/web/src/lib/china-path.ts`(δ v2 真做时可重生) |
+| `3ba5764` | LLM 生图 mockup 实验样张(Imagen 4) |
+| `e683b2c` | docs(handoff) 旧 §7.10 + `docs/UI-LAYOUT-V0.md`(R1/R2/R3 协同拍纪要) |
+
+**护栏(本节核心 · 新 session 必读)**:
+
+1. **画 ASCII 之前必须先用文字声明 chrome / view-local 边界**。每个组件(顶栏 / sidebar / 抽屉 / 模态)属于全局 chrome 还是某个 view-local 视图,写明再画。PRD §6.1 原文里「工作台 = 独立视图区域」「sidebar 是它的局部组件」是判断源头,**协同拍时核对 PRD 原文,不口头臆断**。
+2. **每张 ASCII 顶角必须标视图编号**(视图 ① / ② / ③),view-local 组件**禁止**出现在不属于它的视图里。
+3. **代码落地前先文字 review**:ASCII + 文字描述跟 PRD 原文交叉核对完成后再下代码。R2 → V0.3 之间没有这个核对环节,直接出问题。
+4. **LLM 生图作 mockup 路径永久放弃**(已二次失败:字段瞎编 + 中文渲染失真)。真 mockup 走 dev + preview headless 截图。
+
+**δ v2 入场动作(下次 session 第 1 件事)**:
+
+1. 起新 worktree(/superpowers:using-git-worktrees)
+2. 新建 `docs/UI-LAYOUT-V1.md`(V0 弃,从 V1 起编号)
+3. UI-LAYOUT-V1.md **第一节** = 「chrome / view-local 边界声明」(对齐 PRD §6.1 原文)
+4. 边界对齐后再开 R1(全局骨架 ASCII)、R2(各视图 ASCII),每张标视图编号
+5. R2 完成后再下 V0.3 代码
+
+**重启基准**:`main = 72c69ca`(§7.9 凌晨摘要)= V0.2 闭环(fake SSO + JWT + CASL + 5 角色登录)= 最高已落盘进度。
+
+---
+
 ## 8. 用户个人协作偏好(覆盖所有项目,不仅本项目)
 
 保存在用户全局记忆:
