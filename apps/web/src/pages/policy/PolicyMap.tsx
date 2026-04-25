@@ -1,12 +1,84 @@
 import { useState } from 'react';
 import { Card, Checkbox, Drawer, Space, Tag, Typography } from 'antd';
 import { palette } from '@/tokens';
+import { CHINA_PATH, CHINA_VIEWBOX, CITIES, lonLatToSvg } from '@/lib/china-path';
 
 const { Text } = Typography;
 
+type ThemeKey = 'energy' | 'manuf' | 'finance';
+
+interface ThemeOverlay {
+  key: ThemeKey;
+  label: string;
+  color: string;
+  fillStrong: string;
+  fillMid: string;
+  fillWeak: string;
+  /** [中心 lon, 中心 lat, 度数半径 lng, 度数半径 lat](强 / 中 / 弱 三层) */
+  blobs: Array<[number, number, number, number, 'strong' | 'mid' | 'weak']>;
+  /** 涂层点(政府机构所在城市) */
+  points: Array<{ city: keyof typeof CITIES; size: number }>;
+}
+
+const THEMES: ThemeOverlay[] = [
+  {
+    key: 'energy',
+    label: '能源',
+    color: '#00d4ff',
+    fillStrong: 'rgba(0,212,255,0.34)',
+    fillMid: 'rgba(0,212,255,0.20)',
+    fillWeak: 'rgba(0,212,255,0.12)',
+    blobs: [
+      [120.5, 30.8, 2.6, 1.6, 'strong'],
+      [113.5, 22.8, 2.0, 1.4, 'mid'],
+      [105.5, 30.0, 2.4, 1.5, 'weak'],
+    ],
+    points: [
+      { city: 'hangzhou', size: 7 },
+      { city: 'shanghai', size: 6 },
+      { city: 'guangzhou', size: 6 },
+      { city: 'chengdu', size: 5 },
+    ],
+  },
+  {
+    key: 'manuf',
+    label: '制造',
+    color: '#faad14',
+    fillStrong: 'rgba(250,173,20,0.30)',
+    fillMid: 'rgba(250,173,20,0.18)',
+    fillWeak: 'rgba(250,173,20,0.10)',
+    blobs: [
+      [114.3, 30.6, 2.0, 1.3, 'strong'],
+      [113.5, 22.8, 1.6, 1.0, 'mid'],
+    ],
+    points: [
+      { city: 'wuhan', size: 6 },
+      { city: 'shenzhen', size: 5 },
+    ],
+  },
+  {
+    key: 'finance',
+    label: '金融',
+    color: '#52c41a',
+    fillStrong: 'rgba(82,196,26,0.28)',
+    fillMid: 'rgba(82,196,26,0.16)',
+    fillWeak: 'rgba(82,196,26,0.10)',
+    blobs: [
+      [116.4, 39.9, 1.8, 1.4, 'strong'],
+      [121.5, 31.2, 1.6, 1.2, 'strong'],
+    ],
+    points: [
+      { city: 'beijing', size: 6 },
+      { city: 'shanghai', size: 6 },
+    ],
+  },
+];
+
 export function PolicyMap() {
   const [panelOpen, setPanelOpen] = useState(true);
-  const [themes, setThemes] = useState(['energy', 'manuf']);
+  const [active, setActive] = useState<ThemeKey[]>(['energy', 'manuf']);
+
+  const visibleThemes = THEMES.filter((t) => active.includes(t.key));
 
   return (
     <div style={{ position: 'relative', height: 'calc(100vh - 112px)' }}>
@@ -23,39 +95,55 @@ export function PolicyMap() {
         }}
       >
         <svg
-          viewBox="0 0 800 500"
+          viewBox={CHINA_VIEWBOX}
+          preserveAspectRatio="xMidYMid meet"
           style={{ width: '100%', height: '100%', display: 'block' }}
         >
+          {/* 中国国境 */}
           <path
-            d="M120,140 Q260,80 400,120 T700,180 L720,260 Q620,320 480,300 T200,360 Q140,300 120,140 Z"
+            d={CHINA_PATH}
             fill="rgba(255,255,255,0.04)"
-            stroke="rgba(0,212,255,0.18)"
-            strokeWidth="1"
+            stroke="rgba(0,212,255,0.32)"
+            strokeWidth="0.8"
+            strokeLinejoin="round"
           />
-          {/* 涂层色块 · 多主题(能源 / 制造 / 金融) · §6.5.4 深浅 */}
-          {themes.includes('energy') && (
-            <>
-              <ellipse cx="260" cy="200" rx="80" ry="50" fill="rgba(0,212,255,0.32)" />
-              <ellipse cx="380" cy="180" rx="60" ry="38" fill="rgba(0,212,255,0.20)" />
-              <ellipse cx="540" cy="240" rx="70" ry="42" fill="rgba(0,212,255,0.12)" />
-            </>
+          {/* 涂层色块(多主题深浅,§6.5.4) */}
+          {visibleThemes.map((t) =>
+            t.blobs.map(([lng, lat, rxLng, ryLat, level], i) => {
+              const [cx, cy] = lonLatToSvg(lng, lat);
+              const [rxX] = lonLatToSvg(lng + rxLng, lat);
+              const [, ryY] = lonLatToSvg(lng, lat + ryLat);
+              const fill =
+                level === 'strong' ? t.fillStrong : level === 'mid' ? t.fillMid : t.fillWeak;
+              return (
+                <ellipse
+                  key={`${t.key}-${i}`}
+                  cx={cx}
+                  cy={cy}
+                  rx={Math.abs(rxX - cx)}
+                  ry={Math.abs(ryY - cy)}
+                  fill={fill}
+                />
+              );
+            }),
           )}
-          {themes.includes('manuf') && (
-            <>
-              <ellipse cx="320" cy="260" rx="60" ry="38" fill="rgba(250,173,20,0.28)" />
-              <ellipse cx="500" cy="220" rx="50" ry="32" fill="rgba(250,173,20,0.18)" />
-            </>
+          {/* 涂层点 · §6.5.5 */}
+          {visibleThemes.map((t) =>
+            t.points.map((p) => {
+              const [cx, cy] = lonLatToSvg(...CITIES[p.city].coord);
+              return (
+                <circle
+                  key={`${t.key}-${p.city}`}
+                  cx={cx}
+                  cy={cy}
+                  r={p.size}
+                  fill={t.color}
+                  stroke="#fff"
+                  strokeWidth={1}
+                />
+              );
+            }),
           )}
-          {themes.includes('finance') && (
-            <ellipse cx="420" cy="220" rx="55" ry="36" fill="rgba(82,196,26,0.24)" />
-          )}
-          {/* 涂层点(政策机会) · §6.5.5 大小 */}
-          <circle cx="270" cy="195" r="7" fill="#00d4ff" stroke="#fff" strokeWidth="1" />
-          <circle cx="385" cy="180" r="5" fill="#00d4ff" stroke="#fff" strokeWidth="1" />
-          <circle cx="545" cy="245" r="6" fill="#00d4ff" stroke="#fff" strokeWidth="1" />
-          <circle cx="325" cy="265" r="5" fill="#faad14" stroke="#fff" strokeWidth="1" />
-          <circle cx="505" cy="225" r="4" fill="#faad14" stroke="#fff" strokeWidth="1" />
-          <circle cx="425" cy="225" r="6" fill="#52c41a" stroke="#fff" strokeWidth="1" />
         </svg>
         <Tag color="cyan" style={{ position: 'absolute', top: 16, right: 16 }}>
           政策大盘 · stub(底图状态保持,§6.1)
@@ -75,23 +163,21 @@ export function PolicyMap() {
         <Space direction="vertical" style={{ width: '100%' }} size="middle">
           <Text type="secondary" style={{ fontSize: 12 }}>勾选(可多选叠加)</Text>
           <Checkbox.Group
-            value={themes}
-            onChange={(v) => setThemes(v as string[])}
+            value={active}
+            onChange={(v) => setActive(v as ThemeKey[])}
           >
             <Space direction="vertical">
-              <Checkbox value="energy">
-                <span style={{ color: '#00d4ff' }}>● 能源</span>
-              </Checkbox>
-              <Checkbox value="manuf">
-                <span style={{ color: '#faad14' }}>● 制造</span>
-              </Checkbox>
-              <Checkbox value="finance">
-                <span style={{ color: '#52c41a' }}>● 金融</span>
-              </Checkbox>
+              {THEMES.map((t) => (
+                <Checkbox key={t.key} value={t.key}>
+                  <span style={{ color: t.color }}>● {t.label}</span>
+                </Checkbox>
+              ))}
             </Space>
           </Checkbox.Group>
           <Card size="small">
-            <Text style={{ fontSize: 12 }}>多涂层叠加 G28 MVP 不做(§6.6.2)</Text>
+            <Text style={{ fontSize: 12 }}>
+              多涂层叠加 G28 MVP 不做(§6.6.2)
+            </Text>
           </Card>
         </Space>
       </Drawer>

@@ -1,14 +1,49 @@
 import { useState } from 'react';
-import { Button, Card, Drawer, FloatButton, Space, Tag, Typography } from 'antd';
+import { Card, Drawer, FloatButton, Space, Tag, Typography } from 'antd';
 import {
-  EnvironmentOutlined,
   FilterOutlined,
   PlusOutlined,
   PushpinOutlined,
 } from '@ant-design/icons';
 import { palette } from '@/tokens';
+import { CHINA_PATH, CHINA_VIEWBOX, CITIES, lonLatToSvg } from '@/lib/china-path';
 
 const { Text, Title } = Typography;
+
+const VISIT_POINTS: Array<{
+  city: keyof typeof CITIES;
+  status: 'green' | 'yellow' | 'red';
+}> = [
+  { city: 'shanghai', status: 'green' },
+  { city: 'hangzhou', status: 'green' },
+  { city: 'beijing', status: 'yellow' },
+  { city: 'guangzhou', status: 'red' },
+  { city: 'chengdu', status: 'green' },
+  { city: 'wuhan', status: 'yellow' },
+];
+
+const BLUE_PIN_CITIES: Array<keyof typeof CITIES> = ['xian', 'chongqing'];
+const FLAG_PIN_CITIES: Array<keyof typeof CITIES> = ['shenzhen'];
+
+const STATUS_COLOR: Record<'green' | 'yellow' | 'red', string> = {
+  green: palette.visit.green,
+  yellow: palette.visit.yellow,
+  red: palette.visit.red,
+};
+
+// 热力区(经纬度中心 + 度数半径,占位 demo)
+const HOTSPOTS: Array<{
+  center: [number, number];
+  rxLng: number;
+  ryLat: number;
+  fill: string;
+  name: string;
+}> = [
+  { center: [120.5, 30.8], rxLng: 2.6, ryLat: 1.6, fill: 'rgba(192,57,43,0.30)', name: '长三角' },
+  { center: [113.5, 23.0], rxLng: 1.8, ryLat: 1.2, fill: 'rgba(250,173,20,0.26)', name: '珠三角' },
+  { center: [105.5, 30.0], rxLng: 2.5, ryLat: 1.4, fill: 'rgba(82,196,26,0.22)', name: '成渝' },
+  { center: [116.5, 39.5], rxLng: 2.0, ryLat: 1.5, fill: 'rgba(0,212,255,0.20)', name: '京津冀' },
+];
 
 export function LocalMap() {
   const [filterOpen, setFilterOpen] = useState(true);
@@ -16,7 +51,6 @@ export function LocalMap() {
 
   return (
     <div style={{ position: 'relative', height: 'calc(100vh - 112px)' }}>
-      {/* 占位地图画布 · SVG 最小热力 + 拜访点 + 蓝点 + 图钉 */}
       <div
         style={{
           position: 'relative',
@@ -28,44 +62,70 @@ export function LocalMap() {
           border: `1px solid ${palette.border}`,
           overflow: 'hidden',
         }}
-        onClick={() => setDetailOpen(true)}
       >
         <svg
-          viewBox="0 0 800 500"
-          style={{ width: '100%', height: '100%', display: 'block' }}
+          viewBox={CHINA_VIEWBOX}
+          preserveAspectRatio="xMidYMid meet"
+          style={{ width: '100%', height: '100%', display: 'block', cursor: 'pointer' }}
+          onClick={() => setDetailOpen(true)}
         >
-          {/* 简化中国轮廓占位(几块灰色块,不是真地图) */}
+          {/* 中国国境(simplified china geojson · ~3.6KB · V0.3 接高德 SDK 时移除) */}
           <path
-            d="M120,140 Q260,80 400,120 T700,180 L720,260 Q620,320 480,300 T200,360 Q140,300 120,140 Z"
+            d={CHINA_PATH}
             fill="rgba(255,255,255,0.04)"
-            stroke="rgba(0,212,255,0.18)"
-            strokeWidth="1"
+            stroke="rgba(0,212,255,0.32)"
+            strokeWidth="0.8"
+            strokeLinejoin="round"
           />
-          {/* 热力区涂色(关注区高浓度) */}
-          <ellipse cx="280" cy="220" rx="70" ry="42" fill="rgba(192,57,43,0.28)" />
-          <ellipse cx="500" cy="240" rx="58" ry="36" fill="rgba(250,173,20,0.24)" />
-          <ellipse cx="380" cy="180" rx="48" ry="30" fill="rgba(82,196,26,0.20)" />
-          {/* 拜访点(绿/黄/红 = PRD §6.5.2 走访颜色) */}
-          <circle cx="265" cy="215" r="5" fill={palette.visit.red} />
-          <circle cx="295" cy="230" r="5" fill={palette.visit.green} />
-          <circle cx="385" cy="185" r="5" fill={palette.visit.green} />
-          <circle cx="510" cy="245" r="5" fill={palette.visit.yellow} />
-          <circle cx="465" cy="225" r="5" fill={palette.visit.green} />
-          {/* 蓝点(政策机会) */}
-          <circle cx="340" cy="200" r="6" fill={palette.visit.blue} stroke="#fff" strokeWidth="1" />
-          <circle cx="540" cy="270" r="6" fill={palette.visit.blue} stroke="#fff" strokeWidth="1" />
+          {/* 热力区(关注区高浓度) */}
+          {HOTSPOTS.map((h) => {
+            const [cx, cy] = lonLatToSvg(h.center[0], h.center[1]);
+            const [rxX] = lonLatToSvg(h.center[0] + h.rxLng, h.center[1]);
+            const [, ryY] = lonLatToSvg(h.center[0], h.center[1] + h.ryLat);
+            return (
+              <ellipse
+                key={h.name}
+                cx={cx}
+                cy={cy}
+                rx={Math.abs(rxX - cx)}
+                ry={Math.abs(ryY - cy)}
+                fill={h.fill}
+              />
+            );
+          })}
+          {/* 拜访点 · §6.5.2 走访颜色 */}
+          {VISIT_POINTS.map((p, i) => {
+            const [cx, cy] = lonLatToSvg(...CITIES[p.city].coord);
+            return <circle key={i} cx={cx} cy={cy} r={5} fill={STATUS_COLOR[p.status]} />;
+          })}
+          {/* 蓝点 · 政策机会 */}
+          {BLUE_PIN_CITIES.map((c) => {
+            const [cx, cy] = lonLatToSvg(...CITIES[c].coord);
+            return (
+              <circle
+                key={c}
+                cx={cx}
+                cy={cy}
+                r={6}
+                fill={palette.visit.blue}
+                stroke="#fff"
+                strokeWidth={1}
+              />
+            );
+          })}
           {/* 图钉 */}
-          <g transform="translate(420,170)">
-            <path d="M0,-10 L4,0 L0,12 L-4,0 Z" fill="#faad14" />
-            <circle r="4" cy="-6" fill="#faad14" stroke="#fff" strokeWidth="0.5" />
-          </g>
-          <g transform="translate(610,210)">
-            <path d="M0,-10 L4,0 L0,12 L-4,0 Z" fill="#faad14" />
-            <circle r="4" cy="-6" fill="#faad14" stroke="#fff" strokeWidth="0.5" />
-          </g>
+          {FLAG_PIN_CITIES.map((c) => {
+            const [cx, cy] = lonLatToSvg(...CITIES[c].coord);
+            return (
+              <g key={c} transform={`translate(${cx},${cy})`}>
+                <path d="M0,-12 L5,0 L0,14 L-5,0 Z" fill="#faad14" />
+                <circle r={5} cy={-7} fill="#faad14" stroke="#fff" strokeWidth={0.5} />
+              </g>
+            );
+          })}
         </svg>
         <Tag color="cyan" style={{ position: 'absolute', top: 16, right: 16 }}>
-          属地大盘 · stub(高德 SDK 留 V0.3 接入)
+          属地大盘 · stub(simplified china geojson 占位 / 高德 SDK 留 V0.3)
         </Tag>
         <Space
           size="small"
@@ -142,11 +202,7 @@ export function LocalMap() {
 
       {/* 右下 FAB */}
       <FloatButton.Group shape="circle" style={{ right: 24, bottom: 24 }}>
-        <FloatButton
-          icon={<PlusOutlined />}
-          tooltip="新增蓝点"
-          type="primary"
-        />
+        <FloatButton icon={<PlusOutlined />} tooltip="新增蓝点" type="primary" />
         <FloatButton icon={<PushpinOutlined />} tooltip="新增图钉" />
         <FloatButton
           icon={<FilterOutlined />}
