@@ -645,6 +645,110 @@ d264f02 docs §1 边界声明
 
 ---
 
+### 7.12 V0.5 c2 闭环 ✅(2026-04-26 · 散点视觉骨架 + 形态 3 次翻车 audit trail)
+
+V0.4 c1 真地图(35 regions ECharts geo)落地后,c2 在地图上叠加散点图层。**形态选型 3 次翻车,8 commits 留 audit trail 后 squash 推 PR #5**:
+
+| 版本 | ECharts 形态 | 问题 | 状态 |
+|---|---|---|---|
+| c2 v1 | `series.map + visualMap` (region 整块染色 / choropleth) | 用户业务问题点出:PRD §3.3 L446 B1 写明「**按拜访点密度**」,c2 应该是「点」不是「region 染色」 | ❌ revert |
+| c2 v2 | `series.heatmap + blur=18` (点扩散 blob) | 糊成一片,且无颜色 — PRD §3.3 L447 B2 拜访点要红/黄/绿 | ❌ 改回 |
+| c2 v3 | `series.scatter + itemStyle.color` (离散散点 + 状态色 + legend) | 同时覆盖 B1 密度 + B2 红黄绿 + B3 蓝点 | ✅ |
+
+**用户实测调整 4 轮**(c2 v3 之上叠改):
+1. 散点 radius 收紧(全国 0.2°→0.4°→ 收回 0.2°,小省点不出界)
+2. 全国级粒度从「省 center 抖动 5 点」→「市级 features 每市 1 点」(loadAllCities Promise.all 34 省 GeoJSON)
+3. 比例尺:roam 滚轮 → 右侧 vertical Slider 控件(60-300% step 0.1 + 复位)
+4. 数据减半(keepRate 0.5)+ 蓝点每省 ≤2(maxBluePerProvince)+ 全国 size 5px / 省下钻 10px
+
+**8 commits squash 后 PR #5 单 commit**(`6cc4a98`):
+```
+175a38a feat c2 v1(region 染色 · 错形态)→ revert
+77cda1f Revert c2 v1
+541e0a6 feat c2 v2(heatmap blob · 错粒度)
+b193759 fix c2 v2 视觉打磨
+2474a73 feat c2 v3(scatter + 红黄绿蓝 + legend)
+bf7173a fix c2 v3 视觉打磨(地图 +20% / roam / legend 居中)
+d8e30de fix c2 v3 v2(全国市级粒度 + Slider)
+6cc4a98 ← squashed
+```
+
+**两个流程级教训**(写进护栏):
+
+1. **「热力图」中文歧义**:PRD「热力图 / 全域热力对比」抽象语义,但 B1 行 L446 明确写「**按拜访点密度**」=「点扩散」,不是「region 染色」。**实施前必须把 PRD 抽象词(热力 / 涂层 / 着色)对齐到 ECharts series 类型具体枚举(`map / heatmap / scatter / lines`)再动手**。
+2. **「点」也有歧义**:`series.heatmap`(模糊 blob)vs `series.scatter`(离散点)vs `series.effectScatter`(脉动)。c2 v2 选 heatmap 是因为只对齐了 B1,没追问「业务点是否携带离散语义(状态/类别)」 — 有则 scatter + itemStyle.color,无则 heatmap blur。**追到「业务点是否带颜色/类别」再选 series**。
+
+**PR #5 当前 OPEN**,base = main,head = `claude/quirky-kapitsa-3f2faf`,含 c2 + spec/plan 文档(spec/plan 在 c2 之后追加,§7.13 同 PR)。
+
+---
+
+### 7.13 V0.6 β.1 Visit 真业务闭环 ✅(2026-04-26-27 · brainstorm decompose + 16-task plan + 1 token bug 修复)
+
+c2 视觉骨架(假数据)→ β.1 把 mock 替换为真 Visit CRUD,完成第一个端到端业务实体闭环。
+
+**brainstorm 5 轮拍板**(`docs/SPEC-V0.6-beta1-visit.md`):
+- Q1 范围 → A 极简版(7 业务 + 4 地理字段 / 4 API / sys_admin 全权 / 不接 CASL 真矩阵 / 不做 H5/B14/delete)
+- Q2 lng/lat 来源 → E 省+市 cascading 下拉,后端 GeoJSON 查 city center 自动填
+- Q3 大盘空态 → A seed 32 条 + c2 mock 整段砍
+- Q3.1 优先 8 城市 ×3 + 8 其他 ×1 = 32:广州/深圳/北京/成都/南京/苏州/青岛/杭州 + 西安/武汉/天津/重庆/沈阳/济南/合肥/福州
+- Q4 大盘散点 click → B 抽屉详情 + **可编辑** + 演示文档 .txt 下载(不调接口)
+
+**writing-plans 16 个 task**(`docs/PLAN-V0.6-beta1-visit.md`,2527 行,每 task 含完整代码 + verify + commit):
+- T1 shared-types visit.dto / T2-T7 后端(entity / migration / GeoJSON 工具 / service/controller/dto/module / 注册 / seed)/ T8 API e2e curl / T9-T15 前端(演示文档 / Form Modal / VisitsTab / Detail Drawer / MapCanvas 改造 / MapShell / 删 mock)/ T16 端到端 + squash + PR
+
+**实施 1 个翻车 + 修复**:
+- T8 e2e curl 验证用 sysadmin token(direct curl)拿 32 条 OK,但**没测真前端 → 真 API 的端到端 token 流转**
+- 用户浏览器实测:大盘 0 散点 / 工作台「拜访清单 (0)」/ console 401 Unauthorized
+- 根因:我前端 fetch 用 `localStorage.getItem('pop_token')` 拿 token,但 V0.2 zustand persist key 是 `'pop-auth'`(value 是 JSON 包整个 state)→ 一直拿 null → `Bearer null` → 后端 JWT 拒绝
+- 修:加 `apps/web/src/lib/api.ts` 的 `authHeaders()` 用 `useAuthStore.getState().accessToken`,4 处 fetch 全改
+
+**教训**(写进护栏 · 跟 c2 形态翻车同类型):
+
+1. **共享基础设施 idiom 必须先 grep 现有 codebase 再写**(token / persist key / fetch wrapper 这类) — 我假设 `pop_token`,实际 `pop-auth`。**fetch wrapper 这种共享基础设施,task 起步前必须 grep 一下现有 stores/ 的 persist key**。
+2. **e2e 验证不能只 curl + DOM**:T8 plan 里的 curl 验证用了 hardcoded token,跳过了「前端 fetch 真实从 localStorage 拿 token 喂请求」的环节。**任何涉及 auth 的 task,e2e 验证必须从浏览器登录 → 跳页面 → 看 Network → 看数据**。
+
+**PR #6 单 commit 推**(`17812e2`,squash 自 18 commits 含主体 + token fix):
+- base = `claude/quirky-kapitsa-3f2faf`(PR #5 源)— 只显示 β.1 改动 25 files / +1393 / -400
+- 等 PR #5 merge 进 main 后 PR #6 重 base 到 main
+- API 4 端点 + cities 端点全 camelCase(对齐 V0.2 user.dto)
+
+---
+
+### 7.14 新 session 入场建议(2026-04-27 凌晨 · β.1 闭环后)
+
+**当前 git 拓扑**:
+```
+PR #6 (β.1 真业务) · claude/v06-beta1-visit (17812e2)   → base claude/quirky-kapitsa-3f2faf
+PR #5 (c2 + spec/plan) · claude/quirky-kapitsa-3f2faf  → base main
+                       └ 6cc4a98 c2 squash → 135de1b spec → fa6d206 plan → (本 commit handoff §7.12-7.14)
+main · 6304b6a (V0.4 c1 已合)
+```
+
+**两个 PR 的 review/merge 顺序**:
+1. 先 review/merge PR #5(c2 视觉骨架 + spec/plan/handoff 文档)→ main
+2. PR #6 自动 rebase(GitHub UI 提示),重 base 到 main → review/merge
+
+**新 session Claude 入场 5 分钟清单**:
+
+1. **pull main + 看 PR 状态**:`git fetch && gh pr list`
+2. **环境**:postgres 已配(brew services list)/ npm install / migration:run(确保 visits 表 + 32 seed 已入库)
+3. **跑双 dev**:`npm run dev:api` + `npm run dev:web` → `/login` 选 sysadmin → `/map/local` 看 32 散点
+4. **方向选择**:问用户拍以下其中一个
+   - **β.2 Pin/图钉**(~1.5d · spec 待写):大盘 ➕📌 接真接口 + 工作台「图钉清单」tab + Pin 状态机
+   - **β.3 蓝点 PlanPoint + 状态流转**(~0.5d · 需 β.2 先):蓝→红/黄/绿 录入触发 Visit 自动创建
+   - **γ K 模块**(~2d · 独立):GovOrg + GovContact CRUD,Visit.contactId K3 双轨接入
+   - **c3 政策大盘涂层**(~2.5d · 等 PRD §6.5-6.6 色彩公式定稿)
+   - **V0.7 工程债**:react-query global error handler / CASL 真矩阵 / B14 筛选 / delete soft + audit log
+
+**不要做的事**(沿用 §9.3 + 新增):
+- 不要在 β.2/β.3 task 起步前没 grep 共享基础设施(token / persist key / fetch helper / config 等)就假设 idiom — c2 + β.1 已经踩过 3 次形态/命名假设翻车
+- 不要替用户拍 ⚠️ 项(色彩公式 / 法务/IT 项)
+- 不要在 sys_admin 之外角色加 CASL 写权限(V0.7 集中接真矩阵)
+
+**当前 worktree**:`claude/quirky-kapitsa-3f2faf`(物理路径 `.claude/worktrees/quirky-kapitsa-3f2faf`)。要做 β.2/β.3 时建议:`git checkout -b claude/v06-beta2-pin`(从当前 HEAD 起,等 PR #5/#6 merge 后 rebase 到 main)。
+
+---
+
 ## 8. 用户个人协作偏好(覆盖所有项目,不仅本项目)
 
 保存在用户全局记忆:
