@@ -2,15 +2,15 @@ import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Button, Drawer, Tooltip, Typography } from 'antd';
 import {
-  EnvironmentOutlined,
   LeftOutlined,
   PlusOutlined,
   PushpinOutlined,
   RightOutlined,
 } from '@ant-design/icons';
+import { MapCanvas } from '@/components/MapCanvas';
 import { palette } from '@/tokens';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 /**
  * R2-① 大盘视图 layout(/map/local + /map/policy 共用画布)。
@@ -22,13 +22,17 @@ const { Title, Paragraph, Text } = Typography;
  *   absolute 叠层,贴地图画布内部右下角(§3.6 第 1.5 条 + 用户拍 圆形)
  * - 右抽屉默认收起,点击点(蓝点 / 图钉 / 涂层点)从右滑出
  *
- * V0.3 骨架阶段:地图画布用占位 div(V0.4 接真地图)。
+ * V0.4 c1:地图画布接真 ECharts(MapCanvas 组件,35 regions 多边形 + hover
+ * 高亮 + click 下钻 console.log);属地态 / 政策态切换不重置 currentProvinceCode
+ * (双子视图共用画布,§6.1 设计原则:1578)。业务图层(蓝点 / 图钉 / 涂层)
+ * 留给 V0.5+。
  */
 export function MapShell() {
   const location = useLocation();
   const isPolicy = location.pathname === '/map/policy';
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [siderOpen, setSiderOpen] = useState(true);
+  const [currentProvinceCode, setCurrentProvinceCode] = useState<string | null>(null);
 
   return (
     <div
@@ -40,25 +44,12 @@ export function MapShell() {
         overflow: 'hidden',
       }}
     >
-      {/* 地图画布占位 — 铺满整层(view-local) */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'column',
-          color: palette.textMuted,
-        }}
-      >
-        <EnvironmentOutlined style={{ fontSize: 64, color: palette.primary, opacity: 0.4 }} />
-        <Text style={{ color: palette.textMuted, marginTop: 16 }}>
-          地图画布占位 · 35 regions 底图待接(V0.4)
-        </Text>
-        <Text style={{ color: palette.textMuted, fontSize: 12, marginTop: 4 }}>
-          当前态:{isPolicy ? '政策大盘 · 涂层 + 涂层点' : '属地大盘 · 热力 + 拜访点 + 蓝点 + 图钉'}
-        </Text>
+      {/* 地图画布 — 真 ECharts(V0.4 c1) */}
+      <div style={{ position: 'absolute', inset: 0 }}>
+        <MapCanvas
+          provinceCode={currentProvinceCode}
+          onProvinceChange={setCurrentProvinceCode}
+        />
       </div>
 
       {/* 左面板 — absolute 浮动玻璃面板,不挤压地图(用户拍) */}
