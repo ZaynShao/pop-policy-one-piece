@@ -8,6 +8,7 @@ import {
   RightOutlined,
 } from '@ant-design/icons';
 import { MapCanvas } from '@/components/MapCanvas';
+import { VisitDetailDrawer } from '@/components/VisitDetailDrawer';
 import { palette } from '@/tokens';
 
 const { Title, Paragraph } = Typography;
@@ -33,6 +34,7 @@ export function MapShell() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [siderOpen, setSiderOpen] = useState(true);
   const [currentProvinceCode, setCurrentProvinceCode] = useState<string | null>(null);
+  const [selectedVisitId, setSelectedVisitId] = useState<string | null>(null);
 
   return (
     <div
@@ -49,6 +51,7 @@ export function MapShell() {
         <MapCanvas
           provinceCode={currentProvinceCode}
           onProvinceChange={setCurrentProvinceCode}
+          onVisitClick={setSelectedVisitId}
         />
       </div>
 
@@ -79,7 +82,7 @@ export function MapShell() {
           <Paragraph style={{ color: palette.textMuted, fontSize: 12, whiteSpace: 'pre-line' }}>
             {isPolicy
               ? '· 涂层勾选(多层级联)\n· 时间维度\n· (c3 待接 · C4/C8 涂层)'
-              : '· 时间窗口\n· 区划筛选\n· 角色筛选\n· (c2 假数据 · B1 密度 + B2 红黄绿 + B3 蓝)'}
+              : '· 时间窗口\n· 区划筛选\n· 角色筛选\n· (β.1 真数据 · 32 条 seed Visit)'}
           </Paragraph>
         </div>
       )}
@@ -139,17 +142,23 @@ export function MapShell() {
         </Tooltip>
       </div>
 
-      {/* 右抽屉:点详情面板(默认收起) */}
+      {/* 大盘 Visit 详情抽屉(β.1 新加 · 散点 click 唤起) */}
+      <VisitDetailDrawer
+        visitId={selectedVisitId}
+        onClose={() => setSelectedVisitId(null)}
+      />
+
+      {/* ➕📌 触发的占位抽屉(β.2 接 Pin 时替换) */}
       <Drawer
-        title="点详情面板(占位)"
+        title="新增 Pin / 蓝点(占位)"
         placement="right"
         width={400}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
       >
         <Paragraph>
-          UI-LAYOUT-V1 §3.1 R2-① 右抽屉占位。生产实现:点击地图上的蓝点 / 图钉 / 涂层点唤起,
-          含 B15(属地)/ C11(政策)工具级联。
+          ➕📌 浮动按钮触发占位 — β.2 接 Pin 实体后替换为创建 Pin 表单,
+          β.3 接蓝点(PlanPoint)后扩展计划点录入。
         </Paragraph>
       </Drawer>
 

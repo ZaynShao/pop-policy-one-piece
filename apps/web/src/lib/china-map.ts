@@ -77,38 +77,3 @@ export async function loadProvinceMap(adcode: string): Promise<GeoJsonFC> {
 export function provinceNameToCode(name: string): string | null {
   return provinceNameToCodeCache?.get(name) ?? null;
 }
-
-let allCitiesCache: GeoJsonFC['features'] | null = null;
-
-/**
- * 全国级散点用 — Promise.all fetch 所有 34 省 GeoJSON,合并 features
- * 返回所有市级 (province features 的内容)。
- *
- * 单次首次加载 ~6MB(34 × ~200K),浏览器后续缓存;模块内 in-memory 缓存
- * 同 session 复用。供 c2 全国级散点用「每市 1 点」粒度。
- *
- * 复用 loadAndRegister 的 echarts.registerMap + cache.set,所以下钻到任何
- * 省份都已注册好(后续 loadProvinceMap 直接命中模块 cache)。
- */
-export async function loadAllCities(): Promise<GeoJsonFC['features']> {
-  if (allCitiesCache) return allCitiesCache;
-  // china.json 加载后 provinceNameToCodeCache 内有所有省级 adcode
-  const china = await loadChinaMap();
-  const provinceCodes = china.features
-    .map((f) => String(f.properties.adcode))
-    // 港澳台 + 南海诸岛在 china.json 里有,但 provinces/*.json 不一定有,过滤异常
-    .filter((c) => /^\d{6}$/.test(c));
-  const results = await Promise.all(
-    provinceCodes.map((code) =>
-      loadAndRegister(`province_${code}`, `/geojson/provinces/${code}.json`)
-        .then((geo) => geo.features)
-        .catch((err) => {
-          // eslint-disable-next-line no-console
-          console.warn('[loadAllCities] 省级 GeoJSON 加载失败,跳过', code, err);
-          return [] as GeoJsonFC['features'];
-        }),
-    ),
-  );
-  allCitiesCache = results.flat();
-  return allCitiesCache;
-}

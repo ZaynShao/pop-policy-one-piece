@@ -9,6 +9,7 @@ import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { RegionsModule } from './regions/regions.module';
 import { UsersModule } from './users/users.module';
+import { VisitsModule } from './visits/visits.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { UsersModule } from './users/users.module';
     AuthModule,
     HealthModule,
     RegionsModule,
+    VisitsModule,
   ],
   providers: [
     // 全局 JWT 守卫,@Public() 可跳过

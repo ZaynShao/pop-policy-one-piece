@@ -3,8 +3,10 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
+import { loadGeoJsonCities } from './lib/geojson-cities';
 
 async function bootstrap(): Promise<void> {
+  await loadGeoJsonCities();
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
   app.setGlobalPrefix('api/v1');
