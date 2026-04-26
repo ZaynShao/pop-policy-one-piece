@@ -551,6 +551,100 @@ git branch -D dev/v0.1
 
 ---
 
+### 7.11 δ v2 闭环 ✅(2026-04-25 晚 · 压速度路径一次过)
+
+**接续 §7.10**。δ v2 在新 worktree `claude/festive-swirles-f59bad`(基于 §7.10 commit `ab052c5`)上执行,4 commits 全部按护栏走通,**未触发任何 R2 v1 翻车类型**(无 view-local 越界 / 无 sidebar 跨视图 / 大盘切换正确 view-context-aware)。
+
+**4 commits 序列**:
+
+| commit | 内容 |
+|---|---|
+| `d264f02` | docs(layout) UI-LAYOUT-V1 §1 chrome / view-local 边界声明 ✅(护栏 1 落地) |
+| `63cd68a` | docs(layout) §2 R1 全局骨架 ASCII(三态 α 标准 / β 大盘 / γ 登录) |
+| `8c5d9f8` | docs(layout) §3 R2-①②③④ 各视图 ASCII(压速度一次过)|
+| `bdc6efd` | feat(web) V0.3 layout 骨架 · 5 视图 + AppShell + ➕📌 内嵌画布(δ v2 收口) |
+
+**§1 三个 ⚠️ 用户拍法**(2026-04-25 晚):
+1. ⚠️1 全局 toast / loading / Modal → 归全局 chrome(AntD portal 默认,§1.1.b)
+2. ⚠️2 sys_admin 顶栏「管理后台入口」→ 右侧独立按钮,与「工作台入口」并列
+3. ⚠️3 顶栏「大盘切换」→ **view-context-aware**,仅 ① 显示;**Logo 升格为「永远进大地图(`/map/local`)」入口**(对所有角色一致) — δ v2 派生发现 · 首次实施时误读为「§6.2 角色派发」(每个角色不同),导致 sys_admin/lead/pmo/central_ga 点 Logo 永远回不到大地图,V0.3 实测后用户指出,事后修正为永远跳大地图
+
+**R2-① 用户修订**:➕📌 浮动按钮必须 absolute 叠层贴**地图画布内部右下角**,非画布外延空隙(§3.6 第 1.5 条)。
+
+**V0.3 代码 25 个新文件**(`bdc6efd` 详情):
+- `layouts/AppShell.tsx`:全局 chrome(顶栏 + Logo 角色派发 + 大盘切换 view-context-aware + sys_admin ⚙ 入口)
+- `pages/MapShell.tsx`:R2-① 大盘 layout(双子视图共用,左面板 + 画布占位 + ➕📌 absolute + 右抽屉)
+- `pages/Console.tsx`:R2-② 工作台(view-local sidebar = AntD vertical Menu,按角色 visibleTabsForRole 过滤)
+- `pages/Admin.tsx`:R2-③ 管理后台(sys_admin guard,非该角色重定向 homeForRole)
+- `pages/Me.tsx`:R2-④ 个人中心(水平 Tabs 3 项)
+- `pages/console/* × 11` + `pages/admin/* × 6`:用 `components/StubCard.tsx` 包占位
+- `lib/role-home.ts` / `lib/console-tabs.ts` / `lib/admin-pages.ts`:三份配置 lib
+
+**preview 实测验证**(sys_admin · localStorage 持久化的 V0.2 登录态,1440x900 viewport):
+- `/admin/users` → 顶栏无大盘切换,左菜单 6 项,UsersPage stub 渲染 ✅
+- `/map/local` → 顶栏中央 segmented [属地大盘 ⇄ 政策大盘],左面板属地态,➕📌 贴画布右下角 ✅
+- `/map/policy` → 切换后左面板变「政策态 · 涂层勾选」(view-context-aware ✅)
+- `/console` → 自动跳 `/console/dashboard`(sys_admin 默认),sidebar 10 项 + 关系档案父项 ✅
+- `/me` → 水平 Tabs 3 项,顶栏无大盘切换 ✅
+
+**δ v2 vs δ v1 对比**:
+
+| 维度 | δ v1(2026-04-25 早,弃) | δ v2(2026-04-25 晚,过)|
+|---|---|---|
+| commits | 5 全弃(PR #2 close)| 4 全过(主分支线) |
+| ASCII 前边界声明 | ❌ 无,直接画 ASCII | ✅ §1 4 节(chrome/视图/视图组件/反例) |
+| R2 翻车点 | ❌ sidebar 误画为全局 chrome | ✅ §1.4 ❌1 钉死 + 实测无越界 |
+| 视图编号护栏 | ❌ ASCII 无标 | ✅ R1-α/β/γ + R2-①②③④ 全标 |
+| LLM 生图 mockup | ❌ 试 2 次失败 | ✅ 永久弃,走 preview headless 截图 |
+| 用户拍 ⚠️ 项 | 0(没意识到) | 3(全局 portal / sys_admin 入口 / 大盘切换语义) |
+| V0.3 代码翻车 | ❌ Sider 在所有视图渲染 | ✅ Sider 仅 ② / ➕📌 仅 ① / 大盘切换仅 ① |
+
+**护栏功效复盘**:**画 ASCII 之前先文字声明边界,直接消灭了 R2 翻车类型**。Logo 升格为「回首页」入口这个发现也是 §1 边界讨论时派生出来的 — 单纯画 ASCII 不会暴露。流程缺陷比代码缺陷更值得修。
+
+**当前 main 状态**:`main = ab052c5`(§7.10);`claude/festive-swirles-f59bad = bdc6efd`(δ v2 收口),领先 main 4 commits,可推 PR 合 main 或暂留分支。
+
+**下一步候选**(用户拍):
+- α · 推 PR 合 main(δ v2 落 main,V0.3 layout 骨架成主线)
+- β · Pin + Visit 真业务(PRD §4.3,在 layout 骨架上接真功能)
+- γ · K 模块 GovOrg + GovContact(PRD §4.3.6)
+- δ' · 接真地图(35 regions GeoJSON,V0.4 路径,把 R2-① 画布占位换真)
+- 其他
+
+---
+
+### 7.11.1 V0.3 实测后视觉打磨 3 轮(2026-04-26 早 · 用户拍 α 推 PR 前最后整理)
+
+V0.3 layout 骨架(`bdc6efd`)落地后,用户在浏览器实测发现 3 个细节,依次修订并 commit。这部分是 §7.11 闭环纪要(`e4ef99a`)**之后**的增补,合入 main 时要带上。
+
+| # | 修订 | 触发(用户原话) | commit |
+|---|---|---|---|
+| 1 | Logo 行为修正 — 永远跳 `/map/local`(原误读为 §6.2 角色派发,sys_admin / lead / pmo / central_ga 永远回不到大地图,违背 ⚠️3 本意) | "点左上角 logo 进入了工作台,导致我看不到大地图界面" | `8f616af` |
+| 2 | R2-① 左面板从 AntD Sider(flex 挤压地图水平空间)→ **absolute 浮动玻璃面板**(地图铺满,面板浮上);➕📌 矩形长条 → **圆形图标按钮**(`shape="circle" size="large"` + Tooltip)| "左侧抽屉应该浮在地图上方,而不是挤压地图,右下角 ➕📌 调整到... 圆图标" | `61b7f94` |
+| 3 | R2-① toggle **把手按钮**统一位置 — 抽出为独立 absolute 元素,**始终在面板右边缘外的垂直中间**(`left:296 top:50%`,28×64 矩形右半圆角),展开 < / 收起 >,**位置一致不挪窝** | "抽屉收缩前后展开按钮位置不一致,建议用图3的形式且保持一致" | `09a4cc5` |
+
+**两个流程级教训**(写进护栏,供后续 session):
+
+1. **⚠️ 拍法的口语词必须落具体**:用户说"点 logo 回首页",Claude 解读为 §6.2 角色派发,但用户本意是「永远进大地图」。**「首页」「主页」「默认」这类口语词,实施前必须落成具体路径(对哪些角色跳哪条 URL),否则会变成第二种「流程缺陷」**(δ v1 翻车是 ASCII 前没声明边界;这次是文字拍板有歧义)
+2. **可切换组件的 toggle 控件应独立 absolute 定位**:展开/收起切换时控件**不应瞬移**,体感卡顿。把 toggle 抽出为独立元素(不依赖被切换组件的内部布局),让它的物理位置在两个状态下完全相同。这是 UX 标准,也避免了"内部右下"和"屏幕左上"两种位置不一致的实施
+
+**完整 δ v2 commits 序列**(`main = ab052c5` 后,推 PR 时 9 commits 一次合):
+
+```
+56fe527 chore(dev) api-dev launch 配置(后续接手便利)
+09a4cc5 fix R2-① toggle 把手统一位置 ← 增补 3
+61b7f94 fix R2-① 浮玻璃 + 圆形         ← 增补 2
+8f616af fix Logo 修正                  ← 增补 1
+e4ef99a docs §7.11 闭环纪要(初版)     ← 当时 5 commits 收口
+bdc6efd feat V0.3 layout 骨架
+8c5d9f8 docs §3 R2-①②③④
+63cd68a docs §2 R1 三态
+d264f02 docs §1 边界声明
+```
+
+**下一步**:推 PR 合 main(本节增补完成)→ V0.4 接真地图(δ' 路径,35 regions GeoJSON,把 R2-① 画布占位换真)。
+
+---
+
 ## 8. 用户个人协作偏好(覆盖所有项目,不仅本项目)
 
 保存在用户全局记忆:
