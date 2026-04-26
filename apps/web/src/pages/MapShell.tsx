@@ -78,8 +78,8 @@ export function MapShell() {
           </Title>
           <Paragraph style={{ color: palette.textMuted, fontSize: 12, whiteSpace: 'pre-line' }}>
             {isPolicy
-              ? '· 涂层勾选(多层级联)\n· 时间维度\n· (V0.4 接真涂层)'
-              : '· 时间窗口\n· 区划筛选\n· 角色筛选\n· (V0.4 接真热力)'}
+              ? '· 涂层勾选(多层级联)\n· 时间维度\n· (c3 待接 · C4/C8 涂层)'
+              : '· 时间窗口\n· 区划筛选\n· 角色筛选\n· (c2 假数据 · B1 密度 + B2 红黄绿 + B3 蓝)'}
           </Paragraph>
         </div>
       )}
