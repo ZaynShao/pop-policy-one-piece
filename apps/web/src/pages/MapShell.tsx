@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Button, Drawer, Tooltip, Typography } from 'antd';
+import { Button, Tooltip, Typography } from 'antd';
 import {
   LeftOutlined,
   PlusOutlined,
@@ -9,6 +9,8 @@ import {
 } from '@ant-design/icons';
 import { MapCanvas } from '@/components/MapCanvas';
 import { VisitDetailDrawer } from '@/components/VisitDetailDrawer';
+import { PinFormModal } from '@/components/PinFormModal';
+import { PinDetailDrawer } from '@/components/PinDetailDrawer';
 import { palette } from '@/tokens';
 
 const { Title, Paragraph } = Typography;
@@ -31,10 +33,11 @@ const { Title, Paragraph } = Typography;
 export function MapShell() {
   const location = useLocation();
   const isPolicy = location.pathname === '/map/policy';
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [siderOpen, setSiderOpen] = useState(true);
   const [currentProvinceCode, setCurrentProvinceCode] = useState<string | null>(null);
   const [selectedVisitId, setSelectedVisitId] = useState<string | null>(null);
+  const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
+  const [pinModalOpen, setPinModalOpen] = useState(false);
 
   return (
     <div
@@ -52,6 +55,7 @@ export function MapShell() {
           provinceCode={currentProvinceCode}
           onProvinceChange={setCurrentProvinceCode}
           onVisitClick={setSelectedVisitId}
+          onPinClick={setSelectedPinId}
         />
       </div>
 
@@ -82,7 +86,7 @@ export function MapShell() {
           <Paragraph style={{ color: palette.textMuted, fontSize: 12, whiteSpace: 'pre-line' }}>
             {isPolicy
               ? '· 涂层勾选(多层级联)\n· 时间维度\n· (c3 待接 · C4/C8 涂层)'
-              : '· 时间窗口\n· 区划筛选\n· 角色筛选\n· (β.1 真数据 · 32 条 seed Visit)'}
+              : '· 时间窗口\n· 区划筛选\n· 角色筛选\n· (β.1 32 Visit + β.2 3 Pin · 形状区分)'}
           </Paragraph>
         </div>
       )}
@@ -126,7 +130,7 @@ export function MapShell() {
             shape="circle"
             size="large"
             icon={<PlusOutlined />}
-            onClick={() => setDrawerOpen(true)}
+            onClick={() => setPinModalOpen(true)}
             aria-label="新增蓝点"
           />
         </Tooltip>
@@ -136,7 +140,7 @@ export function MapShell() {
             shape="circle"
             size="large"
             icon={<PushpinOutlined />}
-            onClick={() => setDrawerOpen(true)}
+            onClick={() => setPinModalOpen(true)}
             aria-label="新增图钉"
           />
         </Tooltip>
@@ -148,19 +152,16 @@ export function MapShell() {
         onClose={() => setSelectedVisitId(null)}
       />
 
-      {/* ➕📌 触发的占位抽屉(β.2 接 Pin 时替换) */}
-      <Drawer
-        title="新增 Pin / 蓝点(占位)"
-        placement="right"
-        width={400}
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-      >
-        <Paragraph>
-          ➕📌 浮动按钮触发占位 — β.2 接 Pin 实体后替换为创建 Pin 表单,
-          β.3 接蓝点(PlanPoint)后扩展计划点录入。
-        </Paragraph>
-      </Drawer>
+      {/* β.2:Pin 创建 Modal + 详情 Drawer(➕📌 触发 / 散点 click 触发) */}
+      <PinFormModal
+        open={pinModalOpen}
+        onClose={() => setPinModalOpen(false)}
+      />
+
+      <PinDetailDrawer
+        pinId={selectedPinId}
+        onClose={() => setSelectedPinId(null)}
+      />
 
       <Outlet />
     </div>
