@@ -7,6 +7,13 @@ import { PinEntity } from '../pins/entities/pin.entity';
 import { CommentEntity } from '../comments/entities/comment.entity';
 import { CreateVisitDto } from './dtos/create-visit.dto';
 import { UpdateVisitDto } from './dtos/update-visit.dto';
+import type { VisitStatus } from '@pop/shared-types';
+
+const ALLOWED_TRANSITIONS: Record<VisitStatus, VisitStatus[]> = {
+  planned: ['completed', 'cancelled'],
+  completed: [],            // 不可改 status
+  cancelled: ['planned'],   // 重启
+};
 
 @Injectable()
 export class VisitsService {
@@ -76,15 +83,54 @@ export class VisitsService {
     return this.repo.save(visit);
   }
 
-  async update(id: string, dto: UpdateVisitDto): Promise<VisitEntity> {
-    const v = await this.findOne(id);
-    if (dto.visitDate !== undefined) v.visitDate = dto.visitDate ?? null;
-    if (dto.department !== undefined) v.department = dto.department ?? null;
-    if (dto.contactPerson !== undefined) v.contactPerson = dto.contactPerson ?? null;
-    if (dto.contactTitle !== undefined) v.contactTitle = dto.contactTitle ?? null;
-    if (dto.outcomeSummary !== undefined) v.outcomeSummary = dto.outcomeSummary ?? null;
-    if (dto.color !== undefined) v.color = dto.color ?? null;
-    if (dto.followUp !== undefined) v.followUp = dto.followUp;
-    return this.repo.save(v);
+  async update(id: string, dto: UpdateVisitDto, currentUserId: string): Promise<VisitEntity> {
+    const prev = await this.findOne(id);
+    const newStatus = (dto.status ?? prev.status) as VisitStatus;
+
+    // 状态切换校验
+    if (newStatus !== prev.status) {
+      if (!ALLOWED_TRANSITIONS[prev.status as VisitStatus].includes(newStatus)) {
+        throw new BadRequestException(`不允许 ${prev.status} → ${newStatus}`);
+      }
+      if (newStatus === 'completed') {
+        const visitDate = dto.visitDate ?? prev.visitDate;
+        const contactPerson = dto.contactPerson ?? prev.contactPerson;
+        const color = dto.color ?? prev.color;
+        if (!visitDate) throw new BadRequestException('转 completed 必须填 visitDate');
+        if (!contactPerson) throw new BadRequestException('转 completed 必须填 contactPerson');
+        if (!color) throw new BadRequestException('转 completed 必须填 color');
+      }
+      prev.status = newStatus;
+    }
+
+    // completed 状态白名单:不切 status 时只允许 color
+    if (prev.status === 'completed' && !dto.status) {
+      const allowedKeys = new Set(['color']);
+      const dtoKeys = Object.keys(dto).filter((k) => dto[k as keyof UpdateVisitDto] !== undefined);
+      const violation = dtoKeys.find((k) => !allowedKeys.has(k));
+      if (violation) {
+        throw new BadRequestException('已完成拜访只允许改 visitColor');
+      }
+    }
+
+    // 应用 dto 字段
+    if (dto.title !== undefined) prev.title = dto.title;
+    if (dto.plannedDate !== undefined) prev.plannedDate = dto.plannedDate;
+    if (dto.parentPinId !== undefined) {
+      if (dto.parentPinId !== null) {
+        const pin = await this.pinsRepo.findOne({ where: { id: dto.parentPinId } });
+        if (!pin) throw new BadRequestException(`parentPin ${dto.parentPinId} not found`);
+      }
+      prev.parentPinId = dto.parentPinId;
+    }
+    if (dto.visitDate !== undefined) prev.visitDate = dto.visitDate;
+    if (dto.department !== undefined) prev.department = dto.department;
+    if (dto.contactPerson !== undefined) prev.contactPerson = dto.contactPerson;
+    if (dto.contactTitle !== undefined) prev.contactTitle = dto.contactTitle;
+    if (dto.outcomeSummary !== undefined) prev.outcomeSummary = dto.outcomeSummary;
+    if (dto.color !== undefined) prev.color = dto.color;
+    if (dto.followUp !== undefined) prev.followUp = dto.followUp;
+
+    return this.repo.save(prev);
   }
 }

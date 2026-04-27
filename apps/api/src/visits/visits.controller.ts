@@ -34,8 +34,12 @@ export class VisitsController {
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateVisitDto) {
-    return { data: await this.service.update(id, dto) };
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateVisitDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return { data: await this.service.update(id, dto, user.id) };
   }
 }
 

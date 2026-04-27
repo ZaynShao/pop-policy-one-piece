@@ -98,3 +98,98 @@ describe('VisitsService.create', () => {
     expect(result.status).toBe('completed');
   });
 });
+
+describe('VisitsService.update state machine', () => {
+  let svc: VisitsService;
+  let visitsRepo: any;
+
+  beforeEach(async () => {
+    visitsRepo = mockRepo();
+    const pinsRepo = mockRepo();
+    const commentsRepo = mockRepo();
+
+    const module = await Test.createTestingModule({
+      providers: [
+        VisitsService,
+        { provide: getRepositoryToken(VisitEntity), useValue: visitsRepo },
+        { provide: getRepositoryToken(PinEntity), useValue: pinsRepo },
+        { provide: getRepositoryToken(CommentEntity), useValue: commentsRepo },
+      ],
+    }).compile();
+
+    svc = module.get(VisitsService);
+  });
+
+  const plannedVisit = (overrides = {}) => ({
+    id: 'v1',
+    status: 'planned',
+    parentPinId: null,
+    title: 'plan',
+    plannedDate: null,
+    visitDate: null,
+    department: null,
+    contactPerson: null,
+    contactTitle: null,
+    outcomeSummary: null,
+    color: null,
+    followUp: false,
+    provinceCode: '510000',
+    cityName: '成都市',
+    lng: 0, lat: 0, visitorId: 'u1',
+    ...overrides,
+  });
+
+  it('rejects completed → planned', async () => {
+    visitsRepo.findOne.mockResolvedValue(plannedVisit({ status: 'completed' }));
+    await expect(svc.update('v1', { status: 'planned' }, 'u1')).rejects.toThrow(/不允许.*completed.*planned/);
+  });
+
+  it('rejects completed → cancelled', async () => {
+    visitsRepo.findOne.mockResolvedValue(plannedVisit({ status: 'completed' }));
+    await expect(svc.update('v1', { status: 'cancelled' }, 'u1')).rejects.toThrow(/不允许.*completed.*cancelled/);
+  });
+
+  it('allows planned → completed with required fields', async () => {
+    visitsRepo.findOne.mockResolvedValue(plannedVisit());
+    const result = await svc.update('v1', {
+      status: 'completed',
+      visitDate: '2026-04-27',
+      contactPerson: '张工',
+      department: '某局',
+      color: 'green',
+    }, 'u1');
+    expect(result.status).toBe('completed');
+  });
+
+  it('rejects planned → completed without visitDate', async () => {
+    visitsRepo.findOne.mockResolvedValue(plannedVisit());
+    await expect(
+      svc.update('v1', { status: 'completed' }, 'u1'),
+    ).rejects.toThrow(/visitDate/);
+  });
+
+  it('allows planned → cancelled', async () => {
+    visitsRepo.findOne.mockResolvedValue(plannedVisit());
+    const result = await svc.update('v1', { status: 'cancelled' }, 'u1');
+    expect(result.status).toBe('cancelled');
+  });
+
+  it('allows cancelled → planned (restart)', async () => {
+    visitsRepo.findOne.mockResolvedValue(plannedVisit({ status: 'cancelled' }));
+    const result = await svc.update('v1', { status: 'planned' }, 'u1');
+    expect(result.status).toBe('planned');
+  });
+
+  it('completed: only allows changing color', async () => {
+    visitsRepo.findOne.mockResolvedValue(plannedVisit({ status: 'completed' }));
+    const result = await svc.update('v1', { color: 'yellow' }, 'u1');
+    expect(result.color).toBe('yellow');
+  });
+
+  it('completed: rejects changing other fields', async () => {
+    visitsRepo.findOne.mockResolvedValue(plannedVisit({ status: 'completed' }));
+    await expect(
+      svc.update('v1', { outcomeSummary: 'changed' }, 'u1'),
+    ).rejects.toThrow(/已完成拜访只允许改 visitColor/);
+  });
+});
