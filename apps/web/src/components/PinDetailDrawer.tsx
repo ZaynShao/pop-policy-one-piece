@@ -15,11 +15,14 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   EditOutlined,
+  PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Pin, PinStatus, UpdatePinInput } from '@pop/shared-types';
 import { PinFormModal } from './PinFormModal';
+import { VisitFormModal } from './VisitFormModal';
+import { PinCommentBoard } from './PinCommentBoard';
 import { authHeaders } from '@/lib/api';
 
 const { Text, Paragraph } = Typography;
@@ -69,6 +72,7 @@ async function patchStatus(
 export function PinDetailDrawer({ pinId, onClose }: Props) {
   const qc = useQueryClient();
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deriveModalOpen, setDeriveModalOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['pin', pinId],
@@ -167,6 +171,9 @@ export function PinDetailDrawer({ pinId, onClose }: Props) {
                   重开
                 </Button>
               )}
+              <Button icon={<PlusOutlined />} onClick={() => setDeriveModalOpen(true)}>
+                派生计划点
+              </Button>
               <Button icon={<EditOutlined />} onClick={() => setEditModalOpen(true)}>
                 编辑
               </Button>
@@ -197,6 +204,8 @@ export function PinDetailDrawer({ pinId, onClose }: Props) {
                 </Descriptions.Item>
               )}
             </Descriptions>
+
+            <PinCommentBoard pinId={pin.id} />
           </>
         )}
       </Drawer>
@@ -206,6 +215,17 @@ export function PinDetailDrawer({ pinId, onClose }: Props) {
           open={editModalOpen}
           onClose={() => setEditModalOpen(false)}
           editing={pin}
+        />
+      )}
+
+      {pin && (
+        <VisitFormModal
+          open={deriveModalOpen}
+          onClose={() => setDeriveModalOpen(false)}
+          defaultStatus="planned"
+          presetParentPinId={pin.id}
+          presetProvinceCode={pin.provinceCode}
+          presetCityName={pin.cityName}
         />
       )}
     </>
