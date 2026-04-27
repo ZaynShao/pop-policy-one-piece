@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 import { Button, Slider, Space, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
-import type { Visit } from '@pop/shared-types';
+import type { Visit, Pin, PinStatus } from '@pop/shared-types';
 import {
   loadChinaMap,
   loadProvinceMap,
@@ -25,6 +25,8 @@ interface Props {
   }) => void;
   /** β.1 新增:点击 Visit 散点回调,传 visit.id */
   onVisitClick?: (visitId: string) => void;
+  /** β.2 新增:点击 Pin 图钉回调,传 pin.id */
+  onPinClick?: (pinId: string) => void;
 }
 
 interface LoadedInfo {
@@ -62,7 +64,25 @@ async function fetchVisits(): Promise<{ data: Visit[] }> {
   return r.json();
 }
 
-export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVisitClick }: Props) {
+const PIN_STATUS_COLOR: Record<PinStatus, string> = {
+  in_progress: '#B388FF',  // 紫
+  completed: '#607D8B',    // 暗灰
+  aborted: '#BDBDBD',      // 浅灰
+};
+
+const PIN_STATUS_OPACITY: Record<PinStatus, number> = {
+  in_progress: 0.95,
+  completed: 0.9,
+  aborted: 0.5,
+};
+
+async function fetchPins(): Promise<{ data: Pin[] }> {
+  const r = await fetch('/api/v1/pins', { headers: authHeaders() });
+  if (!r.ok) throw new Error('pins fetch fail');
+  return r.json();
+}
+
+export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVisitClick, onPinClick }: Props) {
   const [loaded, setLoaded] = useState<LoadedInfo | null>(null);
   const [zoom, setZoom] = useState<number>(ZOOM_DEFAULT);
 
@@ -73,6 +93,13 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
     staleTime: 30_000,
   });
   const visits = visitsData?.data ?? [];
+
+  // β.2:从 API 拿真 Pin 数据
+  const { data: pinsResp } = useQuery({
+    queryKey: ['pins'],
+    queryFn: fetchPins,
+  });
+  const pins = pinsResp?.data ?? [];
 
   useEffect(() => {
     let cancelled = false;
@@ -100,6 +127,23 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
         visitId: v.id,
       })),
     [visits, provinceCode],
+  );
+
+  const pinsScatterData = useMemo(() =>
+    pins
+      .filter((p) => !provinceCode || p.provinceCode === provinceCode)
+      .map((p) => ({
+        value: [p.lng, p.lat, 1],
+        itemStyle: {
+          color: PIN_STATUS_COLOR[p.status],
+          opacity: PIN_STATUS_OPACITY[p.status],
+          shadowBlur: 8,
+          shadowColor: 'rgba(0,0,0,0.4)',
+        },
+        name: p.title,
+        pinId: p.id,
+      })),
+    [pins, provinceCode],
   );
 
   const option = useMemo(() => {
@@ -147,14 +191,28 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
           data: scatterData,
           z: 5,
         },
+        {
+          type: 'scatter',
+          coordinateSystem: 'geo',
+          geoIndex: 0,
+          symbol: 'pin',
+          symbolSize: provinceCode ? 22 : 14,
+          data: pinsScatterData,
+          z: 6,
+          silent: false,
+        },
       ],
     };
-  }, [loaded, provinceCode, zoom, scatterData]);
+  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData]);
 
   const onEvents = {
-    click: (params: { componentType?: string; name?: string; data?: { visitId?: string } }) => {
+    click: (params: { componentType?: string; name?: string; data?: { visitId?: string; pinId?: string } }) => {
       if (params.componentType === 'series' && params.data?.visitId) {
         onVisitClick?.(params.data.visitId);
+        return;
+      }
+      if (params.componentType === 'series' && params.data?.pinId) {
+        onPinClick?.(params.data.pinId);
         return;
       }
       if (params.componentType !== 'geo' || !params.name) return;
