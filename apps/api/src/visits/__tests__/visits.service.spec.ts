@@ -212,7 +212,7 @@ describe('VisitsService.update state machine', () => {
     visitsRepo.findOne.mockResolvedValue(plannedVisit({ status: 'completed' }));
     await expect(
       svc.update('v1', { outcomeSummary: 'changed' }, 'u1'),
-    ).rejects.toThrow(/已完成拜访只允许改 visitColor/);
+    ).rejects.toThrow(/已完成拜访只允许改 color/);
   });
 
   it('auto-creates comment when planned → completed with parentPinId', async () => {

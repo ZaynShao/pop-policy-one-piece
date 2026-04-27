@@ -24,7 +24,7 @@ import { PinEntity } from '../../pins/entities/pin.entity';
  * 状态机:
  *   planned ↔ cancelled
  *   planned → completed (不可逆)
- *   completed → * (全禁,只允许改 visitColor)
+ *   completed → * (全禁,只允许改 color)
  */
 @Entity('visits')
 @Index(['visitorId'])

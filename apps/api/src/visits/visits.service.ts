@@ -120,7 +120,7 @@ export class VisitsService {
       const dtoKeys = Object.keys(dto).filter((k) => dto[k as keyof UpdateVisitDto] !== undefined);
       const violation = dtoKeys.find((k) => !allowedKeys.has(k));
       if (violation) {
-        throw new BadRequestException('已完成拜访只允许改 visitColor');
+        throw new BadRequestException('已完成拜访只允许改 color');
       }
     }
 

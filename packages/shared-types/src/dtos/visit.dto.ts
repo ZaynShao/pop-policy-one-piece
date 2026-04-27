@@ -60,6 +60,17 @@ export interface CreateVisitInput {
   cityName: string;
 }
 
+/**
+ * Visit 状态机(后端 visits.service.update 强制):
+ *   planned    → completed(必须填 visitDate / contactPerson / color),不可逆
+ *   planned    ↔ cancelled
+ *   completed  → *  全禁(白名单只允许改 color)
+ *
+ * 边界场景:
+ *   - planned 时改业务字段(department / outcomeSummary 等)允许
+ *   - completed 时只改 color OK,改其他字段抛 400「已完成拜访只允许改 color」
+ *   - cancelled 时可重启回 planned,数据保留
+ */
 export interface UpdateVisitInput {
   status?: VisitStatus;
   parentPinId?: string | null;
