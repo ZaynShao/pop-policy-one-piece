@@ -65,7 +65,7 @@ async function fetchVisits(): Promise<{ data: Visit[] }> {
 }
 
 const PIN_STATUS_COLOR: Record<PinStatus, string> = {
-  in_progress: '#B388FF',  // 紫
+  in_progress: '#cf1322',  // 红(antd red-7,跟 Visit 橙色拉开 + 醒目)
   completed: '#607D8B',    // 暗灰
   aborted: '#BDBDBD',      // 浅灰
 };
@@ -196,7 +196,8 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
           coordinateSystem: 'geo',
           geoIndex: 0,
           symbol: 'pin',
-          symbolSize: provinceCode ? 22 : 14,
+          // 用户拍 ×3 size:全国 14→42 / 省下钻 22→66(图钉醒目)
+          symbolSize: provinceCode ? 66 : 42,
           data: pinsScatterData,
           z: 6,
           silent: false,

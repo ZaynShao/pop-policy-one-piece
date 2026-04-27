@@ -18,7 +18,7 @@ export const palette = {
   visit: {
     green: '#52c41a',
     yellow: '#faad14',
-    red: '#c0392b',
+    red: '#fa8c16',  // 橙色(原深红 #c0392b)— 避开 Pin 红色冲突;Tag 同步 'orange'
     blue: '#1677ff',
   },
 } as const;

@@ -11,7 +11,7 @@ const { Title } = Typography;
 const COLOR_TAG: Record<Visit['color'], { color: string; label: string }> = {
   green: { color: 'green', label: '常规' },
   yellow: { color: 'gold', label: '层级提升' },
-  red: { color: 'red', label: '紧急' },
+  red: { color: 'orange', label: '紧急' },
 };
 
 async function fetchVisits(): Promise<{ data: Visit[] }> {
