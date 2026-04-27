@@ -8,21 +8,31 @@
  * - color 仅 red/yellow/green(blue 是 PlanPoint 蓝点,留 β.3)
  * - 不挂 contactId(K3 双轨,留 γ K 模块)/ relatedThemes(c3 政策主题)/
  *   planPointId(蓝点 β.3)
+ *
+ * β.2.5/β.3: 加 4 新字段(status/parentPinId/title/plannedDate),业务字段改 nullable
  */
 
-export type VisitStatusColor = 'red' | 'yellow' | 'green';
+import type { VisitStatus } from '../enums/visit-status';
+
+export type VisitStatusColor = 'red' | 'yellow' | 'green' | 'blue';
+// 'blue' 仅 status='planned' 时使用,前端按 status 推导,不依赖 visitColor 字段
 
 export interface Visit {
   id: string;
-  // 业务 7 字段
-  visitDate: string;                  // YYYY-MM-DD
-  department: string;
-  contactPerson: string;
+  // β.2.5/β.3 新增 4 字段
+  status: VisitStatus;
+  parentPinId: string | null;
+  title: string | null;
+  plannedDate: string | null;        // YYYY-MM-DD
+  // 业务字段(β.1 — planned 时全部可空)
+  visitDate: string | null;          // 改为 nullable
+  department: string | null;         // 改为 nullable
+  contactPerson: string | null;      // 改为 nullable
   contactTitle: string | null;
-  outcomeSummary: string;
-  color: VisitStatusColor;
+  outcomeSummary: string | null;     // 改为 nullable
+  color: VisitStatusColor | null;    // 改为 nullable
   followUp: boolean;
-  // 地理 4 字段
+  // 地理 4 字段(全可空 false)
   provinceCode: string;
   cityName: string;
   lng: number;
@@ -34,18 +44,27 @@ export interface Visit {
 }
 
 export interface CreateVisitInput {
-  visitDate: string;
-  department: string;
-  contactPerson: string;
+  status?: VisitStatus;              // 默认 'completed'
+  parentPinId?: string;
+  title?: string;
+  plannedDate?: string;
+  visitDate?: string;
+  department?: string;
+  contactPerson?: string;
   contactTitle?: string;
-  outcomeSummary: string;
-  color: VisitStatusColor;
-  followUp: boolean;
+  outcomeSummary?: string;
+  color?: VisitStatusColor;
+  followUp?: boolean;
+  // 地理(必填,用于 city center lookup)
   provinceCode: string;
   cityName: string;
 }
 
 export interface UpdateVisitInput {
+  status?: VisitStatus;
+  parentPinId?: string | null;
+  title?: string | null;
+  plannedDate?: string | null;
   visitDate?: string;
   department?: string;
   contactPerson?: string;
