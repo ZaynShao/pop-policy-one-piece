@@ -44,7 +44,10 @@ export class PinsController {
 
   @Delete(':id')
   @HttpCode(204)
-  async softDelete(@Param('id') id: string): Promise<void> {
-    await this.service.softDelete(id);
+  async softDelete(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<void> {
+    await this.service.softDelete(id, user);
   }
 }

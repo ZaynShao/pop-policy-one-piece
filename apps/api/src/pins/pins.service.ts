@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -9,7 +10,21 @@ import { lookupCityCenter } from '../lib/geojson-cities';
 import { PinEntity } from './entities/pin.entity';
 import { CreatePinDto } from './dtos/create-pin.dto';
 import { UpdatePinDto } from './dtos/update-pin.dto';
-import type { PinStatus } from '@pop/shared-types';
+import {
+  UserRoleCode,
+  type AuthenticatedUser,
+  type PinStatus,
+} from '@pop/shared-types';
+
+/**
+ * Pin 删除白名单(PRD §5 权限矩阵简化版)
+ * V0.7+ CASL 真矩阵落地后,删除路由换成 @CheckPolicies(ability.can(Delete, Pin))
+ */
+const PIN_DELETE_ALLOWED_ROLES: ReadonlySet<UserRoleCode> = new Set([
+  UserRoleCode.SysAdmin,
+  UserRoleCode.Lead,
+  UserRoleCode.Pmo,
+]);
 
 /**
  * Pin 状态机合法切换 — PRD §4.3.1 + SPEC §3
@@ -107,8 +122,13 @@ export class PinsService {
    * 软删除 — TypeORM 设 deleted_at = now(),后续 find 默认滤掉
    * 关联的 visits.parent_pin_id / comments.parent_pin_id 不动
    * (留 audit trail,V0.7+ 回收站还原时关联自动恢复)
+   *
+   * 权限白名单:sys_admin / lead / pmo,其他角色抛 403
    */
-  async softDelete(id: string): Promise<void> {
+  async softDelete(id: string, currentUser: AuthenticatedUser): Promise<void> {
+    if (!PIN_DELETE_ALLOWED_ROLES.has(currentUser.roleCode)) {
+      throw new ForbiddenException('只有管理员/负责人/PMO 可以删除图钉');
+    }
     const pin = await this.findOne(id);
     await this.repo.softRemove(pin);
   }

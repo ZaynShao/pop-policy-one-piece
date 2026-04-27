@@ -20,11 +20,18 @@ import {
   ReloadOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Pin, PinStatus, UpdatePinInput } from '@pop/shared-types';
+import { UserRoleCode, type Pin, type PinStatus, type UpdatePinInput } from '@pop/shared-types';
 import { PinFormModal } from './PinFormModal';
 import { VisitFormModal } from './VisitFormModal';
 import { PinCommentBoard } from './PinCommentBoard';
+import { useAuthStore } from '@/stores/auth';
 import { authHeaders } from '@/lib/api';
+
+const PIN_DELETE_ALLOWED_ROLES: ReadonlySet<UserRoleCode> = new Set([
+  UserRoleCode.SysAdmin,
+  UserRoleCode.Lead,
+  UserRoleCode.Pmo,
+]);
 
 const { Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -83,6 +90,8 @@ async function deletePin(pinId: string): Promise<void> {
 
 export function PinDetailDrawer({ pinId, onClose }: Props) {
   const qc = useQueryClient();
+  const currentUser = useAuthStore((s) => s.user);
+  const canDelete = currentUser ? PIN_DELETE_ALLOWED_ROLES.has(currentUser.roleCode) : false;
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [deriveModalOpen, setDeriveModalOpen] = useState(false);
 
@@ -219,14 +228,16 @@ export function PinDetailDrawer({ pinId, onClose }: Props) {
               <Button icon={<EditOutlined />} onClick={() => setEditModalOpen(true)}>
                 编辑
               </Button>
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                loading={deleteMutation.isPending}
-                onClick={handleDelete}
-              >
-                删除
-              </Button>
+              {canDelete && (
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  loading={deleteMutation.isPending}
+                  onClick={handleDelete}
+                >
+                  删除
+                </Button>
+              )}
             </Space>
 
             {/* 详情展示 */}
