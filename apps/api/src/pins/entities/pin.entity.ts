@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   Index,
   JoinColumn,
@@ -88,4 +89,7 @@ export class PinEntity {
 
   @UpdateDateColumn({ type: 'timestamptz', name: 'updated_at' })
   updatedAt!: Date;
+
+  @DeleteDateColumn({ type: 'timestamptz', name: 'deleted_at' })
+  deletedAt!: Date | null;
 }

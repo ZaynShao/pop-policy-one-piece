@@ -102,4 +102,14 @@ export class PinsService {
 
     return this.repo.save(prev);
   }
+
+  /**
+   * 软删除 — TypeORM 设 deleted_at = now(),后续 find 默认滤掉
+   * 关联的 visits.parent_pin_id / comments.parent_pin_id 不动
+   * (留 audit trail,V0.7+ 回收站还原时关联自动恢复)
+   */
+  async softDelete(id: string): Promise<void> {
+    const pin = await this.findOne(id);
+    await this.repo.softRemove(pin);
+  }
 }

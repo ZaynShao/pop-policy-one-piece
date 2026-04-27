@@ -14,6 +14,7 @@ import {
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
+  DeleteOutlined,
   EditOutlined,
   PlusOutlined,
   ReloadOutlined,
@@ -69,6 +70,17 @@ async function patchStatus(
   }
 }
 
+async function deletePin(pinId: string): Promise<void> {
+  const r = await fetch(`/api/v1/pins/${pinId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({ message: 'delete fail' }));
+    throw new Error(err.message ?? 'delete fail');
+  }
+}
+
 export function PinDetailDrawer({ pinId, onClose }: Props) {
   const qc = useQueryClient();
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -92,6 +104,36 @@ export function PinDetailDrawer({ pinId, onClose }: Props) {
     },
     onError: (err) => message.error(`状态变更失败: ${(err as Error).message}`),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deletePin(pinId as string),
+    onSuccess: () => {
+      message.success('已删除');
+      qc.invalidateQueries({ queryKey: ['pins'] });
+      onClose();
+    },
+    onError: (err) => message.error(`删除失败: ${(err as Error).message}`),
+  });
+
+  const handleDelete = () => {
+    Modal.confirm({
+      title: '删除图钉',
+      content: (
+        <div>
+          <Paragraph type="secondary" style={{ marginBottom: 4 }}>
+            软删除:Pin 会从大盘和清单消失,关联的拜访记录保留(parentPinId 不动)。
+          </Paragraph>
+          <Paragraph type="warning" style={{ marginBottom: 0 }}>
+            如需还原,请联系管理员(V0.7 上回收站 UI)。
+          </Paragraph>
+        </div>
+      ),
+      okText: '确认删除',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: () => deleteMutation.mutateAsync(),
+    });
+  };
 
   const handleAbort = () => {
     let reason = '';
@@ -176,6 +218,14 @@ export function PinDetailDrawer({ pinId, onClose }: Props) {
               </Button>
               <Button icon={<EditOutlined />} onClick={() => setEditModalOpen(true)}>
                 编辑
+              </Button>
+              <Button
+                danger
+                icon={<DeleteOutlined />}
+                loading={deleteMutation.isPending}
+                onClick={handleDelete}
+              >
+                删除
               </Button>
             </Space>
 
