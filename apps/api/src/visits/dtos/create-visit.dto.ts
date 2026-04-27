@@ -5,45 +5,43 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
   MaxLength,
 } from 'class-validator';
 
 export class CreateVisitDto {
-  @IsDateString()
-  visitDate!: string;
+  // β.2.5/β.3 新增
+  @IsOptional()
+  @IsEnum(['planned', 'completed', 'cancelled'])
+  status?: 'planned' | 'completed' | 'cancelled';
 
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(128)
-  department!: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(64)
-  contactPerson!: string;
+  @IsOptional()
+  @IsUUID()
+  parentPinId?: string;
 
   @IsOptional()
   @IsString()
-  @MaxLength(64)
-  contactTitle?: string;
+  @MaxLength(100)
+  title?: string;
 
-  @IsString()
-  @IsNotEmpty()
-  outcomeSummary!: string;
+  @IsOptional()
+  @IsDateString()
+  plannedDate?: string;
 
-  @IsEnum(['red', 'yellow', 'green'])
-  color!: 'red' | 'yellow' | 'green';
+  // 业务字段(均改 optional,service 层按 status 校验必填)
+  @IsOptional() @IsDateString() visitDate?: string;
+  @IsOptional() @IsString() @MaxLength(128) department?: string;
+  @IsOptional() @IsString() @MaxLength(64) contactPerson?: string;
+  @IsOptional() @IsString() @MaxLength(64) contactTitle?: string;
+  @IsOptional() @IsString() outcomeSummary?: string;
 
-  @IsBoolean()
-  followUp!: boolean;
+  @IsOptional()
+  @IsEnum(['red', 'yellow', 'green', 'blue'])
+  color?: 'red' | 'yellow' | 'green' | 'blue';
 
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(6)
-  provinceCode!: string;
+  @IsOptional() @IsBoolean() followUp?: boolean;
 
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(64)
-  cityName!: string;
+  // 地理(必填,用于 city center lookup)
+  @IsString() @IsNotEmpty() @MaxLength(6) provinceCode!: string;
+  @IsString() @IsNotEmpty() @MaxLength(64) cityName!: string;
 }
