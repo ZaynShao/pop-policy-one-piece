@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { type AuthenticatedUser } from '@pop/shared-types';
 import { listAllProvincesCities } from '../lib/geojson-cities';
@@ -15,8 +15,11 @@ export class VisitsController {
   constructor(private readonly service: VisitsService) {}
 
   @Get()
-  async list() {
-    const data = await this.service.list();
+  async list(
+    @Query('status') status?: 'planned' | 'completed' | 'cancelled',
+    @Query('parentPinId') parentPinId?: string,
+  ) {
+    const data = await this.service.list({ status, parentPinId });
     return { data };
   }
 

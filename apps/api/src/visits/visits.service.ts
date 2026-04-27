@@ -27,8 +27,14 @@ export class VisitsService {
     private readonly dataSource: DataSource,
   ) {}
 
-  list(): Promise<VisitEntity[]> {
-    return this.repo.find({ order: { visitDate: 'DESC', createdAt: 'DESC' } });
+  list(filter?: { status?: VisitStatus; parentPinId?: string }): Promise<VisitEntity[]> {
+    const where: Record<string, unknown> = {};
+    if (filter?.status) where.status = filter.status;
+    if (filter?.parentPinId) where.parentPinId = filter.parentPinId;
+    return this.repo.find({
+      where: Object.keys(where).length > 0 ? where : undefined,
+      order: { visitDate: 'DESC', createdAt: 'DESC' },
+    });
   }
 
   async findOne(id: string): Promise<VisitEntity> {
