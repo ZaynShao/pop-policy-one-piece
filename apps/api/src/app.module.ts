@@ -11,6 +11,7 @@ import { RegionsModule } from './regions/regions.module';
 import { UsersModule } from './users/users.module';
 import { VisitsModule } from './visits/visits.module';
 import { PinsModule } from './pins/pins.module';
+import { CommentsModule } from './comments/comments.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { PinsModule } from './pins/pins.module';
     RegionsModule,
     VisitsModule,
     PinsModule,
+    CommentsModule,
   ],
   providers: [
     // 全局 JWT 守卫,@Public() 可跳过

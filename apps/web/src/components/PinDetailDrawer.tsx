@@ -14,13 +14,24 @@ import {
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
+  DeleteOutlined,
   EditOutlined,
+  PlusOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Pin, PinStatus, UpdatePinInput } from '@pop/shared-types';
+import { UserRoleCode, type Pin, type PinStatus, type UpdatePinInput } from '@pop/shared-types';
 import { PinFormModal } from './PinFormModal';
+import { VisitFormModal } from './VisitFormModal';
+import { PinCommentBoard } from './PinCommentBoard';
+import { useAuthStore } from '@/stores/auth';
 import { authHeaders } from '@/lib/api';
+
+const PIN_DELETE_ALLOWED_ROLES: ReadonlySet<UserRoleCode> = new Set([
+  UserRoleCode.SysAdmin,
+  UserRoleCode.Lead,
+  UserRoleCode.Pmo,
+]);
 
 const { Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -66,9 +77,23 @@ async function patchStatus(
   }
 }
 
+async function deletePin(pinId: string): Promise<void> {
+  const r = await fetch(`/api/v1/pins/${pinId}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({ message: 'delete fail' }));
+    throw new Error(err.message ?? 'delete fail');
+  }
+}
+
 export function PinDetailDrawer({ pinId, onClose }: Props) {
   const qc = useQueryClient();
+  const currentUser = useAuthStore((s) => s.user);
+  const canDelete = currentUser ? PIN_DELETE_ALLOWED_ROLES.has(currentUser.roleCode) : false;
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deriveModalOpen, setDeriveModalOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['pin', pinId],
@@ -88,6 +113,36 @@ export function PinDetailDrawer({ pinId, onClose }: Props) {
     },
     onError: (err) => message.error(`状态变更失败: ${(err as Error).message}`),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deletePin(pinId as string),
+    onSuccess: () => {
+      message.success('已删除');
+      qc.invalidateQueries({ queryKey: ['pins'] });
+      onClose();
+    },
+    onError: (err) => message.error(`删除失败: ${(err as Error).message}`),
+  });
+
+  const handleDelete = () => {
+    Modal.confirm({
+      title: '删除图钉',
+      content: (
+        <div>
+          <Paragraph type="secondary" style={{ marginBottom: 4 }}>
+            软删除:Pin 会从大盘和清单消失,关联的拜访记录保留(parentPinId 不动)。
+          </Paragraph>
+          <Paragraph type="warning" style={{ marginBottom: 0 }}>
+            如需还原,请联系管理员(V0.7 上回收站 UI)。
+          </Paragraph>
+        </div>
+      ),
+      okText: '确认删除',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: () => deleteMutation.mutateAsync(),
+    });
+  };
 
   const handleAbort = () => {
     let reason = '';
@@ -167,9 +222,22 @@ export function PinDetailDrawer({ pinId, onClose }: Props) {
                   重开
                 </Button>
               )}
+              <Button icon={<PlusOutlined />} onClick={() => setDeriveModalOpen(true)}>
+                派生计划点
+              </Button>
               <Button icon={<EditOutlined />} onClick={() => setEditModalOpen(true)}>
                 编辑
               </Button>
+              {canDelete && (
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  loading={deleteMutation.isPending}
+                  onClick={handleDelete}
+                >
+                  删除
+                </Button>
+              )}
             </Space>
 
             {/* 详情展示 */}
@@ -197,6 +265,8 @@ export function PinDetailDrawer({ pinId, onClose }: Props) {
                 </Descriptions.Item>
               )}
             </Descriptions>
+
+            <PinCommentBoard pinId={pin.id} />
           </>
         )}
       </Drawer>
@@ -206,6 +276,17 @@ export function PinDetailDrawer({ pinId, onClose }: Props) {
           open={editModalOpen}
           onClose={() => setEditModalOpen(false)}
           editing={pin}
+        />
+      )}
+
+      {pin && (
+        <VisitFormModal
+          open={deriveModalOpen}
+          onClose={() => setDeriveModalOpen(false)}
+          defaultStatus="planned"
+          presetParentPinId={pin.id}
+          presetProvinceCode={pin.provinceCode}
+          presetCityName={pin.cityName}
         />
       )}
     </>

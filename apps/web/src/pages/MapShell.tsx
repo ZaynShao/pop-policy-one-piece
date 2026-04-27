@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import { MapCanvas } from '@/components/MapCanvas';
 import { VisitDetailDrawer } from '@/components/VisitDetailDrawer';
+import { VisitFormModal } from '@/components/VisitFormModal';
 import { PinFormModal } from '@/components/PinFormModal';
 import { PinDetailDrawer } from '@/components/PinDetailDrawer';
 import { palette } from '@/tokens';
@@ -38,6 +39,7 @@ export function MapShell() {
   const [selectedVisitId, setSelectedVisitId] = useState<string | null>(null);
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [pinModalOpen, setPinModalOpen] = useState(false);
+  const [visitModalOpen, setVisitModalOpen] = useState(false);
 
   return (
     <div
@@ -130,7 +132,7 @@ export function MapShell() {
             shape="circle"
             size="large"
             icon={<PlusOutlined />}
-            onClick={() => setPinModalOpen(true)}
+            onClick={() => setVisitModalOpen(true)}
             aria-label="新增蓝点"
           />
         </Tooltip>
@@ -152,7 +154,14 @@ export function MapShell() {
         onClose={() => setSelectedVisitId(null)}
       />
 
-      {/* β.2:Pin 创建 Modal + 详情 Drawer(➕📌 触发 / 散点 click 触发) */}
+      {/* β.3:➕ 新增蓝点(化身 planned visit · 默认计划中) */}
+      <VisitFormModal
+        open={visitModalOpen}
+        onClose={() => setVisitModalOpen(false)}
+        defaultStatus="planned"
+      />
+
+      {/* β.2:📌 Pin 创建 Modal + 详情 Drawer(散点 click 触发) */}
       <PinFormModal
         open={pinModalOpen}
         onClose={() => setPinModalOpen(false)}
