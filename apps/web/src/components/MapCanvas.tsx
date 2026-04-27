@@ -1,12 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
-import { Button, Space, Spin } from 'antd';
+import { Button, Slider, Space, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import {
+  loadAllCities,
   loadChinaMap,
   loadProvinceMap,
   provinceNameToCode,
+  type GeoJsonFC,
 } from '@/lib/china-map';
+import {
+  generateScatterPoints,
+  STATUS_LEGEND,
+  type ScatterDatum,
+  type RegionSeed,
+} from '@/lib/mock-heatmap';
 import { palette } from '@/tokens';
 
 interface Props {
@@ -26,6 +34,26 @@ interface LoadedInfo {
   key: string;
   /** 当前显示名(全国 = "中国",单省 = 省名) */
   name: string;
+  /** 当前层 mock 散点(c2 v3 喂 series.scatter,每点带状态色) */
+  scatter: ScatterDatum[];
+}
+
+function extractSeeds(geo: GeoJsonFC): RegionSeed[] {
+  return featuresToSeeds(geo.features);
+}
+
+function featuresToSeeds(features: GeoJsonFC['features']): RegionSeed[] {
+  const seeds: RegionSeed[] = [];
+  for (const f of features) {
+    const c = f.properties.center ?? f.properties.centroid;
+    if (!c) continue;
+    seeds.push({
+      adcode: String(f.properties.adcode),
+      center: c,
+      provinceCode: f.properties.parent ? String(f.properties.parent.adcode) : undefined,
+    });
+  }
+  return seeds;
 }
 
 /**
@@ -43,22 +71,46 @@ interface LoadedInfo {
  * - 真热力数据
  * - 多层级联(省 → 市 → 区)
  */
+const ZOOM_MIN = 0.6;
+const ZOOM_MAX = 3;
+const ZOOM_DEFAULT = 1.2;
+
 export function MapCanvas({
   provinceCode,
   onProvinceChange,
   onRegionClick,
 }: Props) {
   const [loaded, setLoaded] = useState<LoadedInfo | null>(null);
+  const [zoom, setZoom] = useState<number>(ZOOM_DEFAULT);
 
   useEffect(() => {
     let cancelled = false;
     setLoaded(null);
-    const task = provinceCode
+    setZoom(ZOOM_DEFAULT);
+    // c2 数据生成参数:
+    // - keepRate 0.5:dropout 一半(模拟初期数据稀疏)
+    // - maxBluePerProvince 2:每省蓝点最多 2 个(业务直觉)
+    // - 全国级:每市 1 点 radius 0;省下钻:每市 5 点 radius 0.15°
+    const SCATTER_OPTS_COMMON = { keepRate: 0.5, maxBluePerProvince: 2 };
+    const task: Promise<LoadedInfo> = provinceCode
       ? loadProvinceMap(provinceCode).then((geo) => ({
           key: `province_${provinceCode}`,
           name: geo.features[0]?.properties?.name ?? '省份',
+          scatter: generateScatterPoints(extractSeeds(geo), {
+            ...SCATTER_OPTS_COMMON,
+            pointsPerRegion: 5,
+            radius: 0.15,
+          }),
         }))
-      : loadChinaMap().then(() => ({ key: 'china', name: '中国' }));
+      : Promise.all([loadChinaMap(), loadAllCities()]).then(([_, cities]) => ({
+          key: 'china',
+          name: '中国',
+          scatter: generateScatterPoints(featuresToSeeds(cities), {
+            ...SCATTER_OPTS_COMMON,
+            pointsPerRegion: 1,
+            radius: 0,
+          }),
+        }));
     task
       .then((info) => {
         if (!cancelled) setLoaded(info);
@@ -78,6 +130,9 @@ export function MapCanvas({
       tooltip: { trigger: 'item', formatter: (p: { name?: string }) => p.name ?? '' },
       geo: {
         map: loaded.key,
+        // c2 v3 v2:zoom 由右侧 Slider 控件驱动(React state),
+        // 禁用 ECharts 内置 roam(用户拍 · 不要滚轮缩放)
+        zoom,
         roam: false,
         label: {
           show: !provinceCode,
@@ -106,8 +161,26 @@ export function MapCanvas({
         },
         select: { disabled: true },
       },
+      series: [
+        {
+          // c2 scatter 离散散点 + 每点状态色
+          // 对齐 PRD B1(密度通过散布表达)+ B2(红/黄/绿)+ B3(蓝点)
+          // symbolSize 全国 5(星星点点)/ 省下钻 10(密集态)
+          type: 'scatter',
+          coordinateSystem: 'geo',
+          geoIndex: 0,
+          symbolSize: provinceCode ? 10 : 5,
+          itemStyle: {
+            shadowBlur: 6,
+            shadowColor: 'rgba(0, 0, 0, 0.4)',
+            opacity: 0.92,
+          },
+          data: loaded.scatter,
+          z: 5,
+        },
+      ],
     };
-  }, [loaded, provinceCode]);
+  }, [loaded, provinceCode, zoom]);
 
   const onEvents = {
     click: (params: { componentType?: string; name?: string }) => {
@@ -200,6 +273,94 @@ export function MapCanvas({
             {loaded.name}
           </span>
         </Space>
+      )}
+
+      {/* 四色 legend(c2 v3 打磨)— 画布底部居中,贴近地图主体;
+          放大字号/圆点(用户拍:离地图近 + 大一点) */}
+      {loaded && (
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            bottom: 24,
+            transform: 'translateX(-50%)',
+            zIndex: 5,
+            padding: '12px 24px',
+            background: palette.bgPanel,
+            border: `1px solid ${palette.border}`,
+            borderRadius: 10,
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            gap: 28,
+            alignItems: 'center',
+            fontSize: 14,
+            color: palette.textBase,
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.35)',
+          }}
+        >
+          {STATUS_LEGEND.map((s) => (
+            <span key={s.status} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
+                style={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  background: s.color,
+                  boxShadow: `0 0 6px ${s.color}`,
+                }}
+              />
+              {s.label}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* 右侧 zoom slider(c2 v3 v2)— 用户拍 · 可拖拽控件,
+          替代滚轮缩放。位置避开右下 ➕📌(在 right:24 bottom:24 起占 ~92h) */}
+      {loaded && (
+        <div
+          style={{
+            position: 'absolute',
+            right: 28,
+            top: 80,
+            zIndex: 6,
+            padding: '12px 8px',
+            background: palette.bgPanel,
+            border: `1px solid ${palette.border}`,
+            borderRadius: 10,
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 8,
+            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.35)',
+          }}
+        >
+          <span style={{ fontSize: 11, color: palette.textMuted }}>
+            {Math.round(zoom * 100)}%
+          </span>
+          <div style={{ height: 220 }}>
+            <Slider
+              vertical
+              min={ZOOM_MIN}
+              max={ZOOM_MAX}
+              step={0.1}
+              value={zoom}
+              onChange={(v) => setZoom(typeof v === 'number' ? v : ZOOM_DEFAULT)}
+              tooltip={{ formatter: (v) => `${Math.round((v ?? 1) * 100)}%` }}
+            />
+          </div>
+          <Button
+            type="text"
+            size="small"
+            onClick={() => setZoom(ZOOM_DEFAULT)}
+            style={{ fontSize: 11, color: palette.textMuted, padding: '0 4px', height: 22 }}
+          >
+            复位
+          </Button>
+        </div>
       )}
 
       {loaded && option && (
