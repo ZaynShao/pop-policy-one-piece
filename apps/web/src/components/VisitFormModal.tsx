@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { Form, Input, Modal, Select, DatePicker, Radio, Switch, message } from 'antd';
+import { Form, Input, Modal, Select, DatePicker, Radio, Switch, Segmented, message } from 'antd';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import type {
@@ -16,19 +16,25 @@ const { TextArea } = Input;
 interface Props {
   open: boolean;
   onClose: () => void;
-  /** 编辑场景:传入现有 Visit;录入场景:undefined */
   editing?: Visit;
+  defaultStatus?: 'planned' | 'completed';
+  presetParentPinId?: string;
+  presetProvinceCode?: string;
+  presetCityName?: string;
 }
 
 interface FormValues {
-  visitDate: dayjs.Dayjs;
+  status: 'planned' | 'completed';
+  title?: string;
+  plannedDate?: dayjs.Dayjs;
+  visitDate?: dayjs.Dayjs;
   provinceCode: string;
   cityName: string;
-  department: string;
-  contactPerson: string;
-  contactTitle: string;
-  outcomeSummary: string;
-  color: VisitStatusColor;
+  department?: string;
+  contactPerson?: string;
+  contactTitle?: string;
+  outcomeSummary?: string;
+  color?: VisitStatusColor;
   followUp: boolean;
 }
 
@@ -38,7 +44,15 @@ async function fetchCities(): Promise<CityListResponse> {
   return r.json();
 }
 
-export function VisitFormModal({ open, onClose, editing }: Props) {
+export function VisitFormModal({
+  open,
+  onClose,
+  editing,
+  defaultStatus,
+  presetParentPinId,
+  presetProvinceCode,
+  presetCityName,
+}: Props) {
   const [form] = Form.useForm<FormValues>();
   const qc = useQueryClient();
 
@@ -54,67 +68,83 @@ export function VisitFormModal({ open, onClose, editing }: Props) {
   );
 
   const selectedProvince = Form.useWatch('provinceCode', form);
+  const watchedStatus = Form.useWatch('status', form) ?? 'completed';
+
   const cityOptions = useMemo(() => {
     const p = cityList?.data.find((x) => x.provinceCode === selectedProvince);
     return (p?.cities ?? []).map((c) => ({ label: c.name, value: c.name }));
   }, [cityList, selectedProvince]);
 
   useEffect(() => {
-    if (open && editing) {
+    if (!open) return;
+    if (editing) {
       form.setFieldsValue({
-        visitDate: dayjs(editing.visitDate),
+        status: editing.status === 'cancelled' ? 'planned' : editing.status,
+        title: editing.title ?? undefined,
+        plannedDate: editing.plannedDate ? dayjs(editing.plannedDate) : undefined,
+        visitDate: editing.visitDate ? dayjs(editing.visitDate) : undefined,
         provinceCode: editing.provinceCode,
         cityName: editing.cityName,
-        department: editing.department,
-        contactPerson: editing.contactPerson,
+        department: editing.department ?? undefined,
+        contactPerson: editing.contactPerson ?? undefined,
         contactTitle: editing.contactTitle ?? '',
-        outcomeSummary: editing.outcomeSummary,
-        color: editing.color,
+        outcomeSummary: editing.outcomeSummary ?? undefined,
+        color: editing.color === 'blue' ? undefined : editing.color ?? undefined,
         followUp: editing.followUp,
       });
-    } else if (open) {
+    } else {
       form.resetFields();
       form.setFieldsValue({
+        status: defaultStatus ?? 'completed',
+        provinceCode: presetProvinceCode,
+        cityName: presetCityName,
         visitDate: dayjs(),
         color: 'green',
         followUp: false,
       });
     }
-  }, [open, editing, form]);
+  }, [open, editing, defaultStatus, presetProvinceCode, presetCityName, form]);
 
   const mutation = useMutation({
     mutationFn: async (values: FormValues) => {
       const headers = { 'Content-Type': 'application/json', ...authHeaders() };
+      const isPlanned = values.status === 'planned';
+
+      const payload: CreateVisitInput | UpdateVisitInput = {
+        status: values.status,
+        title: isPlanned ? values.title : undefined,
+        plannedDate: isPlanned ? values.plannedDate?.format('YYYY-MM-DD') : undefined,
+        visitDate: !isPlanned ? values.visitDate?.format('YYYY-MM-DD') : undefined,
+        department: !isPlanned ? values.department : undefined,
+        contactPerson: !isPlanned ? values.contactPerson : undefined,
+        contactTitle: !isPlanned ? values.contactTitle || undefined : undefined,
+        outcomeSummary: !isPlanned ? values.outcomeSummary : undefined,
+        color: !isPlanned ? values.color : undefined,
+        followUp: !isPlanned ? values.followUp : undefined,
+        ...(presetParentPinId && !editing ? { parentPinId: presetParentPinId } : {}),
+      };
+
       if (editing) {
-        const body: UpdateVisitInput = {
-          visitDate: values.visitDate.format('YYYY-MM-DD'),
-          department: values.department,
-          contactPerson: values.contactPerson,
-          contactTitle: values.contactTitle || null,
-          outcomeSummary: values.outcomeSummary,
-          color: values.color,
-          followUp: values.followUp,
-        };
         const r = await fetch(`/api/v1/visits/${editing.id}`, {
-          method: 'PUT', headers, body: JSON.stringify(body),
+          method: 'PUT', headers, body: JSON.stringify(payload),
         });
-        if (!r.ok) throw new Error('update fail');
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.message ?? 'update fail');
+        }
       } else {
-        const body: CreateVisitInput = {
-          visitDate: values.visitDate.format('YYYY-MM-DD'),
-          department: values.department,
-          contactPerson: values.contactPerson,
-          contactTitle: values.contactTitle || undefined,
-          outcomeSummary: values.outcomeSummary,
-          color: values.color,
-          followUp: values.followUp,
+        const createBody: CreateVisitInput = {
+          ...payload,
           provinceCode: values.provinceCode,
           cityName: values.cityName,
-        };
+        } as CreateVisitInput;
         const r = await fetch(`/api/v1/visits`, {
-          method: 'POST', headers, body: JSON.stringify(body),
+          method: 'POST', headers, body: JSON.stringify(createBody),
         });
-        if (!r.ok) throw new Error('create fail');
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.message ?? 'create fail');
+        }
       }
     },
     onSuccess: () => {
@@ -130,7 +160,7 @@ export function VisitFormModal({ open, onClose, editing }: Props) {
   return (
     <Modal
       open={open}
-      title={editing ? '编辑拜访' : '新建拜访'}
+      title={editing ? '编辑拜访' : '新建计划/拜访'}
       onCancel={onClose}
       onOk={() => form.submit()}
       okText="保存"
@@ -140,57 +170,76 @@ export function VisitFormModal({ open, onClose, editing }: Props) {
       destroyOnClose
     >
       <Form form={form} layout="vertical" onFinish={(v) => mutation.mutate(v)}>
-        <Form.Item label="拜访日期" name="visitDate" rules={[{ required: true }]}>
-          <DatePicker style={{ width: '100%' }} />
+        <Form.Item label="类型" name="status" rules={[{ required: true }]}>
+          <Segmented
+            options={[
+              { label: '○ 计划中', value: 'planned' },
+              { label: '● 已拜访', value: 'completed' },
+            ]}
+            block
+            disabled={!!editing}
+          />
         </Form.Item>
+
+        {watchedStatus === 'planned' && (
+          <>
+            <Form.Item label="标题" name="title" rules={[{ required: true, max: 100 }]}>
+              <Input maxLength={100} placeholder="比如:拜访中芯成都厂" />
+            </Form.Item>
+            <Form.Item label="计划日期" name="plannedDate">
+              <DatePicker style={{ width: '100%' }} placeholder="可选,如:2026-05-15" />
+            </Form.Item>
+          </>
+        )}
+
+        {watchedStatus === 'completed' && (
+          <>
+            <Form.Item label="拜访日期" name="visitDate" rules={[{ required: true }]}>
+              <DatePicker style={{ width: '100%' }} />
+            </Form.Item>
+            <Form.Item label="对接部门" name="department" rules={[{ required: true, max: 128 }]}>
+              <Input maxLength={128} />
+            </Form.Item>
+            <Form.Item label="对接人" name="contactPerson" rules={[{ required: true, max: 64 }]}>
+              <Input maxLength={64} />
+            </Form.Item>
+            <Form.Item label="对接人职务" name="contactTitle">
+              <Input maxLength={64} placeholder="可选" />
+            </Form.Item>
+            <Form.Item label="产出描述" name="outcomeSummary" rules={[{ required: true }]}>
+              <TextArea rows={3} />
+            </Form.Item>
+            <Form.Item label="颜色" name="color" rules={[{ required: true }]}>
+              <Radio.Group>
+                <Radio value="green">绿(常规)</Radio>
+                <Radio value="yellow">黄(层级提升)</Radio>
+                <Radio value="red">红(紧急)</Radio>
+              </Radio.Group>
+            </Form.Item>
+            <Form.Item label="后续跟进" name="followUp" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+          </>
+        )}
 
         <Form.Item label="省" name="provinceCode" rules={[{ required: true }]}>
           <Select
             options={provinceOptions}
-            disabled={!!editing}
+            disabled={!!editing || !!presetProvinceCode}
             onChange={() => form.setFieldsValue({ cityName: undefined as unknown as string })}
             showSearch
             optionFilterProp="label"
             placeholder="选择省级"
           />
         </Form.Item>
-
         <Form.Item label="市" name="cityName" rules={[{ required: true }]}>
           <Select
             options={cityOptions}
-            disabled={!!editing || !selectedProvince}
+            disabled={!!editing || !!presetCityName || !selectedProvince}
             showSearch
             optionFilterProp="label"
             placeholder="选择市级"
           />
-        </Form.Item>
-
-        <Form.Item label="对接部门" name="department" rules={[{ required: true, max: 128 }]}>
-          <Input maxLength={128} />
-        </Form.Item>
-
-        <Form.Item label="对接人" name="contactPerson" rules={[{ required: true, max: 64 }]}>
-          <Input maxLength={64} />
-        </Form.Item>
-
-        <Form.Item label="对接人职务" name="contactTitle">
-          <Input maxLength={64} placeholder="可选" />
-        </Form.Item>
-
-        <Form.Item label="产出描述" name="outcomeSummary" rules={[{ required: true }]}>
-          <TextArea rows={3} />
-        </Form.Item>
-
-        <Form.Item label="颜色" name="color" rules={[{ required: true }]}>
-          <Radio.Group>
-            <Radio value="green">绿(常规)</Radio>
-            <Radio value="yellow">黄(层级提升)</Radio>
-            <Radio value="red">红(紧急)</Radio>
-          </Radio.Group>
-        </Form.Item>
-
-        <Form.Item label="后续跟进" name="followUp" valuePropName="checked">
-          <Switch />
         </Form.Item>
       </Form>
     </Modal>
