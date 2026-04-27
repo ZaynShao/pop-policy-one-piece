@@ -38,15 +38,21 @@ const ZOOM_MIN = 0.6;
 const ZOOM_MAX = 3;
 const ZOOM_DEFAULT = 1.2;
 
-const COLOR_HEX: Record<Visit['color'], string> = {
+const COLOR_HEX: Record<'red' | 'yellow' | 'green', string> = {
   red: palette.visit.red,
   yellow: palette.visit.yellow,
   green: palette.visit.green,
 };
-const COLOR_LABEL: Record<Visit['color'], string> = {
+const COLOR_LABEL: Record<'red' | 'yellow' | 'green', string> = {
   red: '紧急',
   yellow: '层级提升',
   green: '常规',
+};
+
+const visitColorByRow = (v: Visit): string => {
+  if (v.status === 'planned') return palette.visit.blue;
+  if (v.status === 'cancelled') return 'rgba(180, 180, 180, 0.4)';
+  return v.color ? COLOR_HEX[v.color as 'red' | 'yellow' | 'green'] : palette.visit.green;
 };
 
 const STATUS_LEGEND = [
@@ -122,8 +128,8 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
       .filter((v) => !provinceCode || v.provinceCode === provinceCode)
       .map((v) => ({
         value: [v.lng, v.lat, 1],
-        itemStyle: { color: COLOR_HEX[v.color] },
-        name: `${v.cityName} · ${v.visitDate} · ${COLOR_LABEL[v.color]}`,
+        itemStyle: { color: visitColorByRow(v) },
+        name: `${v.cityName} · ${v.visitDate} · ${COLOR_LABEL[(v.color ?? 'green') as 'red' | 'yellow' | 'green']}`,
         visitId: v.id,
       })),
     [visits, provinceCode],
