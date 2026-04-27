@@ -1,10 +1,12 @@
 import { Test } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { VisitsService } from '../visits.service';
 import { VisitEntity } from '../entities/visit.entity';
 import { PinEntity } from '../../pins/entities/pin.entity';
 import { CommentEntity } from '../../comments/entities/comment.entity';
+import { UserEntity } from '../../users/entities/user.entity';
 
 // Mock lookupCityCenter so tests don't depend on GeoJSON file loading
 jest.mock('../../lib/geojson-cities', () => ({
@@ -20,6 +22,17 @@ const mockRepo = () => ({
   find: jest.fn(),
 });
 
+const mockDataSource = () => ({
+  transaction: jest.fn(async (cb: (manager: any) => Promise<any>) => {
+    const manager = {
+      save: jest.fn((entity: any, data: any) =>
+        Promise.resolve({ ...data, id: data.id ?? 'mock-uuid' }),
+      ),
+    };
+    return cb(manager);
+  }),
+});
+
 describe('VisitsService.create', () => {
   let svc: VisitsService;
   let pinsRepo: any;
@@ -28,6 +41,7 @@ describe('VisitsService.create', () => {
     const visitsRepo = mockRepo();
     pinsRepo = mockRepo();
     const commentsRepo = mockRepo();
+    const usersRepo = mockRepo();
 
     const module = await Test.createTestingModule({
       providers: [
@@ -35,6 +49,8 @@ describe('VisitsService.create', () => {
         { provide: getRepositoryToken(VisitEntity), useValue: visitsRepo },
         { provide: getRepositoryToken(PinEntity), useValue: pinsRepo },
         { provide: getRepositoryToken(CommentEntity), useValue: commentsRepo },
+        { provide: getRepositoryToken(UserEntity), useValue: usersRepo },
+        { provide: DataSource, useValue: mockDataSource() },
       ],
     }).compile();
 
@@ -102,11 +118,15 @@ describe('VisitsService.create', () => {
 describe('VisitsService.update state machine', () => {
   let svc: VisitsService;
   let visitsRepo: any;
+  let usersRepo: any;
+  let ds: ReturnType<typeof mockDataSource>;
 
   beforeEach(async () => {
     visitsRepo = mockRepo();
     const pinsRepo = mockRepo();
     const commentsRepo = mockRepo();
+    usersRepo = mockRepo();
+    ds = mockDataSource();
 
     const module = await Test.createTestingModule({
       providers: [
@@ -114,6 +134,8 @@ describe('VisitsService.update state machine', () => {
         { provide: getRepositoryToken(VisitEntity), useValue: visitsRepo },
         { provide: getRepositoryToken(PinEntity), useValue: pinsRepo },
         { provide: getRepositoryToken(CommentEntity), useValue: commentsRepo },
+        { provide: getRepositoryToken(UserEntity), useValue: usersRepo },
+        { provide: DataSource, useValue: ds },
       ],
     }).compile();
 
@@ -191,5 +213,43 @@ describe('VisitsService.update state machine', () => {
     await expect(
       svc.update('v1', { outcomeSummary: 'changed' }, 'u1'),
     ).rejects.toThrow(/已完成拜访只允许改 visitColor/);
+  });
+
+  it('auto-creates comment when planned → completed with parentPinId', async () => {
+    const visit = plannedVisit({ parentPinId: 'pin-1', title: 'T6 auto comment' });
+    visitsRepo.findOne.mockResolvedValue(visit);
+    usersRepo.findOne.mockResolvedValue({ id: 'u1', displayName: '系统管理员', username: 'sysadmin' });
+
+    const result = await svc.update('v1', {
+      status: 'completed',
+      visitDate: '2026-04-27',
+      department: '中芯成都',
+      contactPerson: '张工',
+      contactTitle: '副总',
+      color: 'yellow',
+      outcomeSummary: '希望补贴翻倍',
+    }, 'u1');
+
+    expect(result.status).toBe('completed');
+    expect(ds.transaction).toHaveBeenCalledTimes(1);
+
+    // Verify manager.save was called twice (visit + comment)
+    const managerSaveCalls = (ds.transaction as jest.Mock).mock.calls;
+    expect(managerSaveCalls.length).toBe(1);
+  });
+
+  it('does NOT create comment when planned → completed without parentPinId', async () => {
+    const visit = plannedVisit({ parentPinId: null });
+    visitsRepo.findOne.mockResolvedValue(visit);
+
+    await svc.update('v1', {
+      status: 'completed',
+      visitDate: '2026-04-27',
+      contactPerson: '张工',
+      color: 'green',
+    }, 'u1');
+
+    expect(ds.transaction).not.toHaveBeenCalled();
+    expect(visitsRepo.save).toHaveBeenCalledTimes(1);
   });
 });

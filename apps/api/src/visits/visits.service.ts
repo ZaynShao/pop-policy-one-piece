@@ -1,12 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { lookupCityCenter } from '../lib/geojson-cities';
 import { VisitEntity } from './entities/visit.entity';
 import { PinEntity } from '../pins/entities/pin.entity';
 import { CommentEntity } from '../comments/entities/comment.entity';
+import { UserEntity } from '../users/entities/user.entity';
 import { CreateVisitDto } from './dtos/create-visit.dto';
 import { UpdateVisitDto } from './dtos/update-visit.dto';
+import { renderAutoComment } from './comment-template';
 import type { VisitStatus } from '@pop/shared-types';
 
 const ALLOWED_TRANSITIONS: Record<VisitStatus, VisitStatus[]> = {
@@ -21,6 +23,8 @@ export class VisitsService {
     @InjectRepository(VisitEntity) private readonly repo: Repository<VisitEntity>,
     @InjectRepository(PinEntity) private readonly pinsRepo: Repository<PinEntity>,
     @InjectRepository(CommentEntity) private readonly commentsRepo: Repository<CommentEntity>,
+    @InjectRepository(UserEntity) private readonly usersRepo: Repository<UserEntity>,
+    private readonly dataSource: DataSource,
   ) {}
 
   list(): Promise<VisitEntity[]> {
@@ -85,6 +89,7 @@ export class VisitsService {
 
   async update(id: string, dto: UpdateVisitDto, currentUserId: string): Promise<VisitEntity> {
     const prev = await this.findOne(id);
+    const prevStatus = prev.status;
     const newStatus = (dto.status ?? prev.status) as VisitStatus;
 
     // 状态切换校验
@@ -131,6 +136,42 @@ export class VisitsService {
     if (dto.color !== undefined) prev.color = dto.color;
     if (dto.followUp !== undefined) prev.followUp = dto.followUp;
 
-    return this.repo.save(prev);
+    // β.2.5/β.3 触发条件:planned → completed + parentPinId NOT NULL
+    const triggerAutoComment = (
+      prevStatus === 'planned' &&
+      newStatus === 'completed' &&
+      prev.parentPinId !== null
+    );
+
+    if (!triggerAutoComment) {
+      return this.repo.save(prev);
+    }
+
+    // 拿 visitor displayName(fallback username)
+    const visitor = await this.usersRepo.findOne({ where: { id: prev.visitorId } });
+    const visitorName = visitor?.displayName || visitor?.username || '(未知拜访者)';
+
+    // 事务原子:UPDATE visits + INSERT comment
+    return this.dataSource.transaction(async (manager) => {
+      const saved = await manager.save(VisitEntity, prev);
+      const commentBody = renderAutoComment({
+        title: saved.title,
+        visitDate: saved.visitDate,
+        visitorName,
+        department: saved.department,
+        contactPerson: saved.contactPerson,
+        contactTitle: saved.contactTitle,
+        color: saved.color,
+        outcomeSummary: saved.outcomeSummary,
+      });
+      await manager.save(CommentEntity, {
+        parentPinId: saved.parentPinId!,
+        sourceType: 'auto_from_visit',
+        body: commentBody,
+        linkedVisitId: saved.id,
+        createdBy: prev.visitorId,
+      });
+      return saved;
+    });
   }
 }
