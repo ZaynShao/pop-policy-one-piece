@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 import { Button, Slider, Space, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
-import type { Visit, Pin, PinStatus, ThemeCoverage, ThemeTemplate } from '@pop/shared-types';
+import type { Visit, Pin, PinStatus, ThemeCoverage, ThemeTemplate, UserRoleCode } from '@pop/shared-types';
 import {
   loadChinaMap,
   loadProvinceMap,
@@ -46,6 +46,14 @@ interface Props {
   onRegionSelect?: (code: string | null) => void;
   /** chart 实例就绪回调,给抽屉调 dispatchAction(用 unknown 避免 echarts type 漏出去)*/
   onChartReady?: (chart: unknown) => void;
+  /** 属地大盘左面板筛选:时间窗口(YYYY-MM-DD start/end)— null = 不过滤 */
+  localDateRange?: [string | null, string | null] | null;
+  /** 属地大盘左面板筛选:province codes 多选(空数组 = 不过滤 = 全部) */
+  localProvinceCodes?: string[];
+  /** 属地大盘左面板筛选:角色多选 — 反查 visit.visitorId / pin.createdBy 的 role */
+  localRoleCodes?: UserRoleCode[];
+  /** userId → roleCode 映射,角色筛选必需(MapShell 拉 /users 后传下来) */
+  userRoleMap?: Record<string, UserRoleCode | null>;
 }
 
 interface LoadedInfo {
@@ -107,7 +115,22 @@ async function fetchPins(): Promise<{ data: Pin[] }> {
   return r.json();
 }
 
-export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVisitClick, onPinClick, themeOverlays, showLocalLayers = true, selectedRegionCode = null, onRegionSelect, onChartReady }: Props) {
+export function MapCanvas({
+  provinceCode,
+  onProvinceChange,
+  onRegionClick,
+  onVisitClick,
+  onPinClick,
+  themeOverlays,
+  showLocalLayers = true,
+  selectedRegionCode = null,
+  onRegionSelect,
+  onChartReady,
+  localDateRange = null,
+  localProvinceCodes = [],
+  localRoleCodes = [],
+  userRoleMap = {},
+}: Props) {
   const [loaded, setLoaded] = useState<LoadedInfo | null>(null);
   const [zoom, setZoom] = useState<number>(ZOOM_DEFAULT);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -186,21 +209,58 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
     return () => { cancelled = true; };
   }, [provinceCode]);
 
-  const scatterData = useMemo(() =>
-    visits
-      .filter((v) => !provinceCode || v.provinceCode === provinceCode)
+  // 属地大盘 visit 筛选 — 时间(visitDate / plannedDate)/ 区划(provinceCode)/ 角色(visitor.roleCode)
+  // 没传或空数组 = 不过滤
+  const scatterData = useMemo(() => {
+    const [from, to] = localDateRange ?? [null, null];
+    return visits
+      .filter((v) => {
+        // 1. 下钻省过滤(沿用旧逻辑)
+        if (provinceCode && v.provinceCode !== provinceCode) return false;
+        // 2. 区划筛选(空 = 全部)
+        if (localProvinceCodes.length > 0 && !localProvinceCodes.includes(v.provinceCode)) return false;
+        // 3. 角色筛选(空 = 全部)
+        if (localRoleCodes.length > 0) {
+          const role = userRoleMap[v.visitorId];
+          if (!role || !localRoleCodes.includes(role)) return false;
+        }
+        // 4. 时间窗口 — Visit 用 visitDate(completed)或 plannedDate(planned)
+        if (from || to) {
+          const dateStr = v.visitDate ?? v.plannedDate;
+          if (!dateStr) return false; // 没日期的(罕见)排除
+          if (from && dateStr < from) return false;
+          if (to && dateStr > to) return false;
+        }
+        return true;
+      })
       .map((v) => ({
         value: [v.lng, v.lat, 1],
         itemStyle: { color: visitColorByRow(v) },
         name: `${v.cityName} · ${v.visitDate} · ${COLOR_LABEL[(v.color ?? 'green') as 'red' | 'yellow' | 'green']}`,
         visitId: v.id,
-      })),
-    [visits, provinceCode],
-  );
+      }));
+  }, [visits, provinceCode, localDateRange, localProvinceCodes, localRoleCodes, userRoleMap]);
 
-  const pinsScatterData = useMemo(() =>
-    pins
-      .filter((p) => !provinceCode || p.provinceCode === provinceCode)
+  // Pin 筛选 — 同样 3 维(创建人 role / provinceCode / createdAt)
+  const pinsScatterData = useMemo(() => {
+    const [from, to] = localDateRange ?? [null, null];
+    return pins
+      .filter((p) => {
+        if (provinceCode && p.provinceCode !== provinceCode) return false;
+        if (localProvinceCodes.length > 0 && !localProvinceCodes.includes(p.provinceCode)) return false;
+        if (localRoleCodes.length > 0) {
+          const role = userRoleMap[p.createdBy];
+          if (!role || !localRoleCodes.includes(role)) return false;
+        }
+        if (from || to) {
+          // Pin 用 createdAt(YYYY-MM-DDTHH:mm:ss...) → 截前 10 位 比对
+          const dateStr = p.createdAt?.slice(0, 10);
+          if (!dateStr) return false;
+          if (from && dateStr < from) return false;
+          if (to && dateStr > to) return false;
+        }
+        return true;
+      })
       .map((p) => ({
         value: [p.lng, p.lat, 1],
         itemStyle: {
@@ -211,9 +271,8 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
         },
         name: p.title,
         pinId: p.id,
-      })),
-    [pins, provinceCode],
-  );
+      }));
+  }, [pins, provinceCode, localDateRange, localProvinceCodes, localRoleCodes, userRoleMap]);
 
   /**
    * 涂层渲染 — 拆 2 路:
