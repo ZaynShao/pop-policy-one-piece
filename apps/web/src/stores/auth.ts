@@ -13,6 +13,7 @@ interface AuthState {
   ) => void;
   logout: () => void;
   isAuthenticated: () => boolean;
+  updateUser: (patch: Partial<{ displayName: string; email: string }>) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -30,6 +31,11 @@ export const useAuthStore = create<AuthState>()(
         // 本地也检查一下 exp(JWT 本身服务器会查,这只是提前踢出)
         if (expiresAt && expiresAt * 1000 < Date.now()) return false;
         return true;
+      },
+      updateUser: (patch) => {
+        const cur = get().user;
+        if (!cur) return;
+        set({ user: { ...cur, ...patch } });
       },
     }),
     {
