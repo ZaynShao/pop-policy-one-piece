@@ -12,7 +12,7 @@ import {
 import { authHeaders } from '@/lib/api';
 import { palette } from '@/tokens';
 import { regionCodeToLngLat } from '@/lib/region-centers';
-import { regionCodeToName } from '@/lib/region-names';
+import { cityNameToCode, regionCodeToName } from '@/lib/region-names';
 
 export interface ThemeOverlay {
   themeId: string;
@@ -316,11 +316,17 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
       ...r,
       itemStyle: { ...(r.itemStyle as object) },
     }));
+    // 「浮起」视觉(用户拍 — 略微放大 + 白描边 + drop shadow,模拟"抬起来")
+    // 不动 areaColor — 保留涂层色(主线绿/风险红)
     const liftedStyle = {
-      borderColor: palette.primary,
-      borderWidth: 3,
-      shadowColor: palette.primary,
-      shadowBlur: 16,
+      // 白色粗描边突出选中
+      borderColor: '#ffffff',
+      borderWidth: 5,
+      // drop shadow:大半径 + Y 偏移 = 视觉漂浮在地图之上
+      shadowColor: 'rgba(0, 0, 0, 0.85)',
+      shadowBlur: 40,
+      shadowOffsetX: 0,
+      shadowOffsetY: 12,
     };
     const existing = result.find((r) => r.name === name);
     if (existing) {
@@ -411,7 +417,10 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
       }
       if (params.componentType !== 'geo' || !params.name) return;
       const name = params.name;
-      const code = !provinceCode ? provinceNameToCode(name) : null;
+      // 全国视图 → province name → adcode;省视图 → city name → city adcode
+      const code = !provinceCode
+        ? provinceNameToCode(name)
+        : cityNameToCode(name, provinceCode);
 
       // 二段 click:同 region 第二次 → 下钻 / 关
       if (selectedRegionCode && code === selectedRegionCode) {
