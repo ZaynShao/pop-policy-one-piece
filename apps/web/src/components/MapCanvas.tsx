@@ -306,6 +306,49 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
     return { overlayRegions: regions, overlayDotSeries: dotSeries };
   }, [themeOverlays, provinceCode, loaded]);
 
+  /**
+   * 浮起 halo series(用户拍 v2)— effectScatter rippleEffect 在 region 中心持续 pulse
+   * 比静态描边更醒目,跟 dispatchAction highlight 1s 闪烁不冲突(z 层不同)
+   */
+  const liftedHaloSeries = useMemo(() => {
+    if (!selectedRegionCode) return null;
+    const center = regionCodeToLngLat(selectedRegionCode);
+    if (!center) return null;
+    return {
+      name: '__lifted_halo',
+      type: 'effectScatter',
+      coordinateSystem: 'geo',
+      geoIndex: 0,
+      data: [{ value: [...center, 1], name: regionCodeToName(selectedRegionCode) ?? '' }],
+      symbol: 'circle',
+      symbolSize: 32,
+      rippleEffect: {
+        period: 3,
+        scale: 5,
+        brushType: 'stroke',
+        color: '#ffffff',
+      },
+      itemStyle: {
+        color: '#ffffff',
+        opacity: 0.85,
+        shadowBlur: 20,
+        shadowColor: '#ffffff',
+      },
+      label: {
+        show: true,
+        formatter: '{b}',
+        position: 'top',
+        color: '#ffffff',
+        fontSize: 13,
+        fontWeight: 600,
+        textBorderColor: 'rgba(0,0,0,0.6)',
+        textBorderWidth: 2,
+      },
+      silent: true,
+      z: 100,
+    };
+  }, [selectedRegionCode]);
+
   const liftedRegions = useMemo(() => {
     if (!selectedRegionCode) return overlayRegions;
     const name = regionCodeToName(selectedRegionCode);
@@ -316,17 +359,11 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
       ...r,
       itemStyle: { ...(r.itemStyle as object) },
     }));
-    // 「浮起」视觉(用户拍 — 略微放大 + 白描边 + drop shadow,模拟"抬起来")
-    // 不动 areaColor — 保留涂层色(主线绿/风险红)
+    // 「浮起」视觉(用户拍 v2 — 改用 effectScatter pulse halo,这里只留轻描边)
+    // 主视觉走 series 那层 effectScatter rippleEffect,这里只补一圈淡白边作为静态强化
     const liftedStyle = {
-      // 白色粗描边突出选中
       borderColor: '#ffffff',
-      borderWidth: 5,
-      // drop shadow:大半径 + Y 偏移 = 视觉漂浮在地图之上
-      shadowColor: 'rgba(0, 0, 0, 0.85)',
-      shadowBlur: 40,
-      shadowOffsetX: 0,
-      shadowOffsetY: 12,
+      borderWidth: 2,
     };
     const existing = result.find((r) => r.name === name);
     if (existing) {
@@ -372,6 +409,8 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
       },
       series: [
         ...overlayDotSeries,
+        // B7 浮起 halo — 选中 region 中心 effectScatter pulse(z:100 顶层)
+        ...(liftedHaloSeries ? [liftedHaloSeries] : []),
         // 属地层:Pin + Visit 散点 — 政策大盘下整个 hide 掉
         ...(showLocalLayers
           ? [
@@ -403,7 +442,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
           : []),
       ],
     };
-  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, liftedRegions, overlayDotSeries, showLocalLayers]);
+  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, liftedRegions, liftedHaloSeries, overlayDotSeries, showLocalLayers]);
 
   const onEvents = {
     click: (params: { componentType?: string; name?: string; data?: { visitId?: string; pinId?: string } }) => {
