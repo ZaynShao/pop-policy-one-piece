@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Button, Checkbox, Space, Tag, Tooltip, Typography } from 'antd';
 import {
@@ -14,6 +14,7 @@ import { VisitDetailDrawer } from '@/components/VisitDetailDrawer';
 import { VisitFormModal } from '@/components/VisitFormModal';
 import { PinFormModal } from '@/components/PinFormModal';
 import { PinDetailDrawer } from '@/components/PinDetailDrawer';
+import { PolicyRegionDrawer } from '@/components/PolicyRegionDrawer';
 import { fetchThemes, fetchTheme } from '@/api/themes';
 import type { Theme, ThemeWithCoverage } from '@pop/shared-types';
 import { palette } from '@/tokens';
@@ -45,6 +46,14 @@ export function MapShell() {
   const [pinModalOpen, setPinModalOpen] = useState(false);
   const [visitModalOpen, setVisitModalOpen] = useState(false);
   const [selectedThemeIds, setSelectedThemeIds] = useState<string[]>([]);
+  // B7-B9 政策大盘交互升级
+  const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null);
+  const [chart, setChart] = useState<unknown | null>(null);
+
+  // 切大盘 / 下钻 都清浮起 + 关抽屉
+  useEffect(() => {
+    setSelectedRegionCode(null);
+  }, [isPolicy, currentProvinceCode]);
 
   // 拉 published themes 给 Select options(只在 isPolicy 时拉)
   const publishedThemes = useQuery({
@@ -90,6 +99,9 @@ export function MapShell() {
           onPinClick={setSelectedPinId}
           themeOverlays={isPolicy ? themeOverlays : undefined}
           showLocalLayers={!isPolicy}
+          selectedRegionCode={isPolicy ? selectedRegionCode : null}
+          onRegionSelect={isPolicy ? setSelectedRegionCode : undefined}
+          onChartReady={setChart}
         />
       </div>
 
@@ -296,6 +308,16 @@ export function MapShell() {
         pinId={selectedPinId}
         onClose={() => setSelectedPinId(null)}
       />
+
+      {/* B7-B9:政策大盘 region 抽屉(属地大盘不渲染) */}
+      {isPolicy && (
+        <PolicyRegionDrawer
+          regionCode={selectedRegionCode}
+          selectedThemeIds={selectedThemeIds}
+          chart={chart}
+          onClose={() => setSelectedRegionCode(null)}
+        />
+      )}
 
       <Outlet />
     </div>

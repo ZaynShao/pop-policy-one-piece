@@ -2,6 +2,7 @@ import type {
   Theme,
   ThemeCoverage,
   ThemeWithCoverage,
+  ThemeByRegionResult,
   CreateThemeInput,
   UpdateThemeInput,
   ThemeStatus,
@@ -25,6 +26,24 @@ export async function fetchThemes(opts?: { status?: ThemeStatus | 'all' }): Prom
 export async function fetchTheme(id: string): Promise<{ data: ThemeWithCoverage }> {
   const r = await fetch(`/api/v1/themes/${id}`, { headers: authHeaders() });
   return jsonOrThrow(r, 'theme fetch fail');
+}
+
+/**
+ * B7-B9 反查 — 给 region 拉所有 cover 该 region 的已发布主题
+ * selectedIds 可选,Q2=X 实现:只显示当前涂层涉及的主题
+ */
+export async function fetchThemesByRegion(
+  regionCode: string,
+  selectedIds?: string[],
+): Promise<{ data: ThemeByRegionResult[] }> {
+  const params = new URLSearchParams({ regionCode });
+  if (selectedIds && selectedIds.length > 0) {
+    params.set('selectedIds', selectedIds.join(','));
+  }
+  const r = await fetch(`/api/v1/themes/by-region?${params.toString()}`, {
+    headers: authHeaders(),
+  });
+  return jsonOrThrow(r, 'themes by-region fetch fail');
 }
 
 export async function postTheme(input: CreateThemeInput): Promise<Theme> {

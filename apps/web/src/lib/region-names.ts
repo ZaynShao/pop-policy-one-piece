@@ -46,3 +46,25 @@ const REGION_NAMES: Record<string, string> = {
 export function regionCodeToName(code: string): string | null {
   return REGION_NAMES[code] ?? null;
 }
+
+/**
+ * 反查 — 给定 region 中文名 + 省级 code 上下文,返回市级 6 位 adcode
+ *
+ * 用于省视图 click city polygon 时拿 city code(B7 浮窗触发)。
+ * 省视图 GeoJSON 的 city name 没有 adcode 字段直接暴露,
+ * 走 REGION_NAMES 反查 + 省 prefix 匹配即可。
+ *
+ * @param name 省视图里 click 的 region 名(广州市 / 深圳市 ...)
+ * @param provinceCode 当前下钻省 code(440000 / 510000 ...)
+ *                     用前 2 位匹配市 code 前缀,过滤同名歧义
+ * @returns 市级 6 位 adcode 或 null
+ */
+export function cityNameToCode(name: string, provinceCode: string): string | null {
+  const provincePrefix = provinceCode.slice(0, 2);
+  for (const [code, n] of Object.entries(REGION_NAMES)) {
+    if (n === name && code.slice(0, 2) === provincePrefix && code !== provinceCode) {
+      return code;
+    }
+  }
+  return null;
+}

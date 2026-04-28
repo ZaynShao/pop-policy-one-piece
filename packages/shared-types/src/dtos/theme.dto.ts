@@ -42,3 +42,16 @@ export interface UpdateThemeInput {
   regionScope?: string | null;
   // 不接受 status / template / publishedAt(状态切走专用 endpoint;模板创建后不可改)
 }
+
+/**
+ * B7-B9 反查 — GET /themes/by-region 单条结果
+ * theme + 该 region 在主题下的 coverage 摘要
+ */
+export interface ThemeByRegionResult {
+  theme: Theme;
+  coverage: {
+    regionCode: string;
+    regionLevel: ThemeRegionLevel;
+    mainValue: number;
+  };
+}

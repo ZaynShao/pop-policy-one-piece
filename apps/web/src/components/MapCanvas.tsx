@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { Button, Slider, Space, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -12,7 +12,7 @@ import {
 import { authHeaders } from '@/lib/api';
 import { palette } from '@/tokens';
 import { regionCodeToLngLat } from '@/lib/region-centers';
-import { regionCodeToName } from '@/lib/region-names';
+import { cityNameToCode, regionCodeToName } from '@/lib/region-names';
 
 export interface ThemeOverlay {
   themeId: string;
@@ -40,6 +40,12 @@ interface Props {
   themeOverlays?: ThemeOverlay[];
   /** 是否渲染属地层(Pin / Visit 散点 + 4 色 legend)— 政策大盘传 false 让画布只剩涂层 */
   showLocalLayers?: boolean;
+  /** 当前选中浮起的 region adcode(政策大盘交互 B7) */
+  selectedRegionCode?: string | null;
+  /** click 选中 region 回调(传 null 表示清除浮起) */
+  onRegionSelect?: (code: string | null) => void;
+  /** chart 实例就绪回调,给抽屉调 dispatchAction(用 unknown 避免 echarts type 漏出去)*/
+  onChartReady?: (chart: unknown) => void;
 }
 
 interface LoadedInfo {
@@ -101,9 +107,53 @@ async function fetchPins(): Promise<{ data: Pin[] }> {
   return r.json();
 }
 
-export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVisitClick, onPinClick, themeOverlays, showLocalLayers = true }: Props) {
+export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVisitClick, onPinClick, themeOverlays, showLocalLayers = true, selectedRegionCode = null, onRegionSelect, onChartReady }: Props) {
   const [loaded, setLoaded] = useState<LoadedInfo | null>(null);
   const [zoom, setZoom] = useState<number>(ZOOM_DEFAULT);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<unknown>(null);
+
+  // ECharts 在 0×0 容器初始化时 geo 投影坏(canvas 全透明,convertToPixel 返回 [0,0])
+  // 双保险修复:
+  //   1) ResizeObserver 监听容器尺寸变化 → setOption 重放 + resize 强制重渲染
+  //   2) onChartReady 用 RAF 重试 3 次,确保 layout 完成后至少有一次成功
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const c = chartRef.current as {
+        resize?: () => void;
+        setOption?: (opt: object, notMerge: boolean) => void;
+        getOption?: () => object;
+      } | null;
+      if (!c) return;
+      const opt = c.getOption?.();
+      if (opt) c.setOption?.(opt, true);
+      c.resize?.();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const handleChartReady = (chart: unknown) => {
+    chartRef.current = chart;
+    onChartReady?.(chart);
+    // RAF 三连:每帧重试 setOption + resize,直到 canvas 真正画出来(0×0 → 1280×656 race)
+    const c = chart as {
+      resize?: () => void;
+      setOption?: (opt: object, notMerge: boolean) => void;
+      getOption?: () => object;
+    };
+    let tries = 0;
+    const retry = () => {
+      const opt = c.getOption?.();
+      if (opt) c.setOption?.(opt, true);
+      c.resize?.();
+      tries += 1;
+      if (tries < 3) requestAnimationFrame(retry);
+    };
+    requestAnimationFrame(retry);
+  };
 
   // β.1:从 API 拿真 Visit 数据
   const { data: visitsData } = useQuery({
@@ -256,6 +306,32 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
     return { overlayRegions: regions, overlayDotSeries: dotSeries };
   }, [themeOverlays, provinceCode, loaded]);
 
+  const liftedRegions = useMemo(() => {
+    if (!selectedRegionCode) return overlayRegions;
+    const name = regionCodeToName(selectedRegionCode);
+    if (!name) return overlayRegions;
+
+    // 创建副本,避免改原数组
+    const result = overlayRegions.map((r) => ({
+      ...r,
+      itemStyle: { ...(r.itemStyle as object) },
+    }));
+    // 「浮起」视觉(T5 原版 — primary 描边 + 同色阴影,不动 areaColor 保留涂层色)
+    const liftedStyle = {
+      borderColor: palette.primary,
+      borderWidth: 3,
+      shadowColor: palette.primary,
+      shadowBlur: 16,
+    };
+    const existing = result.find((r) => r.name === name);
+    if (existing) {
+      existing.itemStyle = { ...existing.itemStyle, ...liftedStyle };
+    } else {
+      result.push({ name, itemStyle: liftedStyle });
+    }
+    return result;
+  }, [overlayRegions, selectedRegionCode]);
+
   const option = useMemo(() => {
     if (!loaded) return null;
     return {
@@ -287,7 +363,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
         },
         select: { disabled: true },
         // 涂层 polygon 染色 — 直接配 region itemStyle,跟 geo zoom/center 天然同步
-        regions: overlayRegions,
+        regions: liftedRegions,
       },
       series: [
         ...overlayDotSeries,
@@ -322,7 +398,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
           : []),
       ],
     };
-  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, overlayRegions, overlayDotSeries, showLocalLayers]);
+  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, liftedRegions, overlayDotSeries, showLocalLayers]);
 
   const onEvents = {
     click: (params: { componentType?: string; name?: string; data?: { visitId?: string; pinId?: string } }) => {
@@ -336,8 +412,29 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
       }
       if (params.componentType !== 'geo' || !params.name) return;
       const name = params.name;
+      // 全国视图 → province name → adcode;省视图 → city name → city adcode
+      const code = !provinceCode
+        ? provinceNameToCode(name)
+        : cityNameToCode(name, provinceCode);
+
+      // 二段 click:同 region 第二次 → 下钻 / 关
+      if (selectedRegionCode && code === selectedRegionCode) {
+        if (!provinceCode && code) {
+          onProvinceChange?.(code);
+          onRegionClick?.({ level: 'country', code, name });
+        }
+        onRegionSelect?.(null); // 省视图二次 = 关闭浮起
+        return;
+      }
+
+      // 第一次 / 不同 region:政策大盘走 onRegionSelect(浮起 + 抽屉)
+      if (code && onRegionSelect) {
+        onRegionSelect(code);
+        return;
+      }
+
+      // fallback:onRegionSelect 不传时保留原直接下钻(属地大盘)
       if (!provinceCode) {
-        const code = provinceNameToCode(name);
         if (code) {
           onProvinceChange?.(code);
           onRegionClick?.({ level: 'country', code, name });
@@ -349,7 +446,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%' }}>
       <div style={{
         position: 'absolute', inset: 0,
         background: 'radial-gradient(ellipse at 55% 50%, rgba(0, 212, 255, 0.08) 0%, transparent 55%), #0a1628',
@@ -429,7 +526,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
       )}
 
       {loaded && option && (
-        <ReactECharts option={option} notMerge style={{ width: '100%', height: '100%' }} onEvents={onEvents} />
+        <ReactECharts option={option} notMerge style={{ width: '100%', height: '100%' }} onEvents={onEvents} onChartReady={handleChartReady} />
       )}
     </div>
   );
