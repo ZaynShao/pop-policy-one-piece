@@ -1,13 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Button, Checkbox, Space, Tag, Tooltip, Typography } from 'antd';
+import { Button, Checkbox, DatePicker, Input, Segmented, Space, Tag, Tooltip, Typography } from 'antd';
 import {
   LeftOutlined,
   PlusOutlined,
   PushpinOutlined,
   RightOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
+import dayjs from 'dayjs';
+import type { Dayjs } from 'dayjs';
 import { MapCanvas } from '@/components/MapCanvas';
 import type { ThemeOverlay } from '@/components/MapCanvas';
 import { VisitDetailDrawer } from '@/components/VisitDetailDrawer';
@@ -49,6 +52,10 @@ export function MapShell() {
   // B7-B9 政策大盘交互升级
   const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null);
   const [chart, setChart] = useState<unknown | null>(null);
+  // 政策大盘左面板筛选(用户拍 — 时间/模板/关键词)
+  const [keywordFilter, setKeywordFilter] = useState('');
+  const [templateFilter, setTemplateFilter] = useState<'all' | 'main' | 'risk'>('all');
+  const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
 
   // 切大盘 / 下钻 都清浮起 + 关抽屉
   useEffect(() => {
@@ -79,6 +86,25 @@ export function MapShell() {
     template: t.template,
     coverage: t.coverage,
   }));
+
+  // 左面板筛选 — 关键词 / 模板 / 发布时间窗口
+  // 注意:已选中的 theme(selectedThemeIds)即使不在筛选结果里也保留勾选 — 避免视图抖动
+  const filteredThemes = useMemo(() => {
+    const all = (publishedThemes.data?.data ?? []) as Theme[];
+    const kw = keywordFilter.trim().toLowerCase();
+    return all.filter((t) => {
+      if (templateFilter !== 'all' && t.template !== templateFilter) return false;
+      if (kw) {
+        const haystack = (t.title + ' ' + (t.regionScope ?? '') + ' ' + (t.keywords ?? []).join(' ')).toLowerCase();
+        if (!haystack.includes(kw)) return false;
+      }
+      if (dateRange && dateRange[0] && dateRange[1] && t.publishedAt) {
+        const pub = dayjs(t.publishedAt);
+        if (pub.isBefore(dateRange[0], 'day') || pub.isAfter(dateRange[1], 'day')) return false;
+      }
+      return true;
+    });
+  }, [publishedThemes.data, keywordFilter, templateFilter, dateRange]);
 
   return (
     <div
@@ -131,14 +157,49 @@ export function MapShell() {
           </Title>
           {isPolicy ? (
             <>
-              <Paragraph style={{ color: palette.textMuted, fontSize: 12, marginBottom: 8 }}>
+              <Paragraph style={{ color: palette.textMuted, fontSize: 12, marginBottom: 10 }}>
                 勾选后在地图上叠加覆盖(最多 3 层)
               </Paragraph>
-              <Space size={6} style={{ marginBottom: 12 }}>
+
+              {/* 关键词搜索 */}
+              <Input
+                allowClear
+                size="small"
+                prefix={<SearchOutlined style={{ color: palette.textMuted }} />}
+                placeholder="关键词 / 标题 / 区划"
+                value={keywordFilter}
+                onChange={(e) => setKeywordFilter(e.target.value)}
+                style={{ marginBottom: 8 }}
+              />
+
+              {/* 模板筛选 */}
+              <Segmented<'all' | 'main' | 'risk'>
+                size="small"
+                block
+                value={templateFilter}
+                onChange={setTemplateFilter}
+                options={[
+                  { label: '全部', value: 'all' },
+                  { label: '主线', value: 'main' },
+                  { label: '风险', value: 'risk' },
+                ]}
+                style={{ marginBottom: 8 }}
+              />
+
+              {/* 发布时间窗口 */}
+              <DatePicker.RangePicker
+                size="small"
+                value={dateRange as [Dayjs, Dayjs] | null}
+                onChange={(v) => setDateRange(v as [Dayjs | null, Dayjs | null] | null)}
+                placeholder={['发布起', '发布止']}
+                style={{ width: '100%', marginBottom: 10 }}
+              />
+
+              <Space size={6} style={{ marginBottom: 8 }}>
                 <Button
                   size="small"
                   onClick={() => {
-                    const ids = (publishedThemes.data?.data ?? []).slice(0, 3).map((t: Theme) => t.id);
+                    const ids = filteredThemes.slice(0, 3).map((t: Theme) => t.id);
                     setSelectedThemeIds(ids);
                   }}
                 >
@@ -147,9 +208,13 @@ export function MapShell() {
                 <Button size="small" onClick={() => setSelectedThemeIds([])}>
                   清空
                 </Button>
+                <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                  {filteredThemes.length}/{publishedThemes.data?.data?.length ?? 0}
+                </Typography.Text>
               </Space>
+
               <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {(publishedThemes.data?.data ?? []).map((t: Theme) => {
+                {filteredThemes.map((t: Theme) => {
                   const isSel = selectedThemeIds.includes(t.id);
                   const themeColor = t.template === 'main' ? '#52c41a' : '#ff4d4f';
                   const reachLimit = !isSel && selectedThemeIds.length >= 3;
@@ -213,9 +278,11 @@ export function MapShell() {
                     </div>
                   );
                 })}
-                {(publishedThemes.data?.data ?? []).length === 0 && (
+                {filteredThemes.length === 0 && (
                   <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                    暂无已发布主题
+                    {(publishedThemes.data?.data?.length ?? 0) === 0
+                      ? '暂无已发布主题'
+                      : '当前筛选无匹配主题'}
                   </Typography.Text>
                 )}
               </div>
