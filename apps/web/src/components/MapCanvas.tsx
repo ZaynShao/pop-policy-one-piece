@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 import { Button, Slider, Space, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
-import type { Visit, Pin, PinStatus } from '@pop/shared-types';
+import type { Visit, Pin, PinStatus, ThemeCoverage, ThemeTemplate } from '@pop/shared-types';
 import {
   loadChinaMap,
   loadProvinceMap,
@@ -11,6 +11,14 @@ import {
 } from '@/lib/china-map';
 import { authHeaders } from '@/lib/api';
 import { palette } from '@/tokens';
+import { regionCodeToLngLat } from '@/lib/region-centers';
+
+export interface ThemeOverlay {
+  themeId: string;
+  themeTitle: string;
+  template: ThemeTemplate;
+  coverage: ThemeCoverage[];
+}
 
 interface Props {
   /** 当前下钻到的省份 adcode;null / undefined = 全国视图 */
@@ -27,6 +35,8 @@ interface Props {
   onVisitClick?: (visitId: string) => void;
   /** β.2 新增:点击 Pin 图钉回调,传 pin.id */
   onPinClick?: (pinId: string) => void;
+  /** T10:主题涂层,按 regionCode 渲染散点叠加层 */
+  themeOverlays?: ThemeOverlay[];
 }
 
 interface LoadedInfo {
@@ -88,7 +98,7 @@ async function fetchPins(): Promise<{ data: Pin[] }> {
   return r.json();
 }
 
-export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVisitClick, onPinClick }: Props) {
+export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVisitClick, onPinClick, themeOverlays }: Props) {
   const [loaded, setLoaded] = useState<LoadedInfo | null>(null);
   const [zoom, setZoom] = useState<number>(ZOOM_DEFAULT);
 
@@ -152,6 +162,48 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
     [pins, provinceCode],
   );
 
+  const overlaySeries = useMemo(() => {
+    if (!themeOverlays || themeOverlays.length === 0) return [];
+
+    const filterLevel = !provinceCode ? 'city' : 'district';
+
+    return themeOverlays.map((overlay, idx) => {
+      const opacity = Math.max(0.3, 0.8 - idx * 0.2);  // 0.8 / 0.6 / 0.4
+      const colorByTemplate = overlay.template === 'main' ? '#1677ff' : '#ff4d4f';
+      const points = overlay.coverage.filter((c) => c.regionLevel === filterLevel);
+
+      const data = points
+        .map((c) => {
+          const center = regionCodeToLngLat(c.regionCode);
+          if (!center) return null;
+          return {
+            name: `${overlay.themeTitle} · ${c.regionCode}`,
+            value: [...center, c.mainValue],
+            mainValue: c.mainValue,
+          };
+        })
+        .filter((d): d is NonNullable<typeof d> => d !== null);
+
+      return {
+        name: `涂层:${overlay.themeTitle}`,
+        type: 'scatter' as const,
+        coordinateSystem: 'geo' as const,
+        geoIndex: 0,
+        z: 3,
+        data,
+        symbolSize: (_val: unknown, params: { data?: { mainValue?: number } }) => {
+          const v = params?.data?.mainValue ?? 1;
+          return Math.max(8, Math.min(40, v * 0.8));
+        },
+        itemStyle: { color: colorByTemplate, opacity },
+        tooltip: {
+          formatter: (params: { data: { name: string; mainValue: number } }) =>
+            `${params.data.name}<br/>主属性值: ${params.data.mainValue}`,
+        },
+      };
+    });
+  }, [themeOverlays, provinceCode]);
+
   const option = useMemo(() => {
     if (!loaded) return null;
     return {
@@ -184,6 +236,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
         select: { disabled: true },
       },
       series: [
+        ...overlaySeries,
         {
           type: 'scatter',
           coordinateSystem: 'geo',
@@ -210,7 +263,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
         },
       ],
     };
-  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData]);
+  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, overlaySeries]);
 
   const onEvents = {
     click: (params: { componentType?: string; name?: string; data?: { visitId?: string; pinId?: string } }) => {
