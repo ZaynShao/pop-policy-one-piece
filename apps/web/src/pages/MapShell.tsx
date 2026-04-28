@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Button, Checkbox, Space, Tag, Tooltip, Typography } from 'antd';
+import { Button, Checkbox, DatePicker, Select, Space, Tag, Tooltip, Typography } from 'antd';
 import {
   LeftOutlined,
   PlusOutlined,
@@ -8,6 +8,7 @@ import {
   RightOutlined,
 } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
+import type { Dayjs } from 'dayjs';
 import { MapCanvas } from '@/components/MapCanvas';
 import type { ThemeOverlay } from '@/components/MapCanvas';
 import { VisitDetailDrawer } from '@/components/VisitDetailDrawer';
@@ -16,10 +17,20 @@ import { PinFormModal } from '@/components/PinFormModal';
 import { PinDetailDrawer } from '@/components/PinDetailDrawer';
 import { PolicyRegionDrawer } from '@/components/PolicyRegionDrawer';
 import { fetchThemes, fetchTheme } from '@/api/themes';
-import type { Theme, ThemeWithCoverage } from '@pop/shared-types';
+import { fetchUsers } from '@/api/users';
+import type { Theme, ThemeWithCoverage, UserRoleCode } from '@pop/shared-types';
 import { palette } from '@/tokens';
 
 const { Title, Paragraph } = Typography;
+
+// 5 角色选项(对齐 UserRoleCode enum,demo 演示用)
+const ROLE_OPTIONS: Array<{ label: string; value: UserRoleCode }> = [
+  { label: '系统管理员', value: 'sys_admin' as UserRoleCode },
+  { label: '负责人', value: 'lead' as UserRoleCode },
+  { label: 'PMO', value: 'pmo' as UserRoleCode },
+  { label: '属地 GA', value: 'local_ga' as UserRoleCode },
+  { label: '中台 GA', value: 'central_ga' as UserRoleCode },
+];
 
 /**
  * R2-① 大盘视图 layout(/map/local + /map/policy 共用画布)。
@@ -49,11 +60,28 @@ export function MapShell() {
   // B7-B9 政策大盘交互升级
   const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null);
   const [chart, setChart] = useState<unknown | null>(null);
+  // 属地大盘左面板筛选(用户拍 — 时间窗口 / 区划 / 角色)
+  const [localDateRange, setLocalDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
+  const [localProvinceCodes, setLocalProvinceCodes] = useState<string[]>([]);
+  const [localRoleCodes, setLocalRoleCodes] = useState<UserRoleCode[]>([]);
 
   // 切大盘 / 下钻 都清浮起 + 关抽屉
   useEffect(() => {
     setSelectedRegionCode(null);
   }, [isPolicy, currentProvinceCode]);
+
+  // 拉 users 给「角色筛选」下拉用 + filter visit/pin 时反查 user→role
+  const usersQuery = useQuery({
+    queryKey: ['users'],
+    queryFn: fetchUsers,
+    enabled: !isPolicy,  // 只在属地大盘需要
+    staleTime: 5 * 60_000,
+  });
+  // userId → roleCode 映射,filter 时拿
+  const userRoleMap: Record<string, UserRoleCode | null> = {};
+  for (const u of usersQuery.data?.data ?? []) {
+    userRoleMap[u.id] = u.roleCode;
+  }
 
   // 拉 published themes 给 Select options(只在 isPolicy 时拉)
   const publishedThemes = useQuery({
@@ -102,6 +130,14 @@ export function MapShell() {
           selectedRegionCode={isPolicy ? selectedRegionCode : null}
           onRegionSelect={isPolicy ? setSelectedRegionCode : undefined}
           onChartReady={setChart}
+          localDateRange={
+            !isPolicy && localDateRange && localDateRange[0] && localDateRange[1]
+              ? [localDateRange[0].format('YYYY-MM-DD'), localDateRange[1].format('YYYY-MM-DD')]
+              : null
+          }
+          localProvinceCodes={!isPolicy ? localProvinceCodes : []}
+          localRoleCodes={!isPolicy ? localRoleCodes : []}
+          userRoleMap={userRoleMap}
         />
       </div>
 
@@ -221,9 +257,78 @@ export function MapShell() {
               </div>
             </>
           ) : (
-            <Paragraph style={{ color: palette.textMuted, fontSize: 12, whiteSpace: 'pre-line' }}>
-              {`· 时间窗口\n· 区划筛选\n· 角色筛选\n· (β.1 32 Visit + β.2 3 Pin · 形状区分)`}
-            </Paragraph>
+            <>
+              <Paragraph style={{ color: palette.textMuted, fontSize: 12, marginBottom: 10 }}>
+                筛选当前地图上的散点 / 图钉
+              </Paragraph>
+
+              {/* 时间窗口 */}
+              <div style={{ marginBottom: 10 }}>
+                <Typography.Text style={{ fontSize: 11, color: palette.textMuted, display: 'block', marginBottom: 4 }}>
+                  时间窗口
+                </Typography.Text>
+                <DatePicker.RangePicker
+                  size="small"
+                  value={localDateRange as [Dayjs, Dayjs] | null}
+                  onChange={(v) => setLocalDateRange(v as [Dayjs | null, Dayjs | null] | null)}
+                  placeholder={['起', '止']}
+                  style={{ width: '100%' }}
+                />
+              </div>
+
+              {/* 区划筛选 — 多选 province */}
+              <div style={{ marginBottom: 10 }}>
+                <Typography.Text style={{ fontSize: 11, color: palette.textMuted, display: 'block', marginBottom: 4 }}>
+                  区划筛选
+                </Typography.Text>
+                <Select
+                  mode="multiple"
+                  size="small"
+                  allowClear
+                  placeholder="全部省份"
+                  value={localProvinceCodes}
+                  onChange={setLocalProvinceCodes}
+                  maxTagCount="responsive"
+                  style={{ width: '100%' }}
+                  options={Array.from(
+                    new Set([
+                      // 从 visits + pins 数据里取出现过的 province codes(避免列出 32 个 全国)
+                      // 占位简单实现:fallback 到 hardcoded 12 主要省 demo 用
+                      '110000', '310000', '440000', '510000', '320000', '330000',
+                      '370000', '420000', '430000', '500000', '610000', '350000',
+                    ]),
+                  ).map((code) => ({
+                    label: { '110000': '北京', '310000': '上海', '440000': '广东', '510000': '四川',
+                      '320000': '江苏', '330000': '浙江', '370000': '山东', '420000': '湖北',
+                      '430000': '湖南', '500000': '重庆', '610000': '陕西', '350000': '福建' }[code] ?? code,
+                    value: code,
+                  }))}
+                />
+              </div>
+
+              {/* 角色筛选 — 多选 role */}
+              <div style={{ marginBottom: 8 }}>
+                <Typography.Text style={{ fontSize: 11, color: palette.textMuted, display: 'block', marginBottom: 4 }}>
+                  角色筛选
+                </Typography.Text>
+                <Select
+                  mode="multiple"
+                  size="small"
+                  allowClear
+                  placeholder="全部角色"
+                  value={localRoleCodes}
+                  onChange={setLocalRoleCodes}
+                  maxTagCount="responsive"
+                  style={{ width: '100%' }}
+                  options={ROLE_OPTIONS}
+                  loading={usersQuery.isLoading}
+                />
+              </div>
+
+              <Typography.Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 8 }}>
+                β.1 32 Visit + β.2 3 Pin · 形状区分
+              </Typography.Text>
+            </>
           )}
         </div>
       )}
