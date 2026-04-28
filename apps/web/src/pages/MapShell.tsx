@@ -224,7 +224,8 @@ export function MapShell() {
           aria-label={siderOpen ? '收起左面板' : '展开左面板'}
           style={{
             position: 'absolute',
-            left: 16 + 280, // 面板右边缘 = 16 + 280 = 296,按钮挨着面板右侧
+            // 开:贴面板右边缘(16 + 280 = 296);收:贴视口左边缘(0,把手露出来)
+            left: siderOpen ? 16 + 280 : 0,
             top: '50%',
             transform: 'translateY(-50%)',
             width: 28,
@@ -232,6 +233,7 @@ export function MapShell() {
             padding: 0,
             borderRadius: '0 8px 8px 0', // 右半圆角(把手风)
             zIndex: 11,
+            transition: 'left 0.2s ease',
           }}
         />
       </Tooltip>

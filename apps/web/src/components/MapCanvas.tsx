@@ -164,33 +164,37 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
   );
 
   /**
-   * 涂层渲染 — type:'map' series 给 region polygon 染色
-   * - 全国视图(provinceCode=null):province 级 coverage → 全国 GeoJSON 省 polygon
-   * - 省级视图:city 级 coverage → 省级 GeoJSON 市 polygon
-   * 多层叠加用透明度区分(0.55 / 0.43 / 0.31)
-   * 区级散点 city/district 级 coverage 在叠加 polygon 之外保留
+   * 涂层渲染 — 拆 2 路:
+   * 1) overlayRegions:塞 geo.regions[] 给区域 areaColor(随 geo zoom 同步缩放)
+   *    — 之前用独立 type:'map' series 会脱节,改用 geo 自带 regions 是 ECharts 的推荐做法
+   * 2) overlayDotSeries:散点,scatter on geo 坐标系(已经跟 geo 同步)
+   *
+   * 视图分级:
+   *   - 全国:polygon=province / dot=city
+   *   - 省级:polygon=city / dot=district
+   * 多层叠加:同一 region 后入的覆盖前面(layer index 越大越上面)
    */
-  const overlaySeries = useMemo(() => {
-    if (!themeOverlays || themeOverlays.length === 0 || !loaded) return [];
+  const { overlayRegions, overlayDotSeries } = useMemo(() => {
+    if (!themeOverlays || themeOverlays.length === 0 || !loaded) {
+      return { overlayRegions: [], overlayDotSeries: [] as unknown[] };
+    }
 
     const polygonLevel = !provinceCode ? 'province' : 'city';
     const dotLevel = !provinceCode ? 'city' : 'district';
 
-    const series: unknown[] = [];
-
-    // ---- polygon 染色层 ----
+    // ---- polygon 染色:塞 geo.regions[] ----
+    // 同一 name 出现 2 次:后入覆盖前面,所以保留 last-write-wins 来体现叠加优先
+    const regionMap = new Map<string, { name: string; itemStyle: Record<string, unknown> }>();
     themeOverlays.forEach((overlay, idx) => {
       const opacity = Math.max(0.25, 0.55 - idx * 0.12);
       const themeColor = overlay.template === 'main' ? '#52c41a' : '#ff4d4f';
-      const matched = overlay.coverage.filter((c) => c.regionLevel === polygonLevel);
-
-      const polygonData = matched
-        .map((c) => {
+      overlay.coverage
+        .filter((c) => c.regionLevel === polygonLevel)
+        .forEach((c) => {
           const name = regionCodeToName(c.regionCode);
-          if (!name) return null;
-          return {
+          if (!name) return;
+          regionMap.set(name, {
             name,
-            value: c.mainValue,
             itemStyle: {
               areaColor: themeColor,
               opacity,
@@ -199,27 +203,13 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
               shadowColor: themeColor,
               shadowBlur: 12,
             },
-          };
-        })
-        .filter((d): d is NonNullable<typeof d> => d !== null);
-
-      if (polygonData.length > 0) {
-        series.push({
-          name: `涂层:${overlay.themeTitle}`,
-          type: 'map',
-          map: loaded.key,
-          roam: false,
-          silent: true,
-          label: { show: false },
-          itemStyle: { areaColor: 'transparent', borderColor: 'transparent' },
-          emphasis: { disabled: true },
-          data: polygonData,
-          z: 1 + idx,
+          });
         });
-      }
     });
+    const regions = Array.from(regionMap.values());
 
-    // ---- 区级散点叠加层(填充 polygon 不能覆盖的细粒度) ----
+    // ---- 区级散点叠加层(更细粒度,polygon 不能覆盖的) ----
+    const dotSeries: unknown[] = [];
     themeOverlays.forEach((overlay, idx) => {
       const themeColor = overlay.template === 'main' ? '#52c41a' : '#ff4d4f';
       const dots = overlay.coverage
@@ -242,7 +232,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
         .filter((d): d is NonNullable<typeof d> => d !== null);
 
       if (dots.length > 0) {
-        series.push({
+        dotSeries.push({
           name: `涂层散点:${overlay.themeTitle}`,
           type: 'scatter',
           coordinateSystem: 'geo',
@@ -261,7 +251,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
       }
     });
 
-    return series;
+    return { overlayRegions: regions, overlayDotSeries: dotSeries };
   }, [themeOverlays, provinceCode, loaded]);
 
   const option = useMemo(() => {
@@ -294,9 +284,11 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
           },
         },
         select: { disabled: true },
+        // 涂层 polygon 染色 — 直接配 region itemStyle,跟 geo zoom/center 天然同步
+        regions: overlayRegions,
       },
       series: [
-        ...overlaySeries,
+        ...overlayDotSeries,
         {
           type: 'scatter',
           coordinateSystem: 'geo',
@@ -323,7 +315,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
         },
       ],
     };
-  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, overlaySeries]);
+  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, overlayRegions, overlayDotSeries]);
 
   const onEvents = {
     click: (params: { componentType?: string; name?: string; data?: { visitId?: string; pinId?: string } }) => {
