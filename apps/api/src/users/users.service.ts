@@ -1,9 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { UserRoleCode } from '@pop/shared-types';
 import { UserEntity } from './entities/user.entity';
 import { UserRoleEntity } from './entities/user-role.entity';
+import { UpdateProfileDto } from './dtos/update-profile.dto';
+import { ChangePasswordDto } from './dtos/change-password.dto';
 
 export interface UserWithRole {
   user: UserEntity;
@@ -56,6 +59,27 @@ export class UsersService {
       displayName: u.displayName,
       roleCode: roleMap.get(u.id) ?? null,
     }));
+  }
+
+  /** 改自己的 displayName(头像下拉「修改资料」用) */
+  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<UserEntity> {
+    const user = await this.findById(userId);
+    if (!user) throw new NotFoundException(`User ${userId} not found`);
+    user.displayName = dto.displayName;
+    return this.users.save(user);
+  }
+
+  /** 改自己的密码:必须输旧密码校验 */
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<void> {
+    const user = await this.findById(userId);
+    if (!user) throw new NotFoundException(`User ${userId} not found`);
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('账号未设密码,请联系管理员');
+    }
+    const ok = await bcrypt.compare(dto.oldPassword, user.passwordHash);
+    if (!ok) throw new UnauthorizedException('旧密码错误');
+    user.passwordHash = await bcrypt.hash(dto.newPassword, 10);
+    await this.users.save(user);
   }
 
   /** 合并 user + role;常用于 AuthService 和 JwtStrategy */

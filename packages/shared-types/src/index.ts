@@ -11,3 +11,4 @@ export * from './dtos/visit.dto';
 export * from './dtos/pin.dto';
 export * from './dtos/comment.dto';
 export * from './dtos/theme.dto';
+export * from './dtos/user.dto';
