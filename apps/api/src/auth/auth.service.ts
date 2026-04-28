@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -14,19 +15,27 @@ export class AuthService {
   ) {}
 
   /**
-   * Fake SSO 登录(MVP fallback,PRD §8.1):
-   * - 无密码,按 username 精确匹配
-   * - status 必须 active
+   * 登录(PRD §8.1 bcrypt 校验):
+   * - 按 username 精确匹配,status 必须 active
+   * - 找不到或密码错误均返回统一文案(防枚举)
+   * - passwordHash 为 NULL 表示用户未启用,返回引导文案
    * - 单 token,无 refresh(V0.5 接真 OIDC 时换)
    */
-  async login(username: string): Promise<LoginResponseDto> {
+  async login(username: string, password: string): Promise<LoginResponseDto> {
     const user = await this.users.findByUsername(username);
     if (!user || user.status !== 'active') {
-      throw new UnauthorizedException(`用户 ${username} 不存在或已停用`);
+      throw new UnauthorizedException('用户名或密码错误');
+    }
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('用户未启用,请联系管理员');
+    }
+    const ok = await bcrypt.compare(password, user.passwordHash);
+    if (!ok) {
+      throw new UnauthorizedException('用户名或密码错误');
     }
     const roleCode = await this.users.getRoleCode(user.id);
     if (!roleCode) {
-      throw new UnauthorizedException(`用户 ${username} 未分配角色`);
+      throw new UnauthorizedException('用户未分配角色,请联系管理员');
     }
 
     const payload: JwtPayload = {

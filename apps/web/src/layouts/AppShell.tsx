@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Avatar, Button, Dropdown, Layout, Segmented, Space, Typography } from 'antd';
 import {
   AppstoreOutlined,
+  EditOutlined,
   LogoutOutlined,
   SettingOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+import { ProfileModal } from '@/components/ProfileModal';
 import { UserRoleCode } from '@pop/shared-types';
 import { useAuthStore } from '@/stores/auth';
 import { palette } from '@/tokens';
@@ -29,6 +32,7 @@ export function AppShell() {
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const [profileOpen, setProfileOpen] = useState(false);
 
   if (!user) return null;
 
@@ -38,6 +42,7 @@ export function AppShell() {
 
   const userMenu = {
     items: [
+      { key: 'profile', icon: <EditOutlined />, label: '修改资料', onClick: () => setProfileOpen(true) },
       { key: 'me', icon: <UserOutlined />, label: '个人中心', onClick: () => navigate('/me') },
       { type: 'divider' as const },
       { key: 'logout', icon: <LogoutOutlined />, label: '登出', onClick: logout, danger: true },
@@ -118,6 +123,8 @@ export function AppShell() {
       <Content style={{ padding: 0, position: 'relative' }}>
         <Outlet />
       </Content>
+
+      <ProfileModal open={profileOpen} onClose={() => setProfileOpen(false)} />
     </Layout>
   );
 }
