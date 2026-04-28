@@ -1,12 +1,13 @@
 import type { UserRoleCode } from '../enums/role';
 
 /**
- * 登录请求(PRD §8.1 MVP fallback:无密码假 SSO)
+ * 登录请求(PRD §8.1 bcrypt 校验)
  *
  * V0.5 换真 OIDC 后,本 DTO 废弃,改走 /auth/callback?code=xxx。
  */
 export interface LoginRequestDto {
   username: string;
+  password: string;
 }
 
 /**
