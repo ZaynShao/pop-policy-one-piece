@@ -1,6 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, IsNull, Not, Repository } from 'typeorm';
 import { lookupCityCenter } from '../lib/geojson-cities';
 import { VisitEntity } from './entities/visit.entity';
 import { PinEntity } from '../pins/entities/pin.entity';
@@ -9,13 +14,28 @@ import { UserEntity } from '../users/entities/user.entity';
 import { CreateVisitDto } from './dtos/create-visit.dto';
 import { UpdateVisitDto } from './dtos/update-visit.dto';
 import { renderAutoComment } from './comment-template';
-import type { VisitStatus } from '@pop/shared-types';
+import {
+  UserRoleCode,
+  type AuthenticatedUser,
+  type VisitStatus,
+} from '@pop/shared-types';
 
 const ALLOWED_TRANSITIONS: Record<VisitStatus, VisitStatus[]> = {
   planned: ['completed', 'cancelled'],
   completed: [],            // 不可改 status
   cancelled: ['planned'],   // 重启
 };
+
+/**
+ * Visit 删除 / 还原白名单(对称 Pin V0.6 patch)
+ * V0.7+ CASL 真矩阵落地后,换成 @CheckPolicies(ability.can(Delete, Visit))
+ */
+const VISIT_DELETE_ALLOWED_ROLES: ReadonlySet<UserRoleCode> = new Set([
+  UserRoleCode.SysAdmin,
+  UserRoleCode.Lead,
+  UserRoleCode.Pmo,
+]);
+export const VISIT_TRASH_ALLOWED_ROLES = VISIT_DELETE_ALLOWED_ROLES;
 
 @Injectable()
 export class VisitsService {
@@ -27,7 +47,26 @@ export class VisitsService {
     private readonly dataSource: DataSource,
   ) {}
 
-  list(filter?: { status?: VisitStatus; parentPinId?: string }): Promise<VisitEntity[]> {
+  async list(filter?: {
+    status?: VisitStatus;
+    parentPinId?: string;
+    withDeleted?: boolean;
+    currentUser?: AuthenticatedUser;
+  }): Promise<VisitEntity[]> {
+    if (filter?.withDeleted) {
+      if (!filter.currentUser || !VISIT_TRASH_ALLOWED_ROLES.has(filter.currentUser.roleCode)) {
+        throw new ForbiddenException('只有管理员/负责人/PMO 可以查看回收站');
+      }
+      // 回收站:仅返回 deleted_at NOT NULL 的条目
+      const where: Record<string, unknown> = { deletedAt: Not(IsNull()) };
+      if (filter.status) where.status = filter.status;
+      if (filter.parentPinId) where.parentPinId = filter.parentPinId;
+      return this.repo.find({
+        withDeleted: true,
+        where,
+        order: { deletedAt: 'DESC' },
+      });
+    }
     const where: Record<string, unknown> = {};
     if (filter?.status) where.status = filter.status;
     if (filter?.parentPinId) where.parentPinId = filter.parentPinId;
@@ -179,5 +218,33 @@ export class VisitsService {
       });
       return saved;
     });
+  }
+
+  /**
+   * 软删除 — TypeORM 设 deleted_at = now(),后续 find 默认滤掉
+   * 关联 comments.linked_visit_id 不动(留 audit trail · ON DELETE SET NULL 兜底)
+   *
+   * 权限白名单:sys_admin / lead / pmo,其他角色抛 403
+   */
+  async softDelete(id: string, currentUser: AuthenticatedUser): Promise<void> {
+    if (!VISIT_DELETE_ALLOWED_ROLES.has(currentUser.roleCode)) {
+      throw new ForbiddenException('只有管理员/负责人/PMO 可以删除拜访');
+    }
+    const visit = await this.findOne(id);
+    await this.repo.softRemove(visit);
+  }
+
+  /**
+   * 还原软删 Visit — deleted_at 置 NULL,其他字段不动
+   * 权限白名单:sys_admin / lead / pmo
+   */
+  async restore(id: string, currentUser: AuthenticatedUser): Promise<VisitEntity> {
+    if (!VISIT_TRASH_ALLOWED_ROLES.has(currentUser.roleCode)) {
+      throw new ForbiddenException('只有管理员/负责人/PMO 可以还原拜访');
+    }
+    const visit = await this.repo.findOne({ where: { id }, withDeleted: true });
+    if (!visit) throw new NotFoundException(`Visit ${id} not found`);
+    await this.repo.restore(id);
+    return this.repo.findOneOrFail({ where: { id } });
   }
 }

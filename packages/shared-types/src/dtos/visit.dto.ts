@@ -41,6 +41,7 @@ export interface Visit {
   visitorId: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;          // V0.7 软删除(对称 Pin)
 }
 
 export interface CreateVisitInput {
