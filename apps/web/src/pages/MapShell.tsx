@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Button, Tooltip, Typography } from 'antd';
+import { Button, Select, Tooltip, Typography } from 'antd';
 import {
   LeftOutlined,
   PlusOutlined,
   PushpinOutlined,
   RightOutlined,
 } from '@ant-design/icons';
+import { useQuery } from '@tanstack/react-query';
 import { MapCanvas } from '@/components/MapCanvas';
+import type { ThemeOverlay } from '@/components/MapCanvas';
 import { VisitDetailDrawer } from '@/components/VisitDetailDrawer';
 import { VisitFormModal } from '@/components/VisitFormModal';
 import { PinFormModal } from '@/components/PinFormModal';
 import { PinDetailDrawer } from '@/components/PinDetailDrawer';
+import { fetchThemes, fetchTheme } from '@/api/themes';
+import type { Theme, ThemeWithCoverage } from '@pop/shared-types';
 import { palette } from '@/tokens';
 
 const { Title, Paragraph } = Typography;
@@ -40,6 +44,32 @@ export function MapShell() {
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [pinModalOpen, setPinModalOpen] = useState(false);
   const [visitModalOpen, setVisitModalOpen] = useState(false);
+  const [selectedThemeIds, setSelectedThemeIds] = useState<string[]>([]);
+
+  // 拉 published themes 给 Select options(只在 isPolicy 时拉)
+  const publishedThemes = useQuery({
+    queryKey: ['themes', 'published'],
+    queryFn: () => fetchThemes({ status: 'published' }),
+    enabled: isPolicy,
+  });
+
+  // 拉每个选中 theme 的完整信息(含 coverage)
+  const themeOverlaysData = useQuery({
+    queryKey: ['theme-overlays', selectedThemeIds],
+    queryFn: async () => {
+      if (selectedThemeIds.length === 0) return [];
+      const fetched = await Promise.all(selectedThemeIds.map((id) => fetchTheme(id)));
+      return fetched.map((r) => r.data);
+    },
+    enabled: isPolicy && selectedThemeIds.length > 0,
+  });
+
+  const themeOverlays: ThemeOverlay[] = (themeOverlaysData.data ?? []).map((t: ThemeWithCoverage) => ({
+    themeId: t.id,
+    themeTitle: t.title,
+    template: t.template,
+    coverage: t.coverage,
+  }));
 
   return (
     <div
@@ -58,6 +88,7 @@ export function MapShell() {
           onProvinceChange={setCurrentProvinceCode}
           onVisitClick={setSelectedVisitId}
           onPinClick={setSelectedPinId}
+          themeOverlays={isPolicy ? themeOverlays : undefined}
         />
       </div>
 
@@ -85,11 +116,30 @@ export function MapShell() {
           <Title level={5} style={{ color: palette.primary, marginTop: 0 }}>
             {isPolicy ? '政策大盘 · 涂层勾选' : '属地大盘 · 热力筛选'}
           </Title>
-          <Paragraph style={{ color: palette.textMuted, fontSize: 12, whiteSpace: 'pre-line' }}>
-            {isPolicy
-              ? '· 涂层勾选(多层级联)\n· 时间维度\n· (c3 待接 · C4/C8 涂层)'
-              : '· 时间窗口\n· 区划筛选\n· 角色筛选\n· (β.1 32 Visit + β.2 3 Pin · 形状区分)'}
-          </Paragraph>
+          {isPolicy ? (
+            <>
+              <Paragraph style={{ color: palette.textMuted, fontSize: 12, marginBottom: 8 }}>
+                涂层勾选(最多 3 层叠加)
+              </Paragraph>
+              <Select
+                mode="multiple"
+                maxCount={3}
+                placeholder="选择政策主题涂层"
+                value={selectedThemeIds}
+                onChange={setSelectedThemeIds}
+                options={(publishedThemes.data?.data ?? []).map((t: Theme) => ({
+                  label: t.title,
+                  value: t.id,
+                }))}
+                style={{ width: '100%' }}
+                maxTagCount="responsive"
+              />
+            </>
+          ) : (
+            <Paragraph style={{ color: palette.textMuted, fontSize: 12, whiteSpace: 'pre-line' }}>
+              {`· 时间窗口\n· 区划筛选\n· 角色筛选\n· (β.1 32 Visit + β.2 3 Pin · 形状区分)`}
+            </Paragraph>
+          )}
         </div>
       )}
 
