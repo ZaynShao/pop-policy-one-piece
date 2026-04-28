@@ -14,6 +14,7 @@ import {
   UserRoleCode,
   type AuthenticatedUser,
   type ThemeStatus,
+  type ThemeRegionLevel,
 } from '@pop/shared-types';
 
 const THEME_WRITE_ALLOWED_ROLES: ReadonlySet<UserRoleCode> = new Set([
@@ -122,5 +123,41 @@ export class ThemesService {
     }
     prev.status = 'published';
     return this.repo.save(prev);
+  }
+
+  /**
+   * 反查 — 给定 regionCode 返回所有 cover 该 region 的已发布主题
+   * Q4 endpoint: GET /api/v1/themes/by-region
+   *
+   * @param regionCode 6 位 adcode(广东 440000 / 广州 440100 等)
+   * @param selectedIds 可选,前端传当前 3 层涂层 id 过滤(MVP Q2=X)
+   */
+  async findByRegion(
+    regionCode: string,
+    selectedIds?: string[],
+  ): Promise<Array<{
+    theme: ThemeEntity;
+    coverage: { regionCode: string; regionLevel: ThemeRegionLevel; mainValue: number };
+  }>> {
+    const qb = this.coverageRepo
+      .createQueryBuilder('cov')
+      .innerJoinAndSelect('cov.theme', 'theme')
+      .where('cov.region_code = :code', { code: regionCode })
+      .andWhere(`theme.status = 'published'`)
+      .orderBy('theme.createdAt', 'DESC');
+
+    if (selectedIds && selectedIds.length > 0) {
+      qb.andWhere('theme.id IN (:...selectedIds)', { selectedIds });
+    }
+
+    const rows = await qb.getMany();
+    return rows.map((cov) => ({
+      theme: cov.theme!,
+      coverage: {
+        regionCode: cov.regionCode,
+        regionLevel: cov.regionLevel,
+        mainValue: cov.mainValue,
+      },
+    }));
   }
 }

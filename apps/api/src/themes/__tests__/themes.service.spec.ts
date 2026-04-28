@@ -130,4 +130,62 @@ describe('ThemesService', () => {
       expect(out.coverage).toHaveLength(1);
     });
   });
+
+  describe('findByRegion', () => {
+    /** Build a chainable QB mock whose getMany returns the given rows */
+    const makeQb = (rows: any[]) => {
+      const qb: any = {};
+      ['innerJoinAndSelect', 'where', 'andWhere', 'orderBy'].forEach((m) => {
+        qb[m] = jest.fn(() => qb);
+      });
+      qb.getMany = jest.fn().mockResolvedValue(rows);
+      return qb;
+    };
+
+    it('happy — returns published themes for known region', async () => {
+      const theme = { id: 't1', title: '智能网联汽车主线政策', status: 'published' };
+      const covRow = { theme, regionCode: '440000', regionLevel: 'province' as const, mainValue: 80 };
+      coverageRepo.createQueryBuilder = jest.fn(() => makeQb([covRow]));
+
+      const result = await svc.findByRegion('440000');
+      expect(result.length).toBeGreaterThan(0);
+      expect(result.some((r) => r.theme.title.includes('智能网联'))).toBe(true);
+    });
+
+    it('selectedIds filter — returns only the matching theme', async () => {
+      const theme = { id: 't1', title: '智能网联汽车主线政策', status: 'published' };
+      const covRow = { theme, regionCode: '440000', regionLevel: 'province' as const, mainValue: 80 };
+      coverageRepo.createQueryBuilder = jest.fn(() => makeQb([covRow]));
+
+      const result = await svc.findByRegion('440000', ['t1']);
+      expect(result).toHaveLength(1);
+      expect(result[0].theme.id).toBe('t1');
+    });
+
+    it('empty for unknown region code', async () => {
+      coverageRepo.createQueryBuilder = jest.fn(() => makeQb([]));
+
+      const result = await svc.findByRegion('999999');
+      expect(result).toEqual([]);
+    });
+
+    it('excludes archived themes — archived theme not in results', async () => {
+      const publishedTheme = { id: 't1', status: 'published', title: 'X' };
+      const archivedTheme = { id: 't2', status: 'archived', title: 'Y' };
+
+      // First call returns only published (archived filtered out by query)
+      const covRow = {
+        theme: publishedTheme,
+        regionCode: '440000',
+        regionLevel: 'province' as const,
+        mainValue: 80,
+      };
+      coverageRepo.createQueryBuilder = jest.fn(() => makeQb([covRow]));
+
+      const result = await svc.findByRegion('440000');
+      const ids = result.map((r) => r.theme.id);
+      expect(ids).not.toContain(archivedTheme.id);
+      expect(ids).toContain(publishedTheme.id);
+    });
+  });
 });
