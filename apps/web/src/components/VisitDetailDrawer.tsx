@@ -2,6 +2,7 @@ import { useState } from 'react';
 import {
   Button,
   Descriptions,
+  Divider,
   Drawer,
   Modal,
   Select,
@@ -11,13 +12,26 @@ import {
   Typography,
   message,
 } from 'antd';
-import { CheckCircleOutlined, CloseCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import {
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  DownloadOutlined,
+  ReloadOutlined,
+} from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Visit, UpdateVisitInput } from '@pop/shared-types';
 import { VisitFormModal } from './VisitFormModal';
 import { authHeaders } from '@/lib/api';
+import { palette } from '@/tokens';
 
 const { Text } = Typography;
+
+// V0.6 β.1 演示工具包 — planned/completed 状态显示,占位 txt(B15 工具级联留 V0.7)
+const DEMO_TOOLS = [
+  { name: '主线政策汇编.txt', file: '/demo/policy-sample.txt' },
+  { name: '谈参参考.txt', file: '/demo/briefing-sample.txt' },
+  { name: '地方数据整合.txt', file: '/demo/data-sample.txt' },
+];
 
 const COLOR_TAG: Record<'red' | 'yellow' | 'green', { color: string; label: string }> = {
   green: { color: 'green', label: '常规' },
@@ -276,6 +290,28 @@ export function VisitDetailDrawer({ visitId, onClose }: Props) {
                   <Text type="secondary">此拜访计划已取消,可重启为计划中。</Text>
                 </Descriptions.Item>
               </Descriptions>
+            )}
+
+            {/* ── 相关工具下载(planned 谈参 / completed 复盘资料 · 已取消的不展示)── */}
+            {(visit.status === 'planned' || visit.status === 'completed') && (
+              <>
+                <Divider style={{ margin: '16px 0 12px' }} />
+                <div>
+                  <Text strong style={{ color: palette.primary, fontSize: 13 }}>相关工具</Text>
+                  <Space direction="vertical" size={8} style={{ width: '100%', marginTop: 8 }}>
+                    {DEMO_TOOLS.map((t) => (
+                      <a key={t.file} href={t.file} download>
+                        <Button block icon={<DownloadOutlined />} style={{ textAlign: 'left' }}>
+                          {t.name}
+                        </Button>
+                      </a>
+                    ))}
+                  </Space>
+                  <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 8 }}>
+                    占位文档,演示用 · B15 工具级联留 V0.7
+                  </Text>
+                </div>
+              </>
             )}
           </>
         )}
