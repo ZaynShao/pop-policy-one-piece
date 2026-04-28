@@ -64,6 +64,9 @@ export class UserEntity {
   @Column({ type: 'text', nullable: true })
   note!: string | null;
 
+  @Column({ type: 'varchar', length: 256, nullable: true, name: 'password_hash' })
+  passwordHash!: string | null;
+
   /** 创建人(PRD §4.0 默认字段,系统初始账号为 null) */
   @Column({ type: 'uuid', nullable: true, name: 'created_by' })
   createdBy!: string | null;
