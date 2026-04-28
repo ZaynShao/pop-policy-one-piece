@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Button, Select, Tooltip, Typography } from 'antd';
+import { Button, Checkbox, Space, Tag, Tooltip, Typography } from 'antd';
 import {
   LeftOutlined,
   PlusOutlined,
@@ -119,21 +119,93 @@ export function MapShell() {
           {isPolicy ? (
             <>
               <Paragraph style={{ color: palette.textMuted, fontSize: 12, marginBottom: 8 }}>
-                涂层勾选(最多 3 层叠加)
+                勾选后在地图上叠加覆盖(最多 3 层)
               </Paragraph>
-              <Select
-                mode="multiple"
-                maxCount={3}
-                placeholder="选择政策主题涂层"
-                value={selectedThemeIds}
-                onChange={setSelectedThemeIds}
-                options={(publishedThemes.data?.data ?? []).map((t: Theme) => ({
-                  label: t.title,
-                  value: t.id,
-                }))}
-                style={{ width: '100%' }}
-                maxTagCount="responsive"
-              />
+              <Space size={6} style={{ marginBottom: 12 }}>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    const ids = (publishedThemes.data?.data ?? []).slice(0, 3).map((t: Theme) => t.id);
+                    setSelectedThemeIds(ids);
+                  }}
+                >
+                  全选
+                </Button>
+                <Button size="small" onClick={() => setSelectedThemeIds([])}>
+                  清空
+                </Button>
+              </Space>
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {(publishedThemes.data?.data ?? []).map((t: Theme) => {
+                  const isSel = selectedThemeIds.includes(t.id);
+                  const themeColor = t.template === 'main' ? '#52c41a' : '#ff4d4f';
+                  const reachLimit = !isSel && selectedThemeIds.length >= 3;
+                  return (
+                    <div
+                      key={t.id}
+                      onClick={() => {
+                        if (reachLimit) return;
+                        setSelectedThemeIds((prev) =>
+                          prev.includes(t.id) ? prev.filter((x) => x !== t.id) : [...prev, t.id],
+                        );
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 8,
+                        padding: 10,
+                        borderRadius: 8,
+                        background: isSel
+                          ? `${themeColor}22`
+                          : 'rgba(0, 212, 255, 0.03)',
+                        border: `1px solid ${isSel ? `${themeColor}aa` : 'rgba(0, 212, 255, 0.08)'}`,
+                        cursor: reachLimit ? 'not-allowed' : 'pointer',
+                        opacity: reachLimit ? 0.45 : 1,
+                        boxShadow: isSel ? `0 0 12px ${themeColor}33` : 'none',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      <Checkbox checked={isSel} disabled={reachLimit} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Space size={6} wrap>
+                          <span
+                            style={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: '50%',
+                              background: themeColor,
+                              boxShadow: `0 0 6px ${themeColor}`,
+                              display: 'inline-block',
+                            }}
+                          />
+                          <Typography.Text
+                            strong
+                            style={{ fontSize: 13, color: palette.textBase }}
+                          >
+                            {t.title}
+                          </Typography.Text>
+                          <Tag
+                            color={t.template === 'main' ? 'green' : 'red'}
+                            style={{ fontSize: 10, margin: 0, lineHeight: '16px' }}
+                          >
+                            {t.template === 'main' ? '主线' : '风险'}
+                          </Tag>
+                        </Space>
+                        {t.regionScope && (
+                          <div style={{ fontSize: 11, color: palette.textMuted, marginTop: 4, lineHeight: 1.5 }}>
+                            {t.regionScope}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                {(publishedThemes.data?.data ?? []).length === 0 && (
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    暂无已发布主题
+                  </Typography.Text>
+                )}
+              </div>
             </>
           ) : (
             <Paragraph style={{ color: palette.textMuted, fontSize: 12, whiteSpace: 'pre-line' }}>

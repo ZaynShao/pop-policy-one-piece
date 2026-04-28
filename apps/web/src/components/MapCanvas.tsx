@@ -12,6 +12,7 @@ import {
 import { authHeaders } from '@/lib/api';
 import { palette } from '@/tokens';
 import { regionCodeToLngLat } from '@/lib/region-centers';
+import { regionCodeToName } from '@/lib/region-names';
 
 export interface ThemeOverlay {
   themeId: string;
@@ -162,47 +163,106 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
     [pins, provinceCode],
   );
 
+  /**
+   * 涂层渲染 — type:'map' series 给 region polygon 染色
+   * - 全国视图(provinceCode=null):province 级 coverage → 全国 GeoJSON 省 polygon
+   * - 省级视图:city 级 coverage → 省级 GeoJSON 市 polygon
+   * 多层叠加用透明度区分(0.55 / 0.43 / 0.31)
+   * 区级散点 city/district 级 coverage 在叠加 polygon 之外保留
+   */
   const overlaySeries = useMemo(() => {
-    if (!themeOverlays || themeOverlays.length === 0) return [];
+    if (!themeOverlays || themeOverlays.length === 0 || !loaded) return [];
 
-    const filterLevel = !provinceCode ? 'city' : 'district';
+    const polygonLevel = !provinceCode ? 'province' : 'city';
+    const dotLevel = !provinceCode ? 'city' : 'district';
 
-    return themeOverlays.map((overlay, idx) => {
-      const opacity = Math.max(0.3, 0.8 - idx * 0.2);  // 0.8 / 0.6 / 0.4
-      const colorByTemplate = overlay.template === 'main' ? '#1677ff' : '#ff4d4f';
-      const points = overlay.coverage.filter((c) => c.regionLevel === filterLevel);
+    const series: unknown[] = [];
 
-      const data = points
+    // ---- polygon 染色层 ----
+    themeOverlays.forEach((overlay, idx) => {
+      const opacity = Math.max(0.25, 0.55 - idx * 0.12);
+      const themeColor = overlay.template === 'main' ? '#52c41a' : '#ff4d4f';
+      const matched = overlay.coverage.filter((c) => c.regionLevel === polygonLevel);
+
+      const polygonData = matched
         .map((c) => {
-          const center = regionCodeToLngLat(c.regionCode);
-          if (!center) return null;
+          const name = regionCodeToName(c.regionCode);
+          if (!name) return null;
           return {
-            name: `${overlay.themeTitle} · ${c.regionCode}`,
-            value: [...center, c.mainValue],
-            mainValue: c.mainValue,
+            name,
+            value: c.mainValue,
+            itemStyle: {
+              areaColor: themeColor,
+              opacity,
+              borderColor: themeColor,
+              borderWidth: 1.5,
+              shadowColor: themeColor,
+              shadowBlur: 12,
+            },
           };
         })
         .filter((d): d is NonNullable<typeof d> => d !== null);
 
-      return {
-        name: `涂层:${overlay.themeTitle}`,
-        type: 'scatter' as const,
-        coordinateSystem: 'geo' as const,
-        geoIndex: 0,
-        z: 3,
-        data,
-        symbolSize: (_val: unknown, params: { data?: { mainValue?: number } }) => {
-          const v = params?.data?.mainValue ?? 1;
-          return Math.max(8, Math.min(40, v * 0.8));
-        },
-        itemStyle: { color: colorByTemplate, opacity },
-        tooltip: {
-          formatter: (params: { data: { name: string; mainValue: number } }) =>
-            `${params.data.name}<br/>主属性值: ${params.data.mainValue}`,
-        },
-      };
+      if (polygonData.length > 0) {
+        series.push({
+          name: `涂层:${overlay.themeTitle}`,
+          type: 'map',
+          map: loaded.key,
+          roam: false,
+          silent: true,
+          label: { show: false },
+          itemStyle: { areaColor: 'transparent', borderColor: 'transparent' },
+          emphasis: { disabled: true },
+          data: polygonData,
+          z: 1 + idx,
+        });
+      }
     });
-  }, [themeOverlays, provinceCode]);
+
+    // ---- 区级散点叠加层(填充 polygon 不能覆盖的细粒度) ----
+    themeOverlays.forEach((overlay, idx) => {
+      const themeColor = overlay.template === 'main' ? '#52c41a' : '#ff4d4f';
+      const dots = overlay.coverage
+        .filter((c) => c.regionLevel === dotLevel)
+        .map((c) => {
+          const center = regionCodeToLngLat(c.regionCode);
+          if (!center) return null;
+          return {
+            name: `${overlay.themeTitle} · ${regionCodeToName(c.regionCode) ?? c.regionCode}`,
+            value: [...center, c.mainValue],
+            mainValue: c.mainValue,
+            itemStyle: {
+              color: themeColor,
+              opacity: 0.85,
+              shadowBlur: 10,
+              shadowColor: themeColor,
+            },
+          };
+        })
+        .filter((d): d is NonNullable<typeof d> => d !== null);
+
+      if (dots.length > 0) {
+        series.push({
+          name: `涂层散点:${overlay.themeTitle}`,
+          type: 'scatter',
+          coordinateSystem: 'geo',
+          geoIndex: 0,
+          data: dots,
+          symbolSize: (_val: unknown, params: { data?: { mainValue?: number } }) => {
+            const v = params?.data?.mainValue ?? 1;
+            return Math.max(6, Math.min(20, 4 + v * 0.3));
+          },
+          z: 4 + idx,
+          tooltip: {
+            formatter: (params: { data: { name: string; mainValue: number } }) =>
+              `${params.data.name}<br/>主属性值: ${params.data.mainValue}`,
+          },
+        });
+      }
+    });
+
+    return series;
+  }, [themeOverlays, provinceCode, loaded]);
 
   const option = useMemo(() => {
     if (!loaded) return null;
