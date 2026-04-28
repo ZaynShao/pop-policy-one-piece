@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { lookupCityCenter } from '../lib/geojson-cities';
 import { PinEntity } from './entities/pin.entity';
 import { CreatePinDto } from './dtos/create-pin.dto';
@@ -26,6 +26,8 @@ const PIN_DELETE_ALLOWED_ROLES: ReadonlySet<UserRoleCode> = new Set([
   UserRoleCode.Pmo,
 ]);
 
+export const PIN_TRASH_ALLOWED_ROLES = PIN_DELETE_ALLOWED_ROLES;
+
 /**
  * Pin 状态机合法切换 — PRD §4.3.1 + SPEC §3
  *   in_progress → completed / aborted
@@ -45,7 +47,17 @@ export class PinsService {
     @InjectRepository(PinEntity) private readonly repo: Repository<PinEntity>,
   ) {}
 
-  list(): Promise<PinEntity[]> {
+  async list(opts?: { withDeleted?: boolean; currentUser?: AuthenticatedUser }): Promise<PinEntity[]> {
+    if (opts?.withDeleted) {
+      if (!opts.currentUser || !PIN_TRASH_ALLOWED_ROLES.has(opts.currentUser.roleCode)) {
+        throw new ForbiddenException('只有管理员/负责人/PMO 可以查看回收站');
+      }
+      return this.repo.find({
+        withDeleted: true,
+        where: { deletedAt: Not(IsNull()) },
+        order: { deletedAt: 'DESC' },
+      });
+    }
     return this.repo.find({ order: { createdAt: 'DESC' } });
   }
 
@@ -131,5 +143,19 @@ export class PinsService {
     }
     const pin = await this.findOne(id);
     await this.repo.softRemove(pin);
+  }
+
+  /**
+   * 还原软删 Pin — deleted_at 置 NULL,其他字段不动
+   * 权限白名单:sys_admin / lead / pmo
+   */
+  async restore(id: string, currentUser: AuthenticatedUser): Promise<PinEntity> {
+    if (!PIN_TRASH_ALLOWED_ROLES.has(currentUser.roleCode)) {
+      throw new ForbiddenException('只有管理员/负责人/PMO 可以还原图钉');
+    }
+    const pin = await this.repo.findOne({ where: { id }, withDeleted: true });
+    if (!pin) throw new NotFoundException(`Pin ${id} not found`);
+    await this.repo.restore(id);
+    return this.repo.findOneOrFail({ where: { id } });
   }
 }

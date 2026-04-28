@@ -32,6 +32,7 @@ export interface Pin {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;  // V0.6 #9 软删除时间(回收站 UI 用,null = 未删)
 }
 
 export interface CreatePinInput {
