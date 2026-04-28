@@ -15,14 +15,23 @@ import {
 import {
   CheckCircleOutlined,
   CloseCircleOutlined,
+  DeleteOutlined,
   DownloadOutlined,
   ReloadOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Visit, UpdateVisitInput } from '@pop/shared-types';
+import { UserRoleCode, type Visit, type UpdateVisitInput } from '@pop/shared-types';
 import { VisitFormModal } from './VisitFormModal';
+import { deleteVisit } from '@/api/visits';
 import { authHeaders } from '@/lib/api';
+import { useAuthStore } from '@/stores/auth';
 import { palette } from '@/tokens';
+
+const VISIT_DELETE_ALLOWED_ROLES: ReadonlySet<UserRoleCode> = new Set([
+  UserRoleCode.SysAdmin,
+  UserRoleCode.Lead,
+  UserRoleCode.Pmo,
+]);
 
 const { Text } = Typography;
 
@@ -70,6 +79,8 @@ async function putVisit(id: string, body: UpdateVisitInput): Promise<void> {
 
 export function VisitDetailDrawer({ visitId, onClose }: Props) {
   const qc = useQueryClient();
+  const currentUser = useAuthStore((s) => s.user);
+  const canDelete = currentUser ? VISIT_DELETE_ALLOWED_ROLES.has(currentUser.roleCode) : false;
   const [editOpen, setEditOpen] = useState(false);
   // editFormVisit: allows overriding status when opening modal (e.g. planned → completed)
   const [editFormVisit, setEditFormVisit] = useState<Visit | null>(null);
@@ -104,6 +115,27 @@ export function VisitDetailDrawer({ visitId, onClose }: Props) {
     },
     onError: (err) => message.error(`保存失败: ${(err as Error).message}`),
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteVisit(visitId as string),
+    onSuccess: () => {
+      message.success('已删除');
+      qc.invalidateQueries({ queryKey: ['visits'] });
+      onClose();
+    },
+    onError: (err) => message.error(`删除失败: ${(err as Error).message}`),
+  });
+
+  const handleDelete = () => {
+    Modal.confirm({
+      title: '删除拜访',
+      content: '软删除:此条拜访会从大盘和清单消失,关联的 Pin 留言不动。回收站可还原。',
+      okText: '确认删除',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: () => deleteMutation.mutateAsync(),
+    });
+  };
 
   const handleCancelPlan = () => {
     Modal.confirm({
@@ -191,12 +223,22 @@ export function VisitDetailDrawer({ visitId, onClose }: Props) {
                 >
                   取消计划
                 </Button>
+                {canDelete && (
+                  <Button
+                    danger
+                    icon={<DeleteOutlined />}
+                    loading={deleteMutation.isPending}
+                    onClick={handleDelete}
+                  >
+                    删除
+                  </Button>
+                )}
               </Space>
             )}
 
             {/* ── cancelled 状态按钮组 ── */}
             {visit.status === 'cancelled' && (
-              <Space style={{ marginBottom: 16 }}>
+              <Space style={{ marginBottom: 16 }} wrap>
                 <Button
                   type="primary"
                   icon={<ReloadOutlined />}
@@ -204,6 +246,30 @@ export function VisitDetailDrawer({ visitId, onClose }: Props) {
                   onClick={handleRestart}
                 >
                   重启为计划中
+                </Button>
+                {canDelete && (
+                  <Button
+                    danger
+                    icon={<DeleteOutlined />}
+                    loading={deleteMutation.isPending}
+                    onClick={handleDelete}
+                  >
+                    删除
+                  </Button>
+                )}
+              </Space>
+            )}
+
+            {/* ── completed 状态按钮组(只有删除)── */}
+            {visit.status === 'completed' && canDelete && (
+              <Space style={{ marginBottom: 16 }} wrap>
+                <Button
+                  danger
+                  icon={<DeleteOutlined />}
+                  loading={deleteMutation.isPending}
+                  onClick={handleDelete}
+                >
+                  删除
                 </Button>
               </Space>
             )}

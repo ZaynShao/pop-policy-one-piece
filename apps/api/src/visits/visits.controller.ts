@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { type AuthenticatedUser } from '@pop/shared-types';
 import { listAllProvincesCities } from '../lib/geojson-cities';
@@ -16,10 +26,17 @@ export class VisitsController {
 
   @Get()
   async list(
+    @CurrentUser() user: AuthenticatedUser,
     @Query('status') status?: 'planned' | 'completed' | 'cancelled',
     @Query('parentPinId') parentPinId?: string,
+    @Query('withDeleted') withDeleted?: string,
   ) {
-    const data = await this.service.list({ status, parentPinId });
+    const data = await this.service.list({
+      status,
+      parentPinId,
+      withDeleted: withDeleted === 'true',
+      currentUser: user,
+    });
     return { data };
   }
 
@@ -43,6 +60,23 @@ export class VisitsController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return { data: await this.service.update(id, dto, user.id) };
+  }
+
+  @Delete(':id')
+  @HttpCode(204)
+  async softDelete(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<void> {
+    await this.service.softDelete(id, user);
+  }
+
+  @Post(':id/restore')
+  async restore(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return { data: await this.service.restore(id, user) };
   }
 }
 
