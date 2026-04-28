@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { type AuthenticatedUser, type ThemeStatus } from '@pop/shared-types';
 import { ThemesService } from './themes.service';
@@ -16,6 +16,26 @@ export class ThemesController {
   @Get()
   async list(@Query('status') status?: ThemeStatus | 'all') {
     const data = await this.service.list({ status });
+    return { data };
+  }
+
+  /**
+   * B7-B9 反查 — 给 region 返回所有 cover 该 region 的已发布主题
+   * 必须放在 @Get(':id') 之前(NestJS 路由顺序敏感)
+   */
+  @Get('by-region')
+  async findByRegion(
+    @Query('regionCode') regionCode: string,
+    @Query('selectedIds') selectedIdsCsv?: string,
+  ) {
+    if (!regionCode) {
+      throw new BadRequestException('regionCode 必填');
+    }
+    const selectedIds = selectedIdsCsv
+      ?.split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const data = await this.service.findByRegion(regionCode, selectedIds);
     return { data };
   }
 
