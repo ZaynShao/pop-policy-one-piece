@@ -40,6 +40,12 @@ interface Props {
   themeOverlays?: ThemeOverlay[];
   /** 是否渲染属地层(Pin / Visit 散点 + 4 色 legend)— 政策大盘传 false 让画布只剩涂层 */
   showLocalLayers?: boolean;
+  /** 当前选中浮起的 region adcode(政策大盘交互 B7) */
+  selectedRegionCode?: string | null;
+  /** click 选中 region 回调(传 null 表示清除浮起) */
+  onRegionSelect?: (code: string | null) => void;
+  /** chart 实例就绪回调,给抽屉调 dispatchAction(用 unknown 避免 echarts type 漏出去)*/
+  onChartReady?: (chart: unknown) => void;
 }
 
 interface LoadedInfo {
@@ -101,7 +107,7 @@ async function fetchPins(): Promise<{ data: Pin[] }> {
   return r.json();
 }
 
-export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVisitClick, onPinClick, themeOverlays, showLocalLayers = true }: Props) {
+export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVisitClick, onPinClick, themeOverlays, showLocalLayers = true, selectedRegionCode = null, onRegionSelect, onChartReady }: Props) {
   const [loaded, setLoaded] = useState<LoadedInfo | null>(null);
   const [zoom, setZoom] = useState<number>(ZOOM_DEFAULT);
 
@@ -256,6 +262,31 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
     return { overlayRegions: regions, overlayDotSeries: dotSeries };
   }, [themeOverlays, provinceCode, loaded]);
 
+  const liftedRegions = useMemo(() => {
+    if (!selectedRegionCode) return overlayRegions;
+    const name = regionCodeToName(selectedRegionCode);
+    if (!name) return overlayRegions;
+
+    // 创建副本,避免改原数组
+    const result = overlayRegions.map((r) => ({
+      ...r,
+      itemStyle: { ...(r.itemStyle as object) },
+    }));
+    const liftedStyle = {
+      borderColor: palette.primary,
+      borderWidth: 3,
+      shadowColor: palette.primary,
+      shadowBlur: 16,
+    };
+    const existing = result.find((r) => r.name === name);
+    if (existing) {
+      existing.itemStyle = { ...existing.itemStyle, ...liftedStyle };
+    } else {
+      result.push({ name, itemStyle: liftedStyle });
+    }
+    return result;
+  }, [overlayRegions, selectedRegionCode]);
+
   const option = useMemo(() => {
     if (!loaded) return null;
     return {
@@ -287,7 +318,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
         },
         select: { disabled: true },
         // 涂层 polygon 染色 — 直接配 region itemStyle,跟 geo zoom/center 天然同步
-        regions: overlayRegions,
+        regions: liftedRegions,
       },
       series: [
         ...overlayDotSeries,
@@ -322,7 +353,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
           : []),
       ],
     };
-  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, overlayRegions, overlayDotSeries, showLocalLayers]);
+  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, liftedRegions, overlayDotSeries, showLocalLayers]);
 
   const onEvents = {
     click: (params: { componentType?: string; name?: string; data?: { visitId?: string; pinId?: string } }) => {
@@ -336,8 +367,26 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
       }
       if (params.componentType !== 'geo' || !params.name) return;
       const name = params.name;
+      const code = !provinceCode ? provinceNameToCode(name) : null;
+
+      // 二段 click:同 region 第二次 → 下钻 / 关
+      if (selectedRegionCode && code === selectedRegionCode) {
+        if (!provinceCode && code) {
+          onProvinceChange?.(code);
+          onRegionClick?.({ level: 'country', code, name });
+        }
+        onRegionSelect?.(null); // 省视图二次 = 关闭浮起
+        return;
+      }
+
+      // 第一次 / 不同 region:政策大盘走 onRegionSelect(浮起 + 抽屉)
+      if (code && onRegionSelect) {
+        onRegionSelect(code);
+        return;
+      }
+
+      // fallback:onRegionSelect 不传时保留原直接下钻(属地大盘)
       if (!provinceCode) {
-        const code = provinceNameToCode(name);
         if (code) {
           onProvinceChange?.(code);
           onRegionClick?.({ level: 'country', code, name });
@@ -429,7 +478,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
       )}
 
       {loaded && option && (
-        <ReactECharts option={option} notMerge style={{ width: '100%', height: '100%' }} onEvents={onEvents} />
+        <ReactECharts option={option} notMerge style={{ width: '100%', height: '100%' }} onEvents={onEvents} onChartReady={onChartReady} />
       )}
     </div>
   );
