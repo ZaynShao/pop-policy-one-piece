@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Button, Tooltip, Typography } from 'antd';
+import { Button, Checkbox, Space, Tag, Tooltip, Typography } from 'antd';
 import {
   LeftOutlined,
   PlusOutlined,
   PushpinOutlined,
   RightOutlined,
 } from '@ant-design/icons';
+import { useQuery } from '@tanstack/react-query';
 import { MapCanvas } from '@/components/MapCanvas';
+import type { ThemeOverlay } from '@/components/MapCanvas';
 import { VisitDetailDrawer } from '@/components/VisitDetailDrawer';
 import { VisitFormModal } from '@/components/VisitFormModal';
 import { PinFormModal } from '@/components/PinFormModal';
 import { PinDetailDrawer } from '@/components/PinDetailDrawer';
+import { fetchThemes, fetchTheme } from '@/api/themes';
+import type { Theme, ThemeWithCoverage } from '@pop/shared-types';
 import { palette } from '@/tokens';
 
 const { Title, Paragraph } = Typography;
@@ -40,6 +44,32 @@ export function MapShell() {
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [pinModalOpen, setPinModalOpen] = useState(false);
   const [visitModalOpen, setVisitModalOpen] = useState(false);
+  const [selectedThemeIds, setSelectedThemeIds] = useState<string[]>([]);
+
+  // 拉 published themes 给 Select options(只在 isPolicy 时拉)
+  const publishedThemes = useQuery({
+    queryKey: ['themes', 'published'],
+    queryFn: () => fetchThemes({ status: 'published' }),
+    enabled: isPolicy,
+  });
+
+  // 拉每个选中 theme 的完整信息(含 coverage)
+  const themeOverlaysData = useQuery({
+    queryKey: ['theme-overlays', selectedThemeIds],
+    queryFn: async () => {
+      if (selectedThemeIds.length === 0) return [];
+      const fetched = await Promise.all(selectedThemeIds.map((id) => fetchTheme(id)));
+      return fetched.map((r) => r.data);
+    },
+    enabled: isPolicy && selectedThemeIds.length > 0,
+  });
+
+  const themeOverlays: ThemeOverlay[] = (themeOverlaysData.data ?? []).map((t: ThemeWithCoverage) => ({
+    themeId: t.id,
+    themeTitle: t.title,
+    template: t.template,
+    coverage: t.coverage,
+  }));
 
   return (
     <div
@@ -58,6 +88,7 @@ export function MapShell() {
           onProvinceChange={setCurrentProvinceCode}
           onVisitClick={setSelectedVisitId}
           onPinClick={setSelectedPinId}
+          themeOverlays={isPolicy ? themeOverlays : undefined}
         />
       </div>
 
@@ -85,11 +116,102 @@ export function MapShell() {
           <Title level={5} style={{ color: palette.primary, marginTop: 0 }}>
             {isPolicy ? '政策大盘 · 涂层勾选' : '属地大盘 · 热力筛选'}
           </Title>
-          <Paragraph style={{ color: palette.textMuted, fontSize: 12, whiteSpace: 'pre-line' }}>
-            {isPolicy
-              ? '· 涂层勾选(多层级联)\n· 时间维度\n· (c3 待接 · C4/C8 涂层)'
-              : '· 时间窗口\n· 区划筛选\n· 角色筛选\n· (β.1 32 Visit + β.2 3 Pin · 形状区分)'}
-          </Paragraph>
+          {isPolicy ? (
+            <>
+              <Paragraph style={{ color: palette.textMuted, fontSize: 12, marginBottom: 8 }}>
+                勾选后在地图上叠加覆盖(最多 3 层)
+              </Paragraph>
+              <Space size={6} style={{ marginBottom: 12 }}>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    const ids = (publishedThemes.data?.data ?? []).slice(0, 3).map((t: Theme) => t.id);
+                    setSelectedThemeIds(ids);
+                  }}
+                >
+                  全选
+                </Button>
+                <Button size="small" onClick={() => setSelectedThemeIds([])}>
+                  清空
+                </Button>
+              </Space>
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {(publishedThemes.data?.data ?? []).map((t: Theme) => {
+                  const isSel = selectedThemeIds.includes(t.id);
+                  const themeColor = t.template === 'main' ? '#52c41a' : '#ff4d4f';
+                  const reachLimit = !isSel && selectedThemeIds.length >= 3;
+                  return (
+                    <div
+                      key={t.id}
+                      onClick={() => {
+                        if (reachLimit) return;
+                        setSelectedThemeIds((prev) =>
+                          prev.includes(t.id) ? prev.filter((x) => x !== t.id) : [...prev, t.id],
+                        );
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 8,
+                        padding: 10,
+                        borderRadius: 8,
+                        background: isSel
+                          ? `${themeColor}22`
+                          : 'rgba(0, 212, 255, 0.03)',
+                        border: `1px solid ${isSel ? `${themeColor}aa` : 'rgba(0, 212, 255, 0.08)'}`,
+                        cursor: reachLimit ? 'not-allowed' : 'pointer',
+                        opacity: reachLimit ? 0.45 : 1,
+                        boxShadow: isSel ? `0 0 12px ${themeColor}33` : 'none',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      <Checkbox checked={isSel} disabled={reachLimit} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Space size={6} wrap>
+                          <span
+                            style={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: '50%',
+                              background: themeColor,
+                              boxShadow: `0 0 6px ${themeColor}`,
+                              display: 'inline-block',
+                            }}
+                          />
+                          <Typography.Text
+                            strong
+                            style={{ fontSize: 13, color: palette.textBase }}
+                          >
+                            {t.title}
+                          </Typography.Text>
+                          <Tag
+                            color={t.template === 'main' ? 'green' : 'red'}
+                            style={{ fontSize: 10, margin: 0, lineHeight: '16px' }}
+                          >
+                            {t.template === 'main' ? '主线' : '风险'}
+                          </Tag>
+                        </Space>
+                        {t.regionScope && (
+                          <div style={{ fontSize: 11, color: palette.textMuted, marginTop: 4, lineHeight: 1.5 }}>
+                            {t.regionScope}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                {(publishedThemes.data?.data ?? []).length === 0 && (
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    暂无已发布主题
+                  </Typography.Text>
+                )}
+              </div>
+            </>
+          ) : (
+            <Paragraph style={{ color: palette.textMuted, fontSize: 12, whiteSpace: 'pre-line' }}>
+              {`· 时间窗口\n· 区划筛选\n· 角色筛选\n· (β.1 32 Visit + β.2 3 Pin · 形状区分)`}
+            </Paragraph>
+          )}
         </div>
       )}
 
@@ -102,7 +224,8 @@ export function MapShell() {
           aria-label={siderOpen ? '收起左面板' : '展开左面板'}
           style={{
             position: 'absolute',
-            left: 16 + 280, // 面板右边缘 = 16 + 280 = 296,按钮挨着面板右侧
+            // 开:贴面板右边缘(16 + 280 = 296);收:贴视口左边缘(0,把手露出来)
+            left: siderOpen ? 16 + 280 : 0,
             top: '50%',
             transform: 'translateY(-50%)',
             width: 28,
@@ -110,6 +233,7 @@ export function MapShell() {
             padding: 0,
             borderRadius: '0 8px 8px 0', // 右半圆角(把手风)
             zIndex: 11,
+            transition: 'left 0.2s ease',
           }}
         />
       </Tooltip>
