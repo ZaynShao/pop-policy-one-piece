@@ -89,6 +89,7 @@ export function MapShell() {
           onVisitClick={setSelectedVisitId}
           onPinClick={setSelectedPinId}
           themeOverlays={isPolicy ? themeOverlays : undefined}
+          showLocalLayers={!isPolicy}
         />
       </div>
 

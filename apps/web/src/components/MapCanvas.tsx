@@ -38,6 +38,8 @@ interface Props {
   onPinClick?: (pinId: string) => void;
   /** T10:主题涂层,按 regionCode 渲染散点叠加层 */
   themeOverlays?: ThemeOverlay[];
+  /** 是否渲染属地层(Pin / Visit 散点 + 4 色 legend)— 政策大盘传 false 让画布只剩涂层 */
+  showLocalLayers?: boolean;
 }
 
 interface LoadedInfo {
@@ -99,7 +101,7 @@ async function fetchPins(): Promise<{ data: Pin[] }> {
   return r.json();
 }
 
-export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVisitClick, onPinClick, themeOverlays }: Props) {
+export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVisitClick, onPinClick, themeOverlays, showLocalLayers = true }: Props) {
   const [loaded, setLoaded] = useState<LoadedInfo | null>(null);
   const [zoom, setZoom] = useState<number>(ZOOM_DEFAULT);
 
@@ -289,33 +291,38 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
       },
       series: [
         ...overlayDotSeries,
-        {
-          type: 'scatter',
-          coordinateSystem: 'geo',
-          geoIndex: 0,
-          symbolSize: provinceCode ? 14 : 8,
-          itemStyle: {
-            shadowBlur: 8,
-            shadowColor: 'rgba(0, 0, 0, 0.5)',
-            opacity: 0.95,
-          },
-          data: scatterData,
-          z: 5,
-        },
-        {
-          type: 'scatter',
-          coordinateSystem: 'geo',
-          geoIndex: 0,
-          symbol: 'pin',
-          // 用户拍 ×3 size:全国 14→42 / 省下钻 22→66(图钉醒目)
-          symbolSize: provinceCode ? 66 : 42,
-          data: pinsScatterData,
-          z: 6,
-          silent: false,
-        },
+        // 属地层:Pin + Visit 散点 — 政策大盘下整个 hide 掉
+        ...(showLocalLayers
+          ? [
+              {
+                type: 'scatter',
+                coordinateSystem: 'geo',
+                geoIndex: 0,
+                symbolSize: provinceCode ? 14 : 8,
+                itemStyle: {
+                  shadowBlur: 8,
+                  shadowColor: 'rgba(0, 0, 0, 0.5)',
+                  opacity: 0.95,
+                },
+                data: scatterData,
+                z: 5,
+              },
+              {
+                type: 'scatter',
+                coordinateSystem: 'geo',
+                geoIndex: 0,
+                symbol: 'pin',
+                // 用户拍 ×3 size:全国 14→42 / 省下钻 22→66(图钉醒目)
+                symbolSize: provinceCode ? 66 : 42,
+                data: pinsScatterData,
+                z: 6,
+                silent: false,
+              },
+            ]
+          : []),
       ],
     };
-  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, overlayRegions, overlayDotSeries]);
+  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, overlayRegions, overlayDotSeries, showLocalLayers]);
 
   const onEvents = {
     click: (params: { componentType?: string; name?: string; data?: { visitId?: string; pinId?: string } }) => {
@@ -375,8 +382,8 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
         </Space>
       )}
 
-      {/* 4 色 legend(底部居中)*/}
-      {loaded && (
+      {/* 4 色 legend(底部居中)— 只在属地层显示;政策大盘 hide */}
+      {loaded && showLocalLayers && (
         <div style={{
           position: 'absolute', left: '50%', bottom: 24, transform: 'translateX(-50%)', zIndex: 5,
           padding: '12px 24px', background: palette.bgPanel, border: `1px solid ${palette.border}`,
