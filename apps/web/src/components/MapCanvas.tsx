@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { Button, Slider, Space, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
@@ -110,6 +110,50 @@ async function fetchPins(): Promise<{ data: Pin[] }> {
 export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVisitClick, onPinClick, themeOverlays, showLocalLayers = true, selectedRegionCode = null, onRegionSelect, onChartReady }: Props) {
   const [loaded, setLoaded] = useState<LoadedInfo | null>(null);
   const [zoom, setZoom] = useState<number>(ZOOM_DEFAULT);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<unknown>(null);
+
+  // ECharts 在 0×0 容器初始化时 geo 投影坏(canvas 全透明,convertToPixel 返回 [0,0])
+  // 双保险修复:
+  //   1) ResizeObserver 监听容器尺寸变化 → setOption 重放 + resize 强制重渲染
+  //   2) onChartReady 用 RAF 重试 3 次,确保 layout 完成后至少有一次成功
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      const c = chartRef.current as {
+        resize?: () => void;
+        setOption?: (opt: object, notMerge: boolean) => void;
+        getOption?: () => object;
+      } | null;
+      if (!c) return;
+      const opt = c.getOption?.();
+      if (opt) c.setOption?.(opt, true);
+      c.resize?.();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const handleChartReady = (chart: unknown) => {
+    chartRef.current = chart;
+    onChartReady?.(chart);
+    // RAF 三连:每帧重试 setOption + resize,直到 canvas 真正画出来(0×0 → 1280×656 race)
+    const c = chart as {
+      resize?: () => void;
+      setOption?: (opt: object, notMerge: boolean) => void;
+      getOption?: () => object;
+    };
+    let tries = 0;
+    const retry = () => {
+      const opt = c.getOption?.();
+      if (opt) c.setOption?.(opt, true);
+      c.resize?.();
+      tries += 1;
+      if (tries < 3) requestAnimationFrame(retry);
+    };
+    requestAnimationFrame(retry);
+  };
 
   // β.1:从 API 拿真 Visit 数据
   const { data: visitsData } = useQuery({
@@ -398,7 +442,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%' }}>
       <div style={{
         position: 'absolute', inset: 0,
         background: 'radial-gradient(ellipse at 55% 50%, rgba(0, 212, 255, 0.08) 0%, transparent 55%), #0a1628',
@@ -478,7 +522,7 @@ export function MapCanvas({ provinceCode, onProvinceChange, onRegionClick, onVis
       )}
 
       {loaded && option && (
-        <ReactECharts option={option} notMerge style={{ width: '100%', height: '100%' }} onEvents={onEvents} onChartReady={onChartReady} />
+        <ReactECharts option={option} notMerge style={{ width: '100%', height: '100%' }} onEvents={onEvents} onChartReady={handleChartReady} />
       )}
     </div>
   );
