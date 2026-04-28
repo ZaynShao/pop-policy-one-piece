@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, Put, Query } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { type AuthenticatedUser } from '@pop/shared-types';
 import { PinsService } from './pins.service';
@@ -15,8 +15,14 @@ export class PinsController {
   constructor(private readonly service: PinsService) {}
 
   @Get()
-  async list() {
-    const data = await this.service.list();
+  async list(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('withDeleted') withDeleted?: string,
+  ) {
+    const data = await this.service.list({
+      withDeleted: withDeleted === 'true',
+      currentUser: user,
+    });
     return { data };
   }
 
@@ -49,5 +55,13 @@ export class PinsController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<void> {
     await this.service.softDelete(id, user);
+  }
+
+  @Post(':id/restore')
+  async restore(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return { data: await this.service.restore(id, user) };
   }
 }
