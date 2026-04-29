@@ -1,3 +1,4 @@
+import { spawn } from 'child_process';
 import {
   BadGatewayException,
   Injectable,
@@ -16,6 +17,7 @@ import { buildVoicePrompt } from './prompt';
 const TIMEOUT_MS = 15_000;
 const VALID_COLORS = ['red', 'yellow', 'green'] as const;
 const MIN_TRANSCRIPT_CHARS = 2; // 1-char output usually means model failed/noise
+const FFMPEG_TIMEOUT_MS = 8_000; // 60s 音频转码大概 1-2s,8s 兜底
 
 @Injectable()
 export class VoiceService {
@@ -35,12 +37,18 @@ export class VoiceService {
       throw new InternalServerErrorException('AI 服务未配置');
     }
 
-    const audioBase64 = audio.toString('base64');
-    const format = mimeType.includes('webm')
-      ? 'webm'
-      : mimeType.includes('wav')
-        ? 'wav'
-        : 'webm';
+    // MiniMax 不接受 webm/opus,只接受 mp3/wav/flac/pcm。
+    // 浏览器 MediaRecorder 录的是 webm,服务端用 ffmpeg 转码。
+    let mp3: Buffer;
+    try {
+      mp3 = await this.transcodeToMp3(audio, mimeType);
+    } catch (e) {
+      this.logger.error(`ffmpeg transcode failed: ${(e as Error).message}`);
+      throw new BadGatewayException('音频转码失败');
+    }
+
+    const audioBase64 = mp3.toString('base64');
+    const format = 'mp3';
     const prompt = buildVoicePrompt(ctx);
 
     let resp;
@@ -76,8 +84,9 @@ export class VoiceService {
         this.logger.warn(`MiniMax timeout after ${TIMEOUT_MS}ms`);
         throw new RequestTimeoutException('AI 解析超时');
       }
+      const respBody = JSON.stringify(ae.response?.data ?? {}).slice(0, 500);
       this.logger.error(
-        `MiniMax fetch failed: ${ae.message} status=${ae.response?.status}`,
+        `MiniMax fetch failed: ${ae.message} status=${ae.response?.status} body=${respBody}`,
       );
       throw new BadGatewayException('AI 服务不可用');
     }
@@ -146,5 +155,60 @@ export class VoiceService {
     return (VALID_COLORS as readonly string[]).includes(v)
       ? (v as 'red' | 'yellow' | 'green')
       : null;
+  }
+
+  /**
+   * 用 ffmpeg 把任意输入(webm/opus/wav/...)转成 mp3 64kbps。
+   * MiniMax chat completions 不接受 webm,只接受 mp3/wav/flac/pcm。
+   */
+  private transcodeToMp3(input: Buffer, _mimeType: string): Promise<Buffer> {
+    return new Promise((resolve, reject) => {
+      const ff = spawn('ffmpeg', [
+        '-i',
+        'pipe:0',
+        '-f',
+        'mp3',
+        '-codec:a',
+        'libmp3lame',
+        '-b:a',
+        '64k',
+        '-ar',
+        '16000', // 16 kHz 采样,对 ASR 已足够,体积更小
+        '-ac',
+        '1', // 单声道
+        '-loglevel',
+        'error',
+        'pipe:1',
+      ]);
+
+      const out: Buffer[] = [];
+      const err: Buffer[] = [];
+      const timer = setTimeout(() => {
+        ff.kill('SIGKILL');
+        reject(new Error(`ffmpeg timeout after ${FFMPEG_TIMEOUT_MS}ms`));
+      }, FFMPEG_TIMEOUT_MS);
+
+      ff.stdout.on('data', (d: Buffer) => out.push(d));
+      ff.stderr.on('data', (d: Buffer) => err.push(d));
+      ff.on('close', (code) => {
+        clearTimeout(timer);
+        if (code === 0) {
+          resolve(Buffer.concat(out));
+        } else {
+          reject(
+            new Error(
+              `ffmpeg exit ${code}: ${Buffer.concat(err).toString().slice(0, 300)}`,
+            ),
+          );
+        }
+      });
+      ff.on('error', (e) => {
+        clearTimeout(timer);
+        reject(e);
+      });
+
+      ff.stdin.write(input);
+      ff.stdin.end();
+    });
   }
 }

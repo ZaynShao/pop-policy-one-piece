@@ -26,6 +26,10 @@ describe('VoiceService', () => {
     }).compile();
     service = module.get(VoiceService);
     jest.clearAllMocks();
+    // 跳过真实 ffmpeg 转码 — 测试只关心 MiniMax 解析逻辑
+    jest
+      .spyOn(service as unknown as { transcodeToMp3: () => Promise<Buffer> }, 'transcodeToMp3')
+      .mockResolvedValue(Buffer.from('fake-mp3'));
   });
 
   afterEach(() => {
