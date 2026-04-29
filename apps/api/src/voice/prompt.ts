@@ -9,10 +9,10 @@ export function buildVoicePrompt(ctx: VoiceParseVisitContext): string {
   const provinceLabel = provinceCode ? `${provinceCode}` : '未选';
   const cityLabel = cityName || '未选';
 
-  return `你是政策拜访记录辅助 AI。任务:把用户的语音转写为结构化字段,用于自动填写"已完成拜访"录入表单。
+  return `你是政策拜访记录辅助 AI。任务:把用户的语音转写文本解析为结构化字段,用于自动填写"已完成拜访"录入表单。
 
 【输入】
-- 音频:用户口述的本次拜访经过(普通话,可能含方言口音)
+- 用户语音转写文本(下方将以 user 消息给出,该文本由 ASR 引擎从音频转换得到,可能含识别错字)
 - 当前日期:${ctx.today}
 - 用户已选省市:${provinceLabel} / ${cityLabel}
 - 中国省份代码表:

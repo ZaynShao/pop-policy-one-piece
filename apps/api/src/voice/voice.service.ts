@@ -13,6 +13,7 @@ import type {
   VoiceParsedFields,
 } from '@pop/shared-types';
 import { buildVoicePrompt } from './prompt';
+import { transcribeAudioWithAliyunNls } from './aliyun-asr';
 
 const TIMEOUT_MS = 15_000;
 const VALID_COLORS = ['red', 'yellow', 'green'] as const;
@@ -26,6 +27,8 @@ export class VoiceService {
   private readonly baseUrl =
     process.env.MINIMAX_BASE_URL ?? 'https://api.minimaxi.com/v1';
   private readonly model = 'MiniMax-M2.7-highspeed';
+  private readonly nlsAppKey = process.env.ALI_NLS_APP_KEY ?? '';
+  private readonly nlsToken = process.env.ALI_NLS_TOKEN ?? '';
 
   async parseVisit(
     audio: Buffer,
@@ -36,9 +39,12 @@ export class VoiceService {
       this.logger.error('MINIMAX_API_KEY not configured');
       throw new InternalServerErrorException('AI 服务未配置');
     }
+    if (!this.nlsAppKey || !this.nlsToken) {
+      this.logger.error('ALI_NLS_APP_KEY / ALI_NLS_TOKEN not configured');
+      throw new InternalServerErrorException('语音识别服务未配置');
+    }
 
-    // MiniMax 不接受 webm/opus,只接受 mp3/wav/flac/pcm。
-    // 浏览器 MediaRecorder 录的是 webm,服务端用 ffmpeg 转码。
+    // 1. 浏览器录的是 webm/opus, 阿里 NLS 接受 mp3/wav/pcm, 服务端 ffmpeg 转 mp3。
     let mp3: Buffer;
     try {
       mp3 = await this.transcodeToMp3(audio, mimeType);
@@ -47,8 +53,27 @@ export class VoiceService {
       throw new BadGatewayException('音频转码失败');
     }
 
-    const audioBase64 = mp3.toString('base64');
-    const format = 'mp3';
+    // 2. 阿里云 NLS 一句话识别: mp3 → transcript
+    let transcript: string;
+    try {
+      transcript = await transcribeAudioWithAliyunNls(
+        mp3,
+        this.nlsAppKey,
+        this.nlsToken,
+      );
+    } catch (e) {
+      this.logger.error(`aliyun ASR failed: ${(e as Error).message}`);
+      throw new BadGatewayException('语音识别失败');
+    }
+
+    if (!transcript || transcript.trim().length < MIN_TRANSCRIPT_CHARS) {
+      this.logger.warn(
+        `aliyun ASR returned empty/too-short transcript (length=${transcript.length})`,
+      );
+      throw new BadGatewayException('没有识别到内容,请重录');
+    }
+
+    // 3. MiniMax chat completions (纯文字): transcript → JSON
     const prompt = buildVoicePrompt(ctx);
 
     let resp;
@@ -58,16 +83,8 @@ export class VoiceService {
         {
           model: this.model,
           messages: [
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: prompt },
-                {
-                  type: 'input_audio',
-                  input_audio: { data: audioBase64, format },
-                },
-              ],
-            },
+            { role: 'system', content: prompt },
+            { role: 'user', content: transcript },
           ],
         },
         {
@@ -118,15 +135,6 @@ export class VoiceService {
       throw new BadGatewayException('AI 返回格式错误');
     }
 
-    const transcript =
-      typeof parsed.transcript === 'string' ? parsed.transcript : '';
-    if (!transcript || transcript.trim().length < MIN_TRANSCRIPT_CHARS) {
-      this.logger.warn(
-        `MiniMax returned empty/too-short transcript (length=${transcript.length})`,
-      );
-      throw new BadGatewayException('没有识别到内容,请重录');
-    }
-
     const fields: VoiceParsedFields = {
       visitDate: this.cleanString(parsed.visitDate),
       provinceCode: this.cleanString(parsed.provinceCode),
@@ -139,6 +147,7 @@ export class VoiceService {
       followUp: typeof parsed.followUp === 'boolean' ? parsed.followUp : null,
     };
 
+    // transcript 用 ASR 的(更可信),不用 MiniMax 输出里的 transcript 字段
     return { transcript, parsed: fields };
   }
 
