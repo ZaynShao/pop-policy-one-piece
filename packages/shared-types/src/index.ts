@@ -13,3 +13,5 @@ export * from './dtos/comment.dto';
 export * from './dtos/theme.dto';
 export * from './dtos/user.dto';
 export * from './dtos/voice.dto';
+export * from './dtos/gov-org.dto';
+export * from './dtos/gov-contact.dto';

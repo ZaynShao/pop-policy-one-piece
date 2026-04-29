@@ -19,6 +19,8 @@ export interface VoiceParsedFields {
   outcomeSummary: string | null;
   color: 'red' | 'yellow' | 'green' | null;
   followUp: boolean | null;
+  /** K 模块 — 后端 fuzzy match GovOrg 后填充,匹配不上为 null */
+  orgId: string | null;
 }
 
 /** POST /api/v1/voice/parse-visit 响应 */
