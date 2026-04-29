@@ -156,14 +156,26 @@ export function MobileVisitNewPage() {
 
     // 检查必填字段缺失
     const after = { ...form.getFieldsValue(), ...next };
-    const missing = REQUIRED_FOR_SUBMIT.filter((k) => {
+    const missingKeys = REQUIRED_FOR_SUBMIT.filter((k) => {
       const v = after[k];
       return v === undefined || v === null || v === '';
-    }).map((k) => FIELD_LABEL_ZH[k] ?? k);
+    });
+    const missingLabels = missingKeys.map((k) => FIELD_LABEL_ZH[k] ?? k);
 
-    setMissingAfterVoice(missing);
+    setMissingAfterVoice(missingLabels);
     setVoiceHasRun(true);
     message.success(`语音已识别(${transcript.length} 字)`);
+
+    // 有缺失字段时,自动滚动到第一个缺失字段(等 React 渲染完横幅再滚)
+    if (missingKeys.length > 0) {
+      const firstMissing = missingKeys[0];
+      setTimeout(() => {
+        form.scrollToField(firstMissing, {
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }, 150);
+    }
   };
 
   // 用户改字段时,重新计算 missing(消失或新增)
