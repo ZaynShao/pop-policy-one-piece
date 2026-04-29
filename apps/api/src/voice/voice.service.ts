@@ -116,14 +116,18 @@ export class VoiceService {
       throw new BadGatewayException('AI 返回空内容');
     }
 
-    // 模型可能在 JSON 前后带 <think>...</think> 或其他文字,提取第一个 { 到最后一个 }
-    const firstBrace = content.indexOf('{');
-    const lastBrace = content.lastIndexOf('}');
+    // Reasoning 模型(M2.7-highspeed)会在 <think>...</think> 内 sketch 思考(常包含
+    // 候选 JSON),最终答案在 </think> 之后。先剥掉 think 段再提取 JSON。
+    const stripped = content.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    const firstBrace = stripped.indexOf('{');
+    const lastBrace = stripped.lastIndexOf('}');
     if (firstBrace === -1 || lastBrace === -1 || firstBrace >= lastBrace) {
-      this.logger.error(`MiniMax returned non-JSON: ${content.slice(0, 500)}`);
+      this.logger.error(
+        `MiniMax returned non-JSON after stripping think: ${stripped.slice(0, 500)}`,
+      );
       throw new BadGatewayException('AI 返回格式错误');
     }
-    const jsonStr = content.slice(firstBrace, lastBrace + 1);
+    const jsonStr = stripped.slice(firstBrace, lastBrace + 1);
 
     let parsed: Record<string, unknown>;
     try {
