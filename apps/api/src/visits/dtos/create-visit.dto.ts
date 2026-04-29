@@ -41,6 +41,9 @@ export class CreateVisitDto {
 
   @IsOptional() @IsBoolean() followUp?: boolean;
 
+  @IsOptional() @IsUUID() orgId?: string;
+  @IsOptional() @IsUUID() contactId?: string;
+
   // 地理(必填,用于 city center lookup)
   @IsString() @IsNotEmpty() @MaxLength(6) provinceCode!: string;
   @IsString() @IsNotEmpty() @MaxLength(64) cityName!: string;

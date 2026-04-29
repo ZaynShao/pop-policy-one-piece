@@ -50,7 +50,7 @@ export class VisitsController {
     @Body() dto: CreateVisitDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return { data: await this.service.create(dto, user.id) };
+    return { data: await this.service.create(dto, user) };
   }
 
   @Put(':id')
