@@ -1,4 +1,12 @@
 {
   "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "paths": {
+      "@pop/shared-types": ["../../packages/shared-types/dist"],
+      "@pop/shared-types/*": ["../../packages/shared-types/dist/*"]
+    }
+  },
   "exclude": ["node_modules", "dist", "**/*.spec.ts", "test"]
 }

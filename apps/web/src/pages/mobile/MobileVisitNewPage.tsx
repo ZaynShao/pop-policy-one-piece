@@ -1,24 +1,21 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  Alert,
   Button,
   DatePicker,
   Form,
   Input,
   Radio,
+  Select,
   Space,
-  Spin,
   Switch,
-  Tag,
   Typography,
   message,
 } from 'antd';
-import { EnvironmentOutlined, LogoutOutlined, ReloadOutlined } from '@ant-design/icons';
+import { EnvironmentOutlined, LogoutOutlined } from '@ant-design/icons';
 import dayjs, { type Dayjs } from 'dayjs';
-import { useMutation } from '@tanstack/react-query';
-import type { CreateVisitInput, VisitStatusColor } from '@pop/shared-types';
-import { fetchReverseGeocode } from '@/api/regions';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import type { CreateVisitInput, CityListResponse } from '@pop/shared-types';
 import { authHeaders } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 import { palette } from '@/tokens';
@@ -27,6 +24,8 @@ const { Title, Text } = Typography;
 
 interface FormValues {
   visitDate: Dayjs;
+  provinceCode: string;
+  cityName: string;
   department: string;
   contactPerson: string;
   contactTitle?: string;
@@ -35,13 +34,10 @@ interface FormValues {
   followUp: boolean;
 }
 
-interface LocationState {
-  lng: number;
-  lat: number;
-  provinceCode: string;
-  provinceName: string;
-  cityName: string;
-  accuracy: number;
+async function fetchCities(): Promise<CityListResponse> {
+  const r = await fetch('/api/v1/cities', { headers: authHeaders() });
+  if (!r.ok) throw new Error('cities fetch fail');
+  return r.json();
 }
 
 async function postVisit(input: CreateVisitInput): Promise<void> {
@@ -57,11 +53,12 @@ async function postVisit(input: CreateVisitInput): Promise<void> {
 }
 
 /**
- * 移动端 — 已拜访录入(用户拍 Q1=A / Q2=B / Q3=B / Q4=A / Q5=a)
+ * 移动端 — 已拜访录入(R2.6: GPS 临时禁用,改为手选省市)
  *
  * UX:
  * - 单列大字体表单(touch target ≥44px)
- * - 顶部 GPS 一键定位按钮 → 反查 city → prefill 显示
+ * - 顶部 GPS 按钮灰显 disabled,下方提示
+ * - 省/市两个 Select(联动),复用桌面端 fetchCities 模式
  * - 提交后跳 /m/done(可"再录一笔")
  */
 export function MobileVisitNewPage() {
@@ -69,51 +66,27 @@ export function MobileVisitNewPage() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const [form] = Form.useForm<FormValues>();
-  const [location, setLocation] = useState<LocationState | null>(null);
-  const [gpsLoading, setGpsLoading] = useState(false);
-  const [gpsError, setGpsError] = useState<string | null>(null);
 
-  const handleGps = () => {
-    setGpsError(null);
-    if (!navigator.geolocation) {
-      setGpsError('当前浏览器不支持 GPS 定位');
-      return;
-    }
-    setGpsLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const { longitude: lng, latitude: lat, accuracy } = pos.coords;
-          const data = await fetchReverseGeocode(lng, lat);
-          setLocation({
-            lng,
-            lat,
-            provinceCode: data.provinceCode,
-            provinceName: data.provinceName,
-            cityName: data.cityName,
-            accuracy,
-          });
-        } catch (e) {
-          setGpsError((e as Error).message);
-        } finally {
-          setGpsLoading(false);
-        }
-      },
-      (err) => {
-        setGpsLoading(false);
-        // PERMISSION_DENIED=1, POSITION_UNAVAILABLE=2, TIMEOUT=3
-        if (err.code === 1) setGpsError('GPS 权限被拒绝,请在浏览器设置允许位置');
-        else if (err.code === 2) setGpsError('当前位置不可用(信号差?)');
-        else if (err.code === 3) setGpsError('GPS 超时,请重试');
-        else setGpsError('GPS 失败:' + err.message);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 },
-    );
-  };
+  const { data: cityList } = useQuery({
+    queryKey: ['cities'],
+    queryFn: fetchCities,
+    staleTime: Infinity,
+  });
+
+  const provinceOptions = useMemo(
+    () => (cityList?.data ?? []).map((p) => ({ label: p.provinceName, value: p.provinceCode })),
+    [cityList],
+  );
+
+  const selectedProvince = Form.useWatch('provinceCode', form);
+
+  const cityOptions = useMemo(() => {
+    const p = cityList?.data.find((x) => x.provinceCode === selectedProvince);
+    return (p?.cities ?? []).map((c) => ({ label: c.name, value: c.name }));
+  }, [cityList, selectedProvince]);
 
   const submitMutation = useMutation({
     mutationFn: async (vs: FormValues) => {
-      if (!location) throw new Error('请先一键定位');
       const input: CreateVisitInput = {
         status: 'completed',
         visitDate: vs.visitDate.format('YYYY-MM-DD'),
@@ -123,8 +96,8 @@ export function MobileVisitNewPage() {
         outcomeSummary: vs.outcomeSummary,
         color: vs.color,
         followUp: vs.followUp,
-        provinceCode: location.provinceCode,
-        cityName: location.cityName,
+        provinceCode: vs.provinceCode,
+        cityName: vs.cityName,
       };
       await postVisit(input);
     },
@@ -166,57 +139,21 @@ export function MobileVisitNewPage() {
         新建拜访
       </Title>
 
-      {/* GPS 一键定位 */}
+      {/* GPS 按钮 — R2.6 暂时禁用,以后恢复 */}
       <div style={{ marginBottom: 16 }}>
-        {!location && !gpsLoading && !gpsError && (
-          <Button
-            type="primary"
-            size="large"
-            block
-            icon={<EnvironmentOutlined />}
-            onClick={handleGps}
-            style={{ height: 56, fontSize: 16 }}
-          >
-            一键定位(GPS)
-          </Button>
-        )}
-        {gpsLoading && (
-          <div style={{ textAlign: 'center', padding: 20 }}>
-            <Spin /> <Text style={{ marginLeft: 8 }}>定位中…</Text>
-          </div>
-        )}
-        {gpsError && (
-          <Alert
-            type="error"
-            message={gpsError}
-            showIcon
-            action={
-              <Button size="small" icon={<ReloadOutlined />} onClick={handleGps}>
-                重试
-              </Button>
-            }
-          />
-        )}
-        {location && (
-          <Alert
-            type="success"
-            message={
-              <Space size={8} wrap>
-                <Tag color="blue" style={{ margin: 0 }}>📍 {location.provinceName}</Tag>
-                <Tag color="cyan" style={{ margin: 0 }}>{location.cityName}</Tag>
-                <Text type="secondary" style={{ fontSize: 11 }}>
-                  ±{Math.round(location.accuracy)}m
-                </Text>
-              </Space>
-            }
-            showIcon
-            action={
-              <Button size="small" icon={<ReloadOutlined />} onClick={handleGps}>
-                重定位
-              </Button>
-            }
-          />
-        )}
+        <Button
+          type="primary"
+          size="large"
+          block
+          icon={<EnvironmentOutlined />}
+          disabled
+          style={{ height: 56, fontSize: 16 }}
+        >
+          一键定位(GPS)
+        </Button>
+        <Text type="secondary" style={{ fontSize: 12, display: 'block', textAlign: 'center', marginTop: 6 }}>
+          GPS 暂未启用,请下方手选省市
+        </Text>
       </div>
 
       {/* 表单 */}
@@ -230,10 +167,28 @@ export function MobileVisitNewPage() {
           color: 'green',
         }}
         onFinish={(vs) => submitMutation.mutate(vs)}
-        disabled={submitMutation.isPending || !location}
+        disabled={submitMutation.isPending}
       >
         <Form.Item label="拜访日期" name="visitDate" rules={[{ required: true }]}>
           <DatePicker style={{ width: '100%' }} inputReadOnly />
+        </Form.Item>
+        <Form.Item label="省" name="provinceCode" rules={[{ required: true }]}>
+          <Select
+            options={provinceOptions}
+            onChange={() => form.setFieldsValue({ cityName: undefined as unknown as string })}
+            showSearch
+            optionFilterProp="label"
+            placeholder="选择省级"
+          />
+        </Form.Item>
+        <Form.Item label="市" name="cityName" rules={[{ required: true }]}>
+          <Select
+            options={cityOptions}
+            disabled={!selectedProvince}
+            showSearch
+            optionFilterProp="label"
+            placeholder={selectedProvince ? '选择市级' : '请先选省'}
+          />
         </Form.Item>
         <Form.Item label="对接部门" name="department" rules={[{ required: true, max: 128 }]}>
           <Input placeholder="例:上海市发改委" maxLength={128} />
@@ -270,16 +225,10 @@ export function MobileVisitNewPage() {
           block
           size="large"
           loading={submitMutation.isPending}
-          disabled={!location}
           style={{ height: 56, fontSize: 16, marginTop: 8 }}
         >
           提交
         </Button>
-        {!location && (
-          <Text type="secondary" style={{ fontSize: 12, display: 'block', textAlign: 'center', marginTop: 6 }}>
-            请先一键定位
-          </Text>
-        )}
       </Form>
 
       <div style={{ marginTop: 24, textAlign: 'center' }}>
