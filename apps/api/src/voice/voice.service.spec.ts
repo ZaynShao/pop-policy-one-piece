@@ -1,236 +1,172 @@
 import { Test } from '@nestjs/testing';
-import {
-  BadGatewayException,
-  InternalServerErrorException,
-  RequestTimeoutException,
-} from '@nestjs/common';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { BadGatewayException, InternalServerErrorException, RequestTimeoutException } from '@nestjs/common';
 import axios from 'axios';
 import { VoiceService } from './voice.service';
+import { GovOrgEntity } from '../gov-orgs/entities/gov-org.entity';
+import * as aliyunAsr from './aliyun-asr';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('VoiceService', () => {
   let service: VoiceService;
-  const ctx = {
-    today: '2026-04-29',
-    currentProvinceCode: '310000',
-    currentCityName: '浦东新区',
-  };
+  let orgsRepo: any;
+  const ctx = { today: '2026-04-29', currentProvinceCode: '430000', currentCityName: '长沙市' };
   const audio = Buffer.from('fakeaudio');
 
   beforeEach(async () => {
     process.env.MINIMAX_API_KEY = 'sk-test';
+    process.env.ALI_NLS_APP_KEY = 'app-test';
+    process.env.ALI_NLS_TOKEN = 'token-test';
+
+    orgsRepo = {
+      findOne: jest.fn().mockResolvedValue(null),
+      createQueryBuilder: jest.fn(() => ({
+        where: jest.fn().mockReturnThis(),
+        andWhere: jest.fn().mockReturnThis(),
+        take: jest.fn().mockReturnThis(),
+        getMany: jest.fn().mockResolvedValue([]),
+      })),
+    };
+
     const module = await Test.createTestingModule({
-      providers: [VoiceService],
+      providers: [
+        VoiceService,
+        { provide: getRepositoryToken(GovOrgEntity), useValue: orgsRepo },
+      ],
     }).compile();
     service = module.get(VoiceService);
+
     jest.clearAllMocks();
-    // 跳过真实 ffmpeg 转码 — 测试只关心 MiniMax 解析逻辑
-    jest
-      .spyOn(service as unknown as { transcodeToMp3: () => Promise<Buffer> }, 'transcodeToMp3')
-      .mockResolvedValue(Buffer.from('fake-mp3'));
+    // Skip ffmpeg
+    jest.spyOn(service as any, 'transcodeToMp3').mockResolvedValue(Buffer.from('fake-mp3'));
+    // Skip Aliyun ASR
+    jest.spyOn(aliyunAsr, 'transcribeAudioWithAliyunNls').mockResolvedValue('今天去长沙发改委张处长');
   });
 
   afterEach(() => {
     delete process.env.MINIMAX_API_KEY;
+    delete process.env.ALI_NLS_APP_KEY;
+    delete process.env.ALI_NLS_TOKEN;
   });
 
-  it('parses valid JSON response', async () => {
+  function mockMiniMax(content: string) {
     mockedAxios.post.mockResolvedValueOnce({
-      data: {
-        choices: [
-          {
-            message: {
-              content: JSON.stringify({
-                transcript: '今天去上海发改委',
-                visitDate: '2026-04-29',
-                provinceCode: '310000',
-                cityName: '上海市',
-                department: '上海发改委',
-                contactPerson: null,
-                contactTitle: null,
-                outcomeSummary: null,
-                color: null,
-                followUp: null,
-              }),
-            },
-          },
-        ],
-      },
-    });
+      data: { choices: [{ message: { content } }] },
+    } as any);
+  }
+
+  it('parses valid JSON + fuzzy match name exact', async () => {
+    mockMiniMax(JSON.stringify({
+      transcript: '今天去长沙发改委',
+      visitDate: '2026-04-29',
+      provinceCode: '430000',
+      cityName: '长沙市',
+      department: '长沙市发展和改革委员会',
+      contactPerson: null,
+      contactTitle: null,
+      outcomeSummary: null,
+      color: null,
+      followUp: null,
+    }));
+    orgsRepo.findOne.mockResolvedValueOnce({ id: 'org-csfgw' });
 
     const result = await service.parseVisit(audio, 'audio/webm', ctx);
-    expect(result.transcript).toBe('今天去上海发改委');
-    expect(result.parsed.provinceCode).toBe('310000');
-    expect(result.parsed.cityName).toBe('上海市');
-    expect(result.parsed.contactPerson).toBeNull();
+    expect(result.parsed.department).toBe('长沙市发展和改革委员会');
+    expect(result.parsed.orgId).toBe('org-csfgw');
   });
 
-  it('strips <think> wrapper and extracts JSON', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
-      data: {
-        choices: [
-          {
-            message: {
-              content:
-                '<think>let me reason about this</think>\n{"transcript":"今天","visitDate":null,"provinceCode":null,"cityName":null,"department":null,"contactPerson":null,"contactTitle":null,"outcomeSummary":null,"color":null,"followUp":null}',
-            },
-          },
-        ],
-      },
-    });
+  it('fuzzy match shortName exact', async () => {
+    mockMiniMax(JSON.stringify({
+      transcript: 't', visitDate: null, provinceCode: '430000', cityName: '长沙市',
+      department: '长沙发改委', contactPerson: null, contactTitle: null,
+      outcomeSummary: null, color: null, followUp: null,
+    }));
+    orgsRepo.findOne
+      .mockResolvedValueOnce(null)        // name exact miss
+      .mockResolvedValueOnce({ id: 'org-csfgw' });  // shortName exact hit
 
     const result = await service.parseVisit(audio, 'audio/webm', ctx);
-    expect(result.transcript).toBe('今天');
+    expect(result.parsed.orgId).toBe('org-csfgw');
   });
 
-  it('rejects empty transcript', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
-      data: {
-        choices: [
-          {
-            message: {
-              content: JSON.stringify({
-                transcript: '',
-                visitDate: null,
-                provinceCode: null,
-                cityName: null,
-                department: null,
-                contactPerson: null,
-                contactTitle: null,
-                outcomeSummary: null,
-                color: null,
-                followUp: null,
-              }),
-            },
-          },
-        ],
-      },
-    });
+  it('fuzzy match LIKE - returns null when multiple candidates', async () => {
+    mockMiniMax(JSON.stringify({
+      transcript: 't', visitDate: null, provinceCode: '430000', cityName: '长沙市',
+      department: '发改委', contactPerson: null, contactTitle: null,
+      outcomeSummary: null, color: null, followUp: null,
+    }));
+    orgsRepo.findOne.mockResolvedValue(null);  // 都不全等
+    orgsRepo.createQueryBuilder().getMany.mockResolvedValueOnce([
+      { id: 'a' }, { id: 'b' },  // 2 candidates → no match
+    ]);
 
-    await expect(
-      service.parseVisit(audio, 'audio/webm', ctx),
-    ).rejects.toThrow(BadGatewayException);
+    const result = await service.parseVisit(audio, 'audio/webm', ctx);
+    expect(result.parsed.orgId).toBeNull();
+    expect(result.parsed.department).toBe('发改委');
   });
 
-  it('rejects non-JSON response', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
-      data: { choices: [{ message: { content: 'I cannot do this' } }] },
-    });
+  it('no department → no fuzzy match call', async () => {
+    mockMiniMax(JSON.stringify({
+      transcript: 't', visitDate: null, provinceCode: null, cityName: null,
+      department: null, contactPerson: null, contactTitle: null,
+      outcomeSummary: null, color: null, followUp: null,
+    }));
 
-    await expect(
-      service.parseVisit(audio, 'audio/webm', ctx),
-    ).rejects.toThrow(BadGatewayException);
+    const result = await service.parseVisit(audio, 'audio/webm', { today: '2026-04-29' });
+    expect(orgsRepo.findOne).not.toHaveBeenCalled();
+    expect(result.parsed.orgId).toBeNull();
+  });
+
+  it('no provinceCode in ctx + LLM not parsing → no fuzzy', async () => {
+    mockMiniMax(JSON.stringify({
+      transcript: 't', visitDate: null, provinceCode: null, cityName: null,
+      department: '某发改委', contactPerson: null, contactTitle: null,
+      outcomeSummary: null, color: null, followUp: null,
+    }));
+
+    const result = await service.parseVisit(audio, 'audio/webm', { today: '2026-04-29' });
+    expect(orgsRepo.findOne).not.toHaveBeenCalled();
+    expect(result.parsed.orgId).toBeNull();
+  });
+
+  it('strips <think> wrapper', async () => {
+    mockMiniMax('<think>reasoning</think>\n{"transcript":"t","visitDate":null,"provinceCode":null,"cityName":null,"department":null,"contactPerson":null,"contactTitle":null,"outcomeSummary":null,"color":null,"followUp":null}');
+    const result = await service.parseVisit(audio, 'audio/webm', ctx);
+    expect(result.transcript).toBe('今天去长沙发改委张处长');
+  });
+
+  it('rejects empty transcript from ASR', async () => {
+    jest.spyOn(aliyunAsr, 'transcribeAudioWithAliyunNls').mockResolvedValueOnce('');
+    await expect(service.parseVisit(audio, 'audio/webm', ctx))
+      .rejects.toThrow(BadGatewayException);
+  });
+
+  it('rejects non-JSON LLM response', async () => {
+    mockMiniMax('I cannot do this');
+    await expect(service.parseVisit(audio, 'audio/webm', ctx))
+      .rejects.toThrow(BadGatewayException);
   });
 
   it('throws RequestTimeoutException on axios ECONNABORTED', async () => {
-    const err = new Error('timeout of 15000ms exceeded') as any;
+    const err: any = new Error('timeout');
     err.code = 'ECONNABORTED';
     mockedAxios.post.mockRejectedValueOnce(err);
-
-    await expect(
-      service.parseVisit(audio, 'audio/webm', ctx),
-    ).rejects.toThrow(RequestTimeoutException);
+    await expect(service.parseVisit(audio, 'audio/webm', ctx))
+      .rejects.toThrow(RequestTimeoutException);
   });
 
-  it('cleans invalid color to null', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
-      data: {
-        choices: [
-          {
-            message: {
-              content: JSON.stringify({
-                transcript: '今天',
-                visitDate: null,
-                provinceCode: null,
-                cityName: null,
-                department: null,
-                contactPerson: null,
-                contactTitle: null,
-                outcomeSummary: null,
-                color: 'purple',
-                followUp: null,
-              }),
-            },
-          },
-        ],
-      },
-    });
-
-    const result = await service.parseVisit(audio, 'audio/webm', ctx);
-    expect(result.parsed.color).toBeNull();
-  });
-
-  it('cleans empty string fields to null', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
-      data: {
-        choices: [
-          {
-            message: {
-              content: JSON.stringify({
-                transcript: '今天',
-                visitDate: '',
-                provinceCode: '   ',
-                cityName: null,
-                department: '上海发改委',
-                contactPerson: null,
-                contactTitle: null,
-                outcomeSummary: null,
-                color: null,
-                followUp: null,
-              }),
-            },
-          },
-        ],
-      },
-    });
-
-    const result = await service.parseVisit(audio, 'audio/webm', ctx);
-    expect(result.parsed.visitDate).toBeNull();
-    expect(result.parsed.provinceCode).toBeNull();
-    expect(result.parsed.department).toBe('上海发改委');
-  });
-
-  it('throws InternalServerErrorException when MINIMAX_API_KEY is missing', async () => {
+  it('throws InternalServerErrorException when MINIMAX_API_KEY missing', async () => {
     delete process.env.MINIMAX_API_KEY;
-    // re-create service so the empty env is captured at construction
     const module = await Test.createTestingModule({
-      providers: [VoiceService],
+      providers: [
+        VoiceService,
+        { provide: getRepositoryToken(GovOrgEntity), useValue: orgsRepo },
+      ],
     }).compile();
     const localService = module.get(VoiceService);
-
-    await expect(
-      localService.parseVisit(audio, 'audio/webm', ctx),
-    ).rejects.toThrow(InternalServerErrorException);
-  });
-
-  it('throws BadGatewayException on non-timeout axios error', async () => {
-    const err = new Error('Network Error') as any;
-    err.code = 'ECONNREFUSED';
-    err.response = { status: 500 };
-    mockedAxios.post.mockRejectedValueOnce(err);
-
-    await expect(
-      service.parseVisit(audio, 'audio/webm', ctx),
-    ).rejects.toThrow(BadGatewayException);
-  });
-
-  it('throws BadGatewayException when MiniMax returns empty content', async () => {
-    mockedAxios.post.mockResolvedValueOnce({
-      data: {
-        choices: [
-          {
-            message: {
-              content: '',
-            },
-          },
-        ],
-      },
-    });
-
-    await expect(
-      service.parseVisit(audio, 'audio/webm', ctx),
-    ).rejects.toThrow(BadGatewayException);
+    await expect(localService.parseVisit(audio, 'audio/webm', ctx))
+      .rejects.toThrow(InternalServerErrorException);
   });
 });

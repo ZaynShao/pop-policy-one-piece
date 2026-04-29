@@ -6,12 +6,15 @@ import {
   Logger,
   RequestTimeoutException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Repository } from 'typeorm';
 import axios, { AxiosError } from 'axios';
 import type {
   VoiceParseVisitContext,
   VoiceParseVisitResponse,
   VoiceParsedFields,
 } from '@pop/shared-types';
+import { GovOrgEntity } from '../gov-orgs/entities/gov-org.entity';
 import { buildVoicePrompt } from './prompt';
 import { transcribeAudioWithAliyunNls } from './aliyun-asr';
 
@@ -29,6 +32,10 @@ export class VoiceService {
   private readonly model = 'MiniMax-M2.7-highspeed';
   private readonly nlsAppKey = process.env.ALI_NLS_APP_KEY ?? '';
   private readonly nlsToken = process.env.ALI_NLS_TOKEN ?? '';
+
+  constructor(
+    @InjectRepository(GovOrgEntity) private readonly orgsRepo: Repository<GovOrgEntity>,
+  ) {}
 
   async parseVisit(
     audio: Buffer,
@@ -139,7 +146,7 @@ export class VoiceService {
       throw new BadGatewayException('AI 返回格式错误');
     }
 
-    const fields: VoiceParsedFields = {
+    const fields: Omit<VoiceParsedFields, 'orgId'> = {
       visitDate: this.cleanString(parsed.visitDate),
       provinceCode: this.cleanString(parsed.provinceCode),
       cityName: this.cleanString(parsed.cityName),
@@ -151,8 +158,64 @@ export class VoiceService {
       followUp: typeof parsed.followUp === 'boolean' ? parsed.followUp : null,
     };
 
+    // K 模块 — fuzzy match GovOrg
+    let matchedOrgId: string | null = null;
+    const provinceCode = fields.provinceCode || ctx.currentProvinceCode || null;
+    if (fields.department && provinceCode) {
+      matchedOrgId = await this.fuzzyMatchGovOrg(
+        fields.department,
+        provinceCode,
+        fields.cityName || ctx.currentCityName || null,
+      );
+    }
+
     // transcript 用 ASR 的(更可信),不用 MiniMax 输出里的 transcript 字段
-    return { transcript, parsed: fields };
+    return {
+      transcript,
+      parsed: { ...fields, orgId: matchedOrgId },
+    };
+  }
+
+  /**
+   * 优先级:
+   * 1. name === department(全等)
+   * 2. shortName === department
+   * 3. name LIKE %department% AND 候选只有 1 条
+   * 否则 null
+   */
+  private async fuzzyMatchGovOrg(
+    department: string,
+    provinceCode: string,
+    cityName: string | null,
+  ): Promise<string | null> {
+    const baseWhere: Record<string, unknown> = {
+      provinceCode,
+      deletedAt: IsNull(),
+    };
+    if (cityName) baseWhere.cityName = cityName;
+
+    // 1. name 全等
+    const exact = await this.orgsRepo.findOne({
+      where: { ...baseWhere, name: department },
+    });
+    if (exact) return exact.id;
+
+    // 2. shortName 全等
+    const exactShort = await this.orgsRepo.findOne({
+      where: { ...baseWhere, shortName: department },
+    });
+    if (exactShort) return exactShort.id;
+
+    // 3. name LIKE %department% — 仅当唯一匹配
+    const qb = this.orgsRepo.createQueryBuilder('o')
+      .where('o.provinceCode = :pc', { pc: provinceCode })
+      .andWhere('o.deletedAt IS NULL')
+      .andWhere('o.name ILIKE :s', { s: `%${department}%` });
+    if (cityName) qb.andWhere('o.cityName = :cn', { cn: cityName });
+    const candidates = await qb.take(2).getMany();
+    if (candidates.length === 1) return candidates[0].id;
+
+    return null;
   }
 
   /** 清洗:string + 非空 + trim,否则 null */
