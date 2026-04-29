@@ -1,6 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
+  Alert,
   Button,
   DatePicker,
   Form,
@@ -15,10 +16,16 @@ import {
 import { EnvironmentOutlined, LogoutOutlined } from '@ant-design/icons';
 import dayjs, { type Dayjs } from 'dayjs';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import type { CreateVisitInput, CityListResponse } from '@pop/shared-types';
+import type {
+  CreateVisitInput,
+  CityListResponse,
+  VoiceParsedFields,
+  VoiceParseVisitContext,
+} from '@pop/shared-types';
 import { authHeaders } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 import { palette } from '@/tokens';
+import { VoiceRecorderButton } from '@/components/VoiceRecorderButton';
 
 const { Title, Text } = Typography;
 
@@ -33,6 +40,22 @@ interface FormValues {
   color: 'red' | 'yellow' | 'green';
   followUp: boolean;
 }
+
+const REQUIRED_FOR_SUBMIT: (keyof FormValues)[] = [
+  'provinceCode',
+  'cityName',
+  'department',
+  'contactPerson',
+  'outcomeSummary',
+];
+
+const FIELD_LABEL_ZH: Record<string, string> = {
+  provinceCode: '省',
+  cityName: '市',
+  department: '对接部门',
+  contactPerson: '对接人',
+  outcomeSummary: '产出描述',
+};
 
 async function fetchCities(): Promise<CityListResponse> {
   const r = await fetch('/api/v1/cities', { headers: authHeaders() });
@@ -53,19 +76,15 @@ async function postVisit(input: CreateVisitInput): Promise<void> {
 }
 
 /**
- * 移动端 — 已拜访录入(R2.6: GPS 临时禁用,改为手选省市)
- *
- * UX:
- * - 单列大字体表单(touch target ≥44px)
- * - 顶部 GPS 按钮灰显 disabled,下方提示
- * - 省/市两个 Select(联动),复用桌面端 fetchCities 模式
- * - 提交后跳 /m/done(可"再录一笔")
+ * 移动端 — 已拜访录入(R2.7: GPS 禁用 + 省市下拉 + 语音录入 + LLM 自动填表)
  */
 export function MobileVisitNewPage() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const [form] = Form.useForm<FormValues>();
+  const [missingAfterVoice, setMissingAfterVoice] = useState<string[]>([]);
+  const [voiceHasRun, setVoiceHasRun] = useState(false);
 
   const { data: cityList } = useQuery({
     queryKey: ['cities'],
@@ -74,7 +93,11 @@ export function MobileVisitNewPage() {
   });
 
   const provinceOptions = useMemo(
-    () => (cityList?.data ?? []).map((p) => ({ label: p.provinceName, value: p.provinceCode })),
+    () =>
+      (cityList?.data ?? []).map((p) => ({
+        label: p.provinceName,
+        value: p.provinceCode,
+      })),
     [cityList],
   );
 
@@ -108,6 +131,54 @@ export function MobileVisitNewPage() {
     onError: (e) => message.error(`提交失败: ${(e as Error).message}`),
   });
 
+  // —— 语音解析回调 ——
+
+  const getVoiceContext = (): VoiceParseVisitContext => ({
+    today: dayjs().format('YYYY-MM-DD'),
+    currentProvinceCode: form.getFieldValue('provinceCode') || null,
+    currentCityName: form.getFieldValue('cityName') || null,
+  });
+
+  const handleVoiceParsed = (parsed: VoiceParsedFields, transcript: string) => {
+    // 转 dayjs 后,filter 掉 null/undefined,setFieldsValue 字段级覆盖
+    const next: Partial<FormValues> = {};
+    if (parsed.visitDate) next.visitDate = dayjs(parsed.visitDate);
+    if (parsed.provinceCode) next.provinceCode = parsed.provinceCode;
+    if (parsed.cityName) next.cityName = parsed.cityName;
+    if (parsed.department) next.department = parsed.department;
+    if (parsed.contactPerson) next.contactPerson = parsed.contactPerson;
+    if (parsed.contactTitle) next.contactTitle = parsed.contactTitle;
+    if (parsed.outcomeSummary) next.outcomeSummary = parsed.outcomeSummary;
+    if (parsed.color) next.color = parsed.color;
+    if (parsed.followUp !== null) next.followUp = parsed.followUp;
+
+    form.setFieldsValue(next);
+
+    // 检查必填字段缺失
+    const after = { ...form.getFieldsValue(), ...next };
+    const missing = REQUIRED_FOR_SUBMIT.filter((k) => {
+      const v = after[k];
+      return v === undefined || v === null || v === '';
+    }).map((k) => FIELD_LABEL_ZH[k] ?? k);
+
+    setMissingAfterVoice(missing);
+    setVoiceHasRun(true);
+    message.success(`语音已识别(${transcript.length} 字)`);
+  };
+
+  // 用户改字段时,重新计算 missing(消失或新增)
+  const handleValuesChange = (
+    _changed: Partial<FormValues>,
+    all: Partial<FormValues>,
+  ) => {
+    if (!voiceHasRun) return;
+    const stillMissing = REQUIRED_FOR_SUBMIT.filter((k) => {
+      const v = all[k];
+      return v === undefined || v === null || v === '';
+    }).map((k) => FIELD_LABEL_ZH[k] ?? k);
+    setMissingAfterVoice(stillMissing);
+  };
+
   return (
     <div
       style={{
@@ -117,29 +188,72 @@ export function MobileVisitNewPage() {
       }}
     >
       {/* 极简顶栏 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 12,
+        }}
+      >
         <Space size={6}>
           <span style={{ fontSize: 18 }}>📍</span>
-          <Text strong style={{ fontSize: 14, color: palette.primary }}>POP · 移动录入</Text>
+          <Text strong style={{ fontSize: 14, color: palette.primary }}>
+            POP · 移动录入
+          </Text>
         </Space>
         <Space size={4}>
-          <Text type="secondary" style={{ fontSize: 11 }}>{user?.displayName ?? ''}</Text>
+          <Text type="secondary" style={{ fontSize: 11 }}>
+            {user?.displayName ?? ''}
+          </Text>
           <Button
             type="text"
             size="small"
             icon={<LogoutOutlined />}
-            onClick={() => { logout(); navigate('/login'); }}
+            onClick={() => {
+              logout();
+              navigate('/login');
+            }}
             aria-label="登出"
             style={{ color: palette.textMuted }}
           />
         </Space>
       </div>
 
-      <Title level={4} style={{ color: palette.primary, marginTop: 0, marginBottom: 16, fontSize: 20 }}>
+      <Title
+        level={4}
+        style={{
+          color: palette.primary,
+          marginTop: 0,
+          marginBottom: 16,
+          fontSize: 20,
+        }}
+      >
         新建拜访
       </Title>
 
-      {/* GPS 按钮 — R2.6 暂时禁用,以后恢复 */}
+      {/* R2.7 — 语音录入按钮(最前面 + 鲜艳红) */}
+      <div style={{ marginBottom: 12 }}>
+        <VoiceRecorderButton
+          onParsed={handleVoiceParsed}
+          getContext={getVoiceContext}
+          disabled={submitMutation.isPending}
+        />
+      </div>
+
+      {/* 必填字段缺失横幅 */}
+      {missingAfterVoice.length > 0 && (
+        <Alert
+          type="warning"
+          showIcon
+          closable
+          onClose={() => setMissingAfterVoice([])}
+          message={`AI 没识别到:${missingAfterVoice.join('、')},请下方补充`}
+          style={{ marginBottom: 12, fontSize: 13 }}
+        />
+      )}
+
+      {/* GPS 按钮 — R2.6 暂时禁用 */}
       <div style={{ marginBottom: 16 }}>
         <Button
           type="primary"
@@ -151,7 +265,15 @@ export function MobileVisitNewPage() {
         >
           一键定位(GPS)
         </Button>
-        <Text type="secondary" style={{ fontSize: 12, display: 'block', textAlign: 'center', marginTop: 6 }}>
+        <Text
+          type="secondary"
+          style={{
+            fontSize: 12,
+            display: 'block',
+            textAlign: 'center',
+            marginTop: 6,
+          }}
+        >
           GPS 暂未启用,请下方手选省市
         </Text>
       </div>
@@ -167,15 +289,26 @@ export function MobileVisitNewPage() {
           color: 'green',
         }}
         onFinish={(vs) => submitMutation.mutate(vs)}
+        onValuesChange={handleValuesChange}
         disabled={submitMutation.isPending}
       >
-        <Form.Item label="拜访日期" name="visitDate" rules={[{ required: true }]}>
+        <Form.Item
+          label="拜访日期"
+          name="visitDate"
+          rules={[{ required: true }]}
+        >
           <DatePicker style={{ width: '100%' }} inputReadOnly />
         </Form.Item>
-        <Form.Item label="省" name="provinceCode" rules={[{ required: true }]}>
+        <Form.Item
+          label="省"
+          name="provinceCode"
+          rules={[{ required: true }]}
+        >
           <Select
             options={provinceOptions}
-            onChange={() => form.setFieldsValue({ cityName: undefined as unknown as string })}
+            onChange={() =>
+              form.setFieldsValue({ cityName: undefined as unknown as string })
+            }
             showSearch
             optionFilterProp="label"
             placeholder="选择省级"
@@ -190,32 +323,81 @@ export function MobileVisitNewPage() {
             placeholder={selectedProvince ? '选择市级' : '请先选省'}
           />
         </Form.Item>
-        <Form.Item label="对接部门" name="department" rules={[{ required: true, max: 128 }]}>
+        <Form.Item
+          label="对接部门"
+          name="department"
+          rules={[{ required: true, max: 128 }]}
+        >
           <Input placeholder="例:上海市发改委" maxLength={128} />
         </Form.Item>
-        <Form.Item label="对接人" name="contactPerson" rules={[{ required: true, max: 64 }]}>
+        <Form.Item
+          label="对接人"
+          name="contactPerson"
+          rules={[{ required: true, max: 64 }]}
+        >
           <Input placeholder="例:张处长" maxLength={64} />
         </Form.Item>
-        <Form.Item label="对接人职务(可选)" name="contactTitle" rules={[{ max: 64 }]}>
+        <Form.Item
+          label="对接人职务(可选)"
+          name="contactTitle"
+          rules={[{ max: 64 }]}
+        >
           <Input placeholder="例:综合处处长" maxLength={64} />
         </Form.Item>
-        <Form.Item label="产出描述" name="outcomeSummary" rules={[{ required: true }]}>
-          <Input.TextArea rows={4} placeholder="一句话总结这次拜访的产出" maxLength={500} showCount />
+        <Form.Item
+          label="产出描述"
+          name="outcomeSummary"
+          rules={[{ required: true }]}
+        >
+          <Input.TextArea
+            rows={4}
+            placeholder="一句话总结这次拜访的产出"
+            maxLength={500}
+            showCount
+          />
         </Form.Item>
         <Form.Item label="颜色" name="color" rules={[{ required: true }]}>
           <Radio.Group buttonStyle="solid" style={{ width: '100%', display: 'flex' }}>
-            <Radio.Button value="green" style={{ flex: 1, textAlign: 'center', height: 44, lineHeight: '40px' }}>
+            <Radio.Button
+              value="green"
+              style={{
+                flex: 1,
+                textAlign: 'center',
+                height: 44,
+                lineHeight: '40px',
+              }}
+            >
               🟢 常规
             </Radio.Button>
-            <Radio.Button value="yellow" style={{ flex: 1, textAlign: 'center', height: 44, lineHeight: '40px' }}>
+            <Radio.Button
+              value="yellow"
+              style={{
+                flex: 1,
+                textAlign: 'center',
+                height: 44,
+                lineHeight: '40px',
+              }}
+            >
               🟡 层级提升
             </Radio.Button>
-            <Radio.Button value="red" style={{ flex: 1, textAlign: 'center', height: 44, lineHeight: '40px' }}>
+            <Radio.Button
+              value="red"
+              style={{
+                flex: 1,
+                textAlign: 'center',
+                height: 44,
+                lineHeight: '40px',
+              }}
+            >
               🔴 紧急
             </Radio.Button>
           </Radio.Group>
         </Form.Item>
-        <Form.Item label="是否需要后续跟进" name="followUp" valuePropName="checked">
+        <Form.Item
+          label="是否需要后续跟进"
+          name="followUp"
+          valuePropName="checked"
+        >
           <Switch />
         </Form.Item>
 
