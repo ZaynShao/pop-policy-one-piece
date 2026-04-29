@@ -26,6 +26,7 @@ import { authHeaders } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 import { palette } from '@/tokens';
 import { VoiceRecorderButton } from '@/components/VoiceRecorderButton';
+import { fetchGovOrg } from '@/api/gov-orgs';
 
 const { Title, Text } = Typography;
 
@@ -85,6 +86,8 @@ export function MobileVisitNewPage() {
   const [form] = Form.useForm<FormValues>();
   const [missingAfterVoice, setMissingAfterVoice] = useState<string[]>([]);
   const [voiceHasRun, setVoiceHasRun] = useState(false);
+  const [matchedOrgId, setMatchedOrgId] = useState<string | null>(null);
+  const [matchedOrgName, setMatchedOrgName] = useState<string | null>(null);
 
   const { data: cityList } = useQuery({
     queryKey: ['cities'],
@@ -121,6 +124,7 @@ export function MobileVisitNewPage() {
         followUp: vs.followUp,
         provinceCode: vs.provinceCode,
         cityName: vs.cityName,
+        orgId: matchedOrgId,  // K 模块 — 移动端只能从语音 fuzzy match 拿,不主动选
       };
       await postVisit(input);
     },
@@ -154,6 +158,34 @@ export function MobileVisitNewPage() {
 
     form.setFieldsValue(next);
 
+    // K 模块 — 后端返回了 orgId 表示 fuzzy match 成功
+    if (parsed.orgId) {
+      const orgIdAtCallTime = parsed.orgId;
+      setMatchedOrgId(orgIdAtCallTime);
+      setMatchedOrgName(null);  // 清旧名,避免 voice2 短暂闪烁 voice1 的名字
+      // 异步查机构名 — 用 closure 内 ID 校对当前 state,过期 fetch 不写
+      fetchGovOrg(orgIdAtCallTime)
+        .then((org) => {
+          setMatchedOrgId((cur) => {
+            if (cur === orgIdAtCallTime) {
+              setMatchedOrgName(`${org.shortName ?? org.name}`);
+            }
+            return cur;
+          });
+        })
+        .catch(() => {
+          setMatchedOrgId((cur) => {
+            if (cur === orgIdAtCallTime) {
+              setMatchedOrgName(null);
+            }
+            return cur;
+          });
+        });
+    } else {
+      setMatchedOrgId(null);
+      setMatchedOrgName(null);
+    }
+
     // 检查必填字段缺失
     const after = { ...form.getFieldsValue(), ...next };
     const missingKeys = REQUIRED_FOR_SUBMIT.filter((k) => {
@@ -180,10 +212,15 @@ export function MobileVisitNewPage() {
 
   // 用户改字段时,重新计算 missing(消失或新增)
   const handleValuesChange = (
-    _changed: Partial<FormValues>,
+    changed: Partial<FormValues>,
     all: Partial<FormValues>,
   ) => {
     if (!voiceHasRun) return;
+    // K 模块 — 用户改 department → 清 matchedOrgId(避免 orgId 指向旧机构)
+    if (changed.department !== undefined) {
+      setMatchedOrgId(null);
+      setMatchedOrgName(null);
+    }
     const stillMissing = REQUIRED_FOR_SUBMIT.filter((k) => {
       const v = all[k];
       return v === undefined || v === null || v === '';
@@ -261,6 +298,24 @@ export function MobileVisitNewPage() {
           closable
           onClose={() => setMissingAfterVoice([])}
           message={`AI 没识别到:${missingAfterVoice.join('、')},请下方补充`}
+          style={{ marginBottom: 12, fontSize: 13 }}
+        />
+      )}
+
+      {/* K 模块 — 机构匹配状态 */}
+      {voiceHasRun && matchedOrgId && matchedOrgName && (
+        <Alert
+          type="success"
+          showIcon
+          message={`🤖 AI 已匹配机构:${matchedOrgName}`}
+          style={{ marginBottom: 12, fontSize: 13 }}
+        />
+      )}
+      {voiceHasRun && !matchedOrgId && form.getFieldValue('department') && (
+        <Alert
+          type="warning"
+          showIcon
+          message={`⚠ 已识别"${form.getFieldValue('department')}",但未匹配到机构库,提交后将作为自由文本保存,你可以稍后回桌面端补关联`}
           style={{ marginBottom: 12, fontSize: 13 }}
         />
       )}
