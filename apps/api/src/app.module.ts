@@ -14,6 +14,7 @@ import { PinsModule } from './pins/pins.module';
 import { CommentsModule } from './comments/comments.module';
 import { ThemesModule } from './themes/themes.module';
 import { VoiceModule } from './voice/voice.module';
+import { GovOrgsModule } from './gov-orgs/gov-orgs.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { VoiceModule } from './voice/voice.module';
     CommentsModule,
     ThemesModule,
     VoiceModule,
+    GovOrgsModule,
   ],
   providers: [
     // 全局 JWT 守卫,@Public() 可跳过
