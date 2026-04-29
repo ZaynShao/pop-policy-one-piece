@@ -2,6 +2,7 @@ import { Drawer, Descriptions, Tag, Space, Typography, Empty } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import type { GovOrg, GovContact, Visit, CityListResponse } from '@pop/shared-types';
 import { fetchVisits } from '@/api/visits';
+import { fetchGovContacts } from '@/api/gov-contacts';
 import { authHeaders } from '@/lib/api';
 
 const { Title, Text } = Typography;
@@ -20,11 +21,10 @@ interface Props {
 }
 
 export function GovOrgDetailDrawer({ org, open, onClose }: Props) {
-  // TODO Task 9: switch this to fetchGovContacts({ orgId: org!.id }) and enabled: !!org once that API client exists
   const { data: contacts } = useQuery({
     queryKey: ['gov-contacts', { orgId: org?.id }],
-    queryFn: async () => ({ data: [] as GovContact[] }),
-    enabled: false,  // Task 9 will re-enable
+    queryFn: () => fetchGovContacts({ orgId: org!.id }),
+    enabled: !!org,
   });
 
   // 省 code → name lookup,使用与 GovOrgFormModal 相同的 cityList query key 复用缓存
