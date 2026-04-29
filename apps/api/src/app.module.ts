@@ -13,6 +13,7 @@ import { VisitsModule } from './visits/visits.module';
 import { PinsModule } from './pins/pins.module';
 import { CommentsModule } from './comments/comments.module';
 import { ThemesModule } from './themes/themes.module';
+import { VoiceModule } from './voice/voice.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ThemesModule } from './themes/themes.module';
     PinsModule,
     CommentsModule,
     ThemesModule,
+    VoiceModule,
   ],
   providers: [
     // 全局 JWT 守卫,@Public() 可跳过
