@@ -12,6 +12,8 @@ import {
 import type { VisitStatusColor, VisitStatus } from '@pop/shared-types';
 import { UserEntity } from '../../users/entities/user.entity';
 import { PinEntity } from '../../pins/entities/pin.entity';
+import { GovOrgEntity } from '../../gov-orgs/entities/gov-org.entity';
+import { GovContactEntity } from '../../gov-contacts/entities/gov-contact.entity';
 
 /**
  * Visit · 计划/拜访点统一实体(β.2.5 + β.3 升级)
@@ -33,6 +35,8 @@ import { PinEntity } from '../../pins/entities/pin.entity';
 @Index(['visitDate'])
 @Index(['parentPinId'])
 @Index(['status'])
+@Index(['orgId'])
+@Index(['contactId'])
 export class VisitEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -99,6 +103,21 @@ export class VisitEntity {
 
   @Column({ type: 'double precision' })
   lat!: number;
+
+  // K 模块 — 关联机构 / 联系人(可空,与 free text 双轨)
+  @Column({ type: 'uuid', nullable: true, name: 'org_id' })
+  orgId!: string | null;
+
+  @ManyToOne(() => GovOrgEntity, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'org_id' })
+  org?: GovOrgEntity;
+
+  @Column({ type: 'uuid', nullable: true, name: 'contact_id' })
+  contactId!: string | null;
+
+  @ManyToOne(() => GovContactEntity, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'contact_id' })
+  contact?: GovContactEntity;
 
   // 系统字段
   @Column({ type: 'uuid', name: 'visitor_id' })
