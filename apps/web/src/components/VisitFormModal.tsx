@@ -1,5 +1,6 @@
-import { useEffect, useMemo } from 'react';
-import { Form, Input, Modal, Select, DatePicker, Radio, Switch, Segmented, message } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import { Form, Input, Modal, Select, DatePicker, Radio, Switch, Segmented, message, Button, Checkbox, Space } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import type {
@@ -8,8 +9,13 @@ import type {
   UpdateVisitInput,
   CityListResponse,
   VisitStatusColor,
+  GovOrg,
+  GovContact,
 } from '@pop/shared-types';
 import { authHeaders } from '@/lib/api';
+import { fetchGovOrgs } from '@/api/gov-orgs';
+import { fetchGovContacts } from '@/api/gov-contacts';
+import { GovOrgFormModal } from './GovOrgFormModal';
 
 const { TextArea } = Input;
 
@@ -30,6 +36,9 @@ interface FormValues {
   visitDate?: dayjs.Dayjs;
   provinceCode: string;
   cityName: string;
+  orgId?: string;
+  contactId?: string;
+  manualMode: boolean;
   department?: string;
   contactPerson?: string;
   contactTitle?: string;
@@ -56,10 +65,33 @@ export function VisitFormModal({
   const [form] = Form.useForm<FormValues>();
   const qc = useQueryClient();
 
+  const [orgSearch, setOrgSearch] = useState('');
+  const [contactSearch, setContactSearch] = useState('');
+  const [orgModalOpen, setOrgModalOpen] = useState(false);
+
+  const watchedOrgId = Form.useWatch('orgId', form);
+  const watchedManual = Form.useWatch('manualMode', form);
+
   const { data: cityList } = useQuery({
     queryKey: ['cities'],
     queryFn: fetchCities,
     staleTime: Infinity,
+  });
+
+  const { data: orgList } = useQuery({
+    queryKey: ['gov-orgs', 'visit-form', orgSearch],
+    queryFn: () => fetchGovOrgs({ search: orgSearch || undefined, limit: 20 }),
+    enabled: !watchedManual,
+  });
+
+  const { data: contactList } = useQuery({
+    queryKey: ['gov-contacts', 'visit-form', watchedOrgId, contactSearch],
+    queryFn: () => fetchGovContacts({
+      orgId: watchedOrgId,
+      search: contactSearch || undefined,
+      limit: 20,
+    }),
+    enabled: !!watchedOrgId,
   });
 
   const provinceOptions = useMemo(
@@ -85,6 +117,9 @@ export function VisitFormModal({
         visitDate: editing.visitDate ? dayjs(editing.visitDate) : undefined,
         provinceCode: editing.provinceCode,
         cityName: editing.cityName,
+        orgId: editing.orgId ?? undefined,
+        contactId: editing.contactId ?? undefined,
+        manualMode: !editing.orgId && !!editing.department,
         department: editing.department ?? undefined,
         contactPerson: editing.contactPerson ?? undefined,
         contactTitle: editing.contactTitle ?? '',
@@ -101,6 +136,7 @@ export function VisitFormModal({
         visitDate: dayjs(),
         color: 'green',
         followUp: false,
+        manualMode: false,
       });
     }
   }, [open, editing, defaultStatus, presetProvinceCode, presetCityName, form]);
@@ -115,7 +151,10 @@ export function VisitFormModal({
         title: isPlanned ? values.title : undefined,
         plannedDate: isPlanned ? values.plannedDate?.format('YYYY-MM-DD') : undefined,
         visitDate: !isPlanned ? values.visitDate?.format('YYYY-MM-DD') : undefined,
-        department: !isPlanned ? values.department : undefined,
+        // K 模块:双轨 — 选了下拉就忽略 free text
+        orgId: values.manualMode ? null : (values.orgId ?? null),
+        contactId: values.manualMode ? null : (values.contactId ?? null),
+        department: !isPlanned ? (values.manualMode ? values.department : undefined) : undefined,
         contactPerson: !isPlanned ? values.contactPerson : undefined,
         contactTitle: !isPlanned ? values.contactTitle || undefined : undefined,
         outcomeSummary: !isPlanned ? values.outcomeSummary : undefined,
@@ -150,6 +189,7 @@ export function VisitFormModal({
     onSuccess: () => {
       message.success(editing ? '已保存' : '已创建');
       qc.invalidateQueries({ queryKey: ['visits'] });
+      qc.invalidateQueries({ queryKey: ['gov-contacts'] });  // K 模块 — auto-upsert may have created new contact
       onClose();
     },
     onError: (err) => {
@@ -158,90 +198,175 @@ export function VisitFormModal({
   });
 
   return (
-    <Modal
-      open={open}
-      title={editing ? '编辑拜访' : '新建计划/拜访'}
-      onCancel={onClose}
-      onOk={() => form.submit()}
-      okText="保存"
-      cancelText="取消"
-      confirmLoading={mutation.isPending}
-      width={560}
-      destroyOnClose
-    >
-      <Form form={form} layout="vertical" onFinish={(v) => mutation.mutate(v)}>
-        <Form.Item label="类型" name="status" rules={[{ required: true }]}>
-          <Segmented
-            options={[
-              { label: '○ 计划中', value: 'planned' },
-              { label: '● 已拜访', value: 'completed' },
-            ]}
-            block
-            disabled={!!editing}
-          />
-        </Form.Item>
+    <>
+      <Modal
+        open={open}
+        title={editing ? '编辑拜访' : '新建计划/拜访'}
+        onCancel={onClose}
+        onOk={() => form.submit()}
+        okText="保存"
+        cancelText="取消"
+        confirmLoading={mutation.isPending}
+        width={560}
+        destroyOnClose
+      >
+        <Form form={form} layout="vertical" onFinish={(v) => mutation.mutate(v)}>
+          <Form.Item label="类型" name="status" rules={[{ required: true }]}>
+            <Segmented
+              options={[
+                { label: '○ 计划中', value: 'planned' },
+                { label: '● 已拜访', value: 'completed' },
+              ]}
+              block
+              disabled={!!editing}
+            />
+          </Form.Item>
 
-        {watchedStatus === 'planned' && (
-          <>
-            <Form.Item label="标题" name="title" rules={[{ required: true, max: 100 }]}>
-              <Input maxLength={100} placeholder="比如:拜访中芯成都厂" />
-            </Form.Item>
-            <Form.Item label="计划日期" name="plannedDate">
-              <DatePicker style={{ width: '100%' }} placeholder="可选,如:2026-05-15" />
-            </Form.Item>
-          </>
-        )}
+          {watchedStatus === 'planned' && (
+            <>
+              <Form.Item label="标题" name="title" rules={[{ required: true, max: 100 }]}>
+                <Input maxLength={100} placeholder="比如:拜访中芯成都厂" />
+              </Form.Item>
+              <Form.Item label="计划日期" name="plannedDate">
+                <DatePicker style={{ width: '100%' }} placeholder="可选,如:2026-05-15" />
+              </Form.Item>
+            </>
+          )}
 
-        {watchedStatus === 'completed' && (
-          <>
-            <Form.Item label="拜访日期" name="visitDate" rules={[{ required: true }]}>
-              <DatePicker style={{ width: '100%' }} />
-            </Form.Item>
-            <Form.Item label="对接部门" name="department" rules={[{ required: true, max: 128 }]}>
-              <Input maxLength={128} />
-            </Form.Item>
-            <Form.Item label="对接人" name="contactPerson" rules={[{ required: true, max: 64 }]}>
-              <Input maxLength={64} />
-            </Form.Item>
-            <Form.Item label="对接人职务" name="contactTitle">
-              <Input maxLength={64} placeholder="可选" />
-            </Form.Item>
-            <Form.Item label="产出描述" name="outcomeSummary" rules={[{ required: true }]}>
-              <TextArea rows={3} />
-            </Form.Item>
-            <Form.Item label="颜色" name="color" rules={[{ required: true }]}>
-              <Radio.Group>
-                <Radio value="green">绿(常规)</Radio>
-                <Radio value="yellow">黄(层级提升)</Radio>
-                <Radio value="red">红(紧急)</Radio>
-              </Radio.Group>
-            </Form.Item>
-            <Form.Item label="后续跟进" name="followUp" valuePropName="checked">
-              <Switch />
-            </Form.Item>
-          </>
-        )}
+          {watchedStatus === 'completed' && (
+            <>
+              <Form.Item label="拜访日期" name="visitDate" rules={[{ required: true }]}>
+                <DatePicker style={{ width: '100%' }} />
+              </Form.Item>
 
-        <Form.Item label="省" name="provinceCode" rules={[{ required: true }]}>
-          <Select
-            options={provinceOptions}
-            disabled={!!editing || !!presetProvinceCode}
-            onChange={() => form.setFieldsValue({ cityName: undefined as unknown as string })}
-            showSearch
-            optionFilterProp="label"
-            placeholder="选择省级"
-          />
-        </Form.Item>
-        <Form.Item label="市" name="cityName" rules={[{ required: true }]}>
-          <Select
-            options={cityOptions}
-            disabled={!!editing || !!presetCityName || !selectedProvince}
-            showSearch
-            optionFilterProp="label"
-            placeholder="选择市级"
-          />
-        </Form.Item>
-      </Form>
-    </Modal>
+              {/* K 模块 — 机构(GovOrg)+ 「我要纯手动填」开关 */}
+              <Form.Item label="对接机构" required>
+                <Space.Compact style={{ width: '100%' }}>
+                  <Form.Item
+                    name="orgId" noStyle
+                    rules={[{ required: !watchedManual, message: '请选择机构或勾「纯手动填」' }]}
+                  >
+                    <Select
+                      showSearch
+                      allowClear
+                      filterOption={false}
+                      onSearch={setOrgSearch}
+                      disabled={watchedManual}
+                      placeholder="搜索机构名/简称"
+                      options={(orgList?.data ?? []).map((o: GovOrg) => ({
+                        label: `${o.name}${o.shortName ? ` (${o.shortName})` : ''}`,
+                        value: o.id,
+                      }))}
+                      notFoundContent={
+                        orgSearch ? (
+                          <Button size="small" type="link" icon={<PlusOutlined />}
+                            onClick={() => setOrgModalOpen(true)}>
+                            + 新建「{orgSearch}」
+                          </Button>
+                        ) : null
+                      }
+                      style={{ width: 'calc(100% - 110px)' }}
+                    />
+                  </Form.Item>
+                  <Button onClick={() => setOrgModalOpen(true)} disabled={watchedManual}>
+                    + 新建机构
+                  </Button>
+                </Space.Compact>
+              </Form.Item>
+
+              <Form.Item name="manualMode" valuePropName="checked">
+                <Checkbox onChange={(e) => {
+                  if (e.target.checked) {
+                    form.setFieldsValue({ orgId: undefined, contactId: undefined });
+                  } else {
+                    form.setFieldsValue({ department: undefined });
+                  }
+                }}>
+                  我要纯手动填(找不到机构 / 不录入机构库)
+                </Checkbox>
+              </Form.Item>
+
+              {watchedManual && (
+                <Form.Item label="对接部门(自由填)" name="department"
+                  rules={[{ required: true, max: 128 }]}>
+                  <Input maxLength={128} placeholder="如:某区发改委" />
+                </Form.Item>
+              )}
+
+              {/* K 模块 — 联系人(GovContact)+ free text 兜底 */}
+              <Form.Item label="对接人(姓名)" required>
+                <Form.Item name="contactId" noStyle>
+                  <Select
+                    showSearch
+                    allowClear
+                    filterOption={false}
+                    onSearch={setContactSearch}
+                    disabled={!watchedOrgId || watchedManual}
+                    placeholder={watchedOrgId ? '从历史联系人挑选' : '先选机构,或下方手填新人'}
+                    options={(contactList?.data ?? []).map((c: GovContact) => ({
+                      label: `${c.name} · ${c.title}`,
+                      value: c.id,
+                    }))}
+                    style={{ marginBottom: 8 }}
+                  />
+                </Form.Item>
+                <Form.Item name="contactPerson" noStyle
+                  rules={[{ required: true, max: 64, message: '至少手填一个名字' }]}>
+                  <Input maxLength={64} placeholder="姓名(必填,后端会按 (机构, 姓名) 自动建联系人)" />
+                </Form.Item>
+              </Form.Item>
+
+              <Form.Item label="对接人职务" name="contactTitle">
+                <Input maxLength={64} placeholder="可选,如:处长" />
+              </Form.Item>
+
+              <Form.Item label="产出描述" name="outcomeSummary" rules={[{ required: true }]}>
+                <TextArea rows={3} />
+              </Form.Item>
+              <Form.Item label="颜色" name="color" rules={[{ required: true }]}>
+                <Radio.Group>
+                  <Radio value="green">绿(常规)</Radio>
+                  <Radio value="yellow">黄(层级提升)</Radio>
+                  <Radio value="red">红(紧急)</Radio>
+                </Radio.Group>
+              </Form.Item>
+              <Form.Item label="后续跟进" name="followUp" valuePropName="checked">
+                <Switch />
+              </Form.Item>
+            </>
+          )}
+
+          <Form.Item label="省" name="provinceCode" rules={[{ required: true }]}>
+            <Select
+              options={provinceOptions}
+              disabled={!!editing || !!presetProvinceCode}
+              onChange={() => form.setFieldsValue({ cityName: undefined as unknown as string })}
+              showSearch
+              optionFilterProp="label"
+              placeholder="选择省级"
+            />
+          </Form.Item>
+          <Form.Item label="市" name="cityName" rules={[{ required: true }]}>
+            <Select
+              options={cityOptions}
+              disabled={!!editing || !!presetCityName || !selectedProvince}
+              showSearch
+              optionFilterProp="label"
+              placeholder="选择市级"
+            />
+          </Form.Item>
+        </Form>
+      </Modal>
+      <GovOrgFormModal
+        open={orgModalOpen}
+        onClose={() => setOrgModalOpen(false)}
+        presetProvinceCode={form.getFieldValue('provinceCode')}
+        presetCityName={form.getFieldValue('cityName')}
+        onCreated={(org) => {
+          form.setFieldsValue({ orgId: org.id, manualMode: false });
+          setOrgSearch('');
+        }}
+      />
+    </>
   );
 }
