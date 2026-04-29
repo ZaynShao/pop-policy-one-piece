@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import { LoginPage } from '@/pages/Login';
 import { AppShell } from '@/layouts/AppShell';
 import { MapShell } from '@/pages/MapShell';
@@ -22,10 +22,17 @@ import { ParamsPage } from '@/pages/admin/ParamsPage';
 import { AuditPage } from '@/pages/admin/AuditPage';
 import { TicketsPage } from '@/pages/admin/TicketsPage';
 import { ExportPage } from '@/pages/admin/ExportPage';
+import { MobileVisitNewPage } from '@/pages/mobile/MobileVisitNewPage';
+import { MobileDonePage } from '@/pages/mobile/MobileDonePage';
 import { ProtectedRoute } from '@/routes/ProtectedRoute';
 import { useAuthStore } from '@/stores/auth';
 import { homeForRole } from '@/lib/role-home';
 import { CONSOLE_DEFAULT_BY_ROLE } from '@/lib/console-tabs';
+
+/** Mobile 路由 wrapper — 仅 Outlet,无 chrome,适合手机直接渲染表单 */
+function MobileShell() {
+  return <Outlet />;
+}
 
 /** 登录后 / 进入 `/` 时按 §6.2 角色派发 */
 function RoleHomeRedirect() {
@@ -45,6 +52,20 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+
+      {/* R2-⑤ 移动端独立路由 — 不挂 AppShell(没顶栏 sidebar) */}
+      <Route
+        path="/m"
+        element={
+          <ProtectedRoute>
+            <MobileShell />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="/m/visit/new" replace />} />
+        <Route path="visit/new" element={<MobileVisitNewPage />} />
+        <Route path="done" element={<MobileDonePage />} />
+      </Route>
 
       <Route
         path="/"

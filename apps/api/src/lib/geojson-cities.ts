@@ -122,6 +122,40 @@ export function lookupCityCenter(
   return { lng: entry.lng, lat: entry.lat };
 }
 
+/**
+ * GET /api/v1/regions/reverse 用:lng/lat → 最近 city center
+ *
+ * 简化算法:遍历所有 city centers,欧式距离最小的胜出。demo 范围 cn 大陆,
+ * 经纬度差异不大,不用 haversine。
+ *
+ * 城市级(provinceCode + cityName 6 位 adcode 在 demo 里,直辖市直接返 110000 等)。
+ * 移动端 GPS 拿到位置后,后端反查最近 city,prefill 表单。
+ */
+export function reverseGeocode(
+  lng: number,
+  lat: number,
+): { provinceCode: string; provinceName: string; cityName: string } | null {
+  let best: { key: string; entry: CityCenter; dist: number } | null = null;
+  for (const [key, entry] of cityCenterMap.entries()) {
+    const dx = entry.lng - lng;
+    const dy = entry.lat - lat;
+    const dist = dx * dx + dy * dy;
+    if (!best || dist < best.dist) {
+      best = { key, entry, dist };
+    }
+  }
+  if (!best) return null;
+  // key 是 `${provinceCode}_${cityName}`,直辖市 cityName=省名
+  const sep = best.key.indexOf('_');
+  const provinceCode = best.key.slice(0, sep);
+  const cityName = best.key.slice(sep + 1);
+  return {
+    provinceCode,
+    provinceName: best.entry.province_name,
+    cityName,
+  };
+}
+
 /** GET /api/v1/cities 用:列出所有省 + 市(camelCase 对齐 shared-types) */
 export function listAllProvincesCities(): Array<{
   provinceCode: string;
