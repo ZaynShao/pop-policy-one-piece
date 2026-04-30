@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Form, Input, Modal, Select, DatePicker, Radio, Switch, Segmented, message, Button, Checkbox } from 'antd';
+import { Form, Input, Modal, Select, DatePicker, Radio, Switch, Segmented, message, Button } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -37,8 +37,6 @@ interface FormValues {
   cityName: string;
   orgId?: string;
   contactId?: string;
-  manualMode: boolean;
-  department?: string;
   contactPerson?: string;
   contactTitle?: string;
   outcomeSummary?: string;
@@ -68,7 +66,6 @@ export function VisitFormModal({
   const [contactSearch, setContactSearch] = useState('');
 
   const watchedOrgId = Form.useWatch('orgId', form);
-  const watchedManual = Form.useWatch('manualMode', form);
   const watchedProvinceCode = Form.useWatch('provinceCode', form);
   const watchedCityName = Form.useWatch('cityName', form);
   const watchedStatus = Form.useWatch('status', form) ?? 'completed';
@@ -88,7 +85,7 @@ export function VisitFormModal({
       search: orgSearch || undefined,
       limit: 30,
     }),
-    enabled: !watchedManual && !!watchedProvinceCode && !!watchedCityName,
+    enabled: !!watchedProvinceCode && !!watchedCityName,
   });
 
   const { data: contactList } = useQuery({
@@ -123,8 +120,6 @@ export function VisitFormModal({
         cityName: editing.cityName,
         orgId: editing.orgId ?? undefined,
         contactId: editing.contactId ?? undefined,
-        manualMode: !editing.orgId && !!editing.department,
-        department: editing.department ?? undefined,
         contactPerson: editing.contactPerson ?? undefined,
         contactTitle: editing.contactTitle ?? '',
         outcomeSummary: editing.outcomeSummary ?? undefined,
@@ -140,7 +135,6 @@ export function VisitFormModal({
         visitDate: dayjs(),
         color: 'green',
         followUp: false,
-        manualMode: false,
       });
     }
   }, [open, editing, defaultStatus, presetProvinceCode, presetCityName, form]);
@@ -164,7 +158,7 @@ export function VisitFormModal({
     onSuccess: (org) => {
       message.success(`已创建「${org.name}」`);
       qc.invalidateQueries({ queryKey: ['gov-orgs'] });
-      form.setFieldsValue({ orgId: org.id, manualMode: false });
+      form.setFieldsValue({ orgId: org.id });
       setOrgSearch('');
     },
     onError: (err) => {
@@ -182,10 +176,9 @@ export function VisitFormModal({
         title: isPlanned ? values.title : undefined,
         plannedDate: isPlanned ? values.plannedDate?.format('YYYY-MM-DD') : undefined,
         visitDate: !isPlanned ? values.visitDate?.format('YYYY-MM-DD') : undefined,
-        // K 模块:双轨 — 选了下拉就忽略 free text
-        orgId: values.manualMode ? null : (values.orgId ?? null),
-        contactId: values.manualMode ? null : (values.contactId ?? null),
-        department: !isPlanned ? (values.manualMode ? values.department : undefined) : undefined,
+        // K 模块:桌面端统一走机构库,department 不再前端发送(老数据保留)
+        orgId: values.orgId ?? null,
+        contactId: values.contactId ?? null,
         contactPerson: !isPlanned ? values.contactPerson : undefined,
         contactTitle: !isPlanned ? values.contactTitle || undefined : undefined,
         outcomeSummary: !isPlanned ? values.outcomeSummary : undefined,
@@ -299,18 +292,29 @@ export function VisitFormModal({
               <DatePicker style={{ width: '100%' }} />
             </Form.Item>
 
+            {/* K 模块 — 老数据(无 orgId)编辑提示 */}
+            {editing && !editing.orgId && editing.department && (
+              <div style={{
+                marginBottom: 16, padding: 8,
+                background: '#e6f4ff', border: '1px solid #91caff',
+                borderRadius: 6, fontSize: 13,
+              }}>
+                💡 原始记录:对接部门「{editing.department}」 — 请在下方选择对应机构(找不到可一键新建)
+              </div>
+            )}
+
             {/* K 模块 — 机构(GovOrg)+ 内联快速创建 */}
             <Form.Item
               label="对接机构"
               name="orgId"
-              rules={[{ required: !watchedManual, message: '请选择机构或勾「纯手动填」' }]}
+              rules={[{ required: true, message: '请选择机构(找不到可一键新建)' }]}
             >
               <Select
                 showSearch
                 allowClear
                 filterOption={false}
                 onSearch={setOrgSearch}
-                disabled={watchedManual || !watchedProvinceCode || !watchedCityName}
+                disabled={!watchedProvinceCode || !watchedCityName}
                 placeholder={
                   !watchedProvinceCode || !watchedCityName
                     ? '先选择省/市'
@@ -336,25 +340,6 @@ export function VisitFormModal({
               />
             </Form.Item>
 
-            <Form.Item name="manualMode" valuePropName="checked">
-              <Checkbox onChange={(e) => {
-                if (e.target.checked) {
-                  form.setFieldsValue({ orgId: undefined, contactId: undefined });
-                } else {
-                  form.setFieldsValue({ department: undefined });
-                }
-              }}>
-                我要纯手动填(不录入机构库)
-              </Checkbox>
-            </Form.Item>
-
-            {watchedManual && (
-              <Form.Item label="对接部门(自由填)" name="department"
-                rules={[{ required: true, max: 128 }]}>
-                <Input maxLength={128} placeholder="如:某区发改委" />
-              </Form.Item>
-            )}
-
             {/* K 模块 — 联系人(GovContact)+ free text 兜底 */}
             <Form.Item label="对接人(姓名)" required>
               <Form.Item name="contactId" noStyle>
@@ -363,7 +348,7 @@ export function VisitFormModal({
                   allowClear
                   filterOption={false}
                   onSearch={setContactSearch}
-                  disabled={!watchedOrgId || watchedManual}
+                  disabled={!watchedOrgId}
                   placeholder={watchedOrgId ? '从历史联系人挑选' : '先选机构,或下方手填新人'}
                   options={(contactList?.data ?? []).map((c: GovContact) => ({
                     label: `${c.name} · ${c.title}`,
