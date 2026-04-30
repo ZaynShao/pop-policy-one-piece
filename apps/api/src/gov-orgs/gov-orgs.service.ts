@@ -22,7 +22,12 @@ export class GovOrgsService {
     const qb = this.repo.createQueryBuilder('o');
     if (q.withDeleted === 'true') qb.withDeleted();
     qb.where('1=1');
-    if (q.provinceCode) qb.andWhere('o.provinceCode = :pc', { pc: q.provinceCode });
+    // K 模块 — 北京(110000)合并中央部委(provinceCode='000000', level='national', cityName='北京市')
+    if (q.provinceCode === '110000') {
+      qb.andWhere('(o.provinceCode = :pc OR o.level = :nat)', { pc: q.provinceCode, nat: 'national' });
+    } else if (q.provinceCode) {
+      qb.andWhere('o.provinceCode = :pc', { pc: q.provinceCode });
+    }
     if (q.cityName) qb.andWhere('o.cityName = :cn', { cn: q.cityName });
     if (q.level) qb.andWhere('o.level = :lv', { lv: q.level });
     if (q.search) {
