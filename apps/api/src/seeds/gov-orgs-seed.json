@@ -1,0 +1,7039 @@
+[
+  {
+    "name": "国家发展和改革委员会",
+    "shortName": "国家发改委",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "工业和信息化部",
+    "shortName": "工信部",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "工业",
+      "数字化"
+    ]
+  },
+  {
+    "name": "科学技术部",
+    "shortName": "科技部",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "财政部",
+    "shortName": "财政部",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "人力资源和社会保障部",
+    "shortName": "人社部",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "商务部",
+    "shortName": "商务部",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "国家市场监督管理总局",
+    "shortName": "市场监管总局",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "教育部",
+    "shortName": "教育部",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "教育"
+    ]
+  },
+  {
+    "name": "住房和城乡建设部",
+    "shortName": "住建部",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "基建",
+      "住房"
+    ]
+  },
+  {
+    "name": "交通运输部",
+    "shortName": "交通部",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "交通",
+      "物流"
+    ]
+  },
+  {
+    "name": "水利部",
+    "shortName": "水利部",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "水利"
+    ]
+  },
+  {
+    "name": "农业农村部",
+    "shortName": "农业部",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "农业"
+    ]
+  },
+  {
+    "name": "文化和旅游部",
+    "shortName": "文旅部",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "文化",
+      "旅游"
+    ]
+  },
+  {
+    "name": "国家卫生健康委员会",
+    "shortName": "卫健委",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "卫生",
+      "医疗"
+    ]
+  },
+  {
+    "name": "国家广播电视总局",
+    "shortName": "广电总局",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "广电"
+    ]
+  },
+  {
+    "name": "国家税务总局",
+    "shortName": "税务总局",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "税务"
+    ]
+  },
+  {
+    "name": "国家统计局",
+    "shortName": "统计局",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "统计"
+    ]
+  },
+  {
+    "name": "国家知识产权局",
+    "shortName": "知识产权局",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "知识产权"
+    ]
+  },
+  {
+    "name": "国家能源局",
+    "shortName": "能源局",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "能源"
+    ]
+  },
+  {
+    "name": "国家林业和草原局",
+    "shortName": "林草局",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "林业"
+    ]
+  },
+  {
+    "name": "国家粮食和物资储备局",
+    "shortName": "粮食局",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "粮食"
+    ]
+  },
+  {
+    "name": "国家烟草专卖局",
+    "shortName": "烟草局",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "烟草"
+    ]
+  },
+  {
+    "name": "国家移民管理局",
+    "shortName": "移民局",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "移民"
+    ]
+  },
+  {
+    "name": "国务院国有资产监督管理委员会",
+    "shortName": "国资委",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "国资"
+    ]
+  },
+  {
+    "name": "中国人民银行",
+    "shortName": "人民银行",
+    "provinceCode": "000000",
+    "cityName": "北京市",
+    "level": "national",
+    "functionTags": [
+      "金融"
+    ]
+  },
+  {
+    "name": "北京市发展和改革委员会",
+    "shortName": "北京发改委",
+    "provinceCode": "110000",
+    "cityName": "北京市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "北京市工业和信息化局",
+    "shortName": "北京工信局",
+    "provinceCode": "110000",
+    "cityName": "北京市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "北京市科学技术局",
+    "shortName": "北京科技局",
+    "provinceCode": "110000",
+    "cityName": "北京市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "北京市财政局",
+    "shortName": "北京财政局",
+    "provinceCode": "110000",
+    "cityName": "北京市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "北京市人力资源和社会保障局",
+    "shortName": "北京人社局",
+    "provinceCode": "110000",
+    "cityName": "北京市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "北京市商务局",
+    "shortName": "北京商务局",
+    "provinceCode": "110000",
+    "cityName": "北京市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "北京市市场监督管理局",
+    "shortName": "北京市场监管局",
+    "provinceCode": "110000",
+    "cityName": "北京市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "天津市发展和改革委员会",
+    "shortName": "天津发改委",
+    "provinceCode": "120000",
+    "cityName": "天津市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "天津市工业和信息化局",
+    "shortName": "天津工信局",
+    "provinceCode": "120000",
+    "cityName": "天津市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "天津市科学技术局",
+    "shortName": "天津科技局",
+    "provinceCode": "120000",
+    "cityName": "天津市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "天津市财政局",
+    "shortName": "天津财政局",
+    "provinceCode": "120000",
+    "cityName": "天津市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "天津市人力资源和社会保障局",
+    "shortName": "天津人社局",
+    "provinceCode": "120000",
+    "cityName": "天津市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "天津市商务局",
+    "shortName": "天津商务局",
+    "provinceCode": "120000",
+    "cityName": "天津市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "天津市市场监督管理局",
+    "shortName": "天津市场监管局",
+    "provinceCode": "120000",
+    "cityName": "天津市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "上海市发展和改革委员会",
+    "shortName": "上海发改委",
+    "provinceCode": "310000",
+    "cityName": "上海市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "上海市工业和信息化局",
+    "shortName": "上海工信局",
+    "provinceCode": "310000",
+    "cityName": "上海市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "上海市科学技术局",
+    "shortName": "上海科技局",
+    "provinceCode": "310000",
+    "cityName": "上海市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "上海市财政局",
+    "shortName": "上海财政局",
+    "provinceCode": "310000",
+    "cityName": "上海市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "上海市人力资源和社会保障局",
+    "shortName": "上海人社局",
+    "provinceCode": "310000",
+    "cityName": "上海市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "上海市商务局",
+    "shortName": "上海商务局",
+    "provinceCode": "310000",
+    "cityName": "上海市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "上海市市场监督管理局",
+    "shortName": "上海市场监管局",
+    "provinceCode": "310000",
+    "cityName": "上海市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "重庆市发展和改革委员会",
+    "shortName": "重庆发改委",
+    "provinceCode": "500000",
+    "cityName": "重庆市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "重庆市工业和信息化局",
+    "shortName": "重庆工信局",
+    "provinceCode": "500000",
+    "cityName": "重庆市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "重庆市科学技术局",
+    "shortName": "重庆科技局",
+    "provinceCode": "500000",
+    "cityName": "重庆市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "重庆市财政局",
+    "shortName": "重庆财政局",
+    "provinceCode": "500000",
+    "cityName": "重庆市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "重庆市人力资源和社会保障局",
+    "shortName": "重庆人社局",
+    "provinceCode": "500000",
+    "cityName": "重庆市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "重庆市商务局",
+    "shortName": "重庆商务局",
+    "provinceCode": "500000",
+    "cityName": "重庆市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "重庆市市场监督管理局",
+    "shortName": "重庆市场监管局",
+    "provinceCode": "500000",
+    "cityName": "重庆市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "内蒙古自治区发展和改革委员会",
+    "shortName": "内蒙古发改委",
+    "provinceCode": "150000",
+    "cityName": "呼和浩特市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "内蒙古自治区工业和信息化厅",
+    "shortName": "内蒙古工信厅",
+    "provinceCode": "150000",
+    "cityName": "呼和浩特市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "内蒙古自治区科学技术厅",
+    "shortName": "内蒙古科技厅",
+    "provinceCode": "150000",
+    "cityName": "呼和浩特市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "内蒙古自治区财政厅",
+    "shortName": "内蒙古财政厅",
+    "provinceCode": "150000",
+    "cityName": "呼和浩特市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "内蒙古自治区人力资源和社会保障厅",
+    "shortName": "内蒙古人社厅",
+    "provinceCode": "150000",
+    "cityName": "呼和浩特市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "内蒙古自治区商务厅",
+    "shortName": "内蒙古商务厅",
+    "provinceCode": "150000",
+    "cityName": "呼和浩特市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "内蒙古自治区市场监督管理局",
+    "shortName": "内蒙古市场监管局",
+    "provinceCode": "150000",
+    "cityName": "呼和浩特市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "广西壮族自治区发展和改革委员会",
+    "shortName": "广西发改委",
+    "provinceCode": "450000",
+    "cityName": "南宁市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "广西壮族自治区工业和信息化厅",
+    "shortName": "广西工信厅",
+    "provinceCode": "450000",
+    "cityName": "南宁市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "广西壮族自治区科学技术厅",
+    "shortName": "广西科技厅",
+    "provinceCode": "450000",
+    "cityName": "南宁市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "广西壮族自治区财政厅",
+    "shortName": "广西财政厅",
+    "provinceCode": "450000",
+    "cityName": "南宁市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "广西壮族自治区人力资源和社会保障厅",
+    "shortName": "广西人社厅",
+    "provinceCode": "450000",
+    "cityName": "南宁市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "广西壮族自治区商务厅",
+    "shortName": "广西商务厅",
+    "provinceCode": "450000",
+    "cityName": "南宁市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "广西壮族自治区市场监督管理局",
+    "shortName": "广西市场监管局",
+    "provinceCode": "450000",
+    "cityName": "南宁市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "西藏自治区发展和改革委员会",
+    "shortName": "西藏发改委",
+    "provinceCode": "540000",
+    "cityName": "拉萨市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "西藏自治区工业和信息化厅",
+    "shortName": "西藏工信厅",
+    "provinceCode": "540000",
+    "cityName": "拉萨市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "西藏自治区科学技术厅",
+    "shortName": "西藏科技厅",
+    "provinceCode": "540000",
+    "cityName": "拉萨市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "西藏自治区财政厅",
+    "shortName": "西藏财政厅",
+    "provinceCode": "540000",
+    "cityName": "拉萨市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "西藏自治区人力资源和社会保障厅",
+    "shortName": "西藏人社厅",
+    "provinceCode": "540000",
+    "cityName": "拉萨市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "西藏自治区商务厅",
+    "shortName": "西藏商务厅",
+    "provinceCode": "540000",
+    "cityName": "拉萨市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "西藏自治区市场监督管理局",
+    "shortName": "西藏市场监管局",
+    "provinceCode": "540000",
+    "cityName": "拉萨市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "宁夏回族自治区发展和改革委员会",
+    "shortName": "宁夏发改委",
+    "provinceCode": "640000",
+    "cityName": "银川市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "宁夏回族自治区工业和信息化厅",
+    "shortName": "宁夏工信厅",
+    "provinceCode": "640000",
+    "cityName": "银川市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "宁夏回族自治区科学技术厅",
+    "shortName": "宁夏科技厅",
+    "provinceCode": "640000",
+    "cityName": "银川市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "宁夏回族自治区财政厅",
+    "shortName": "宁夏财政厅",
+    "provinceCode": "640000",
+    "cityName": "银川市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "宁夏回族自治区人力资源和社会保障厅",
+    "shortName": "宁夏人社厅",
+    "provinceCode": "640000",
+    "cityName": "银川市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "宁夏回族自治区商务厅",
+    "shortName": "宁夏商务厅",
+    "provinceCode": "640000",
+    "cityName": "银川市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "宁夏回族自治区市场监督管理局",
+    "shortName": "宁夏市场监管局",
+    "provinceCode": "640000",
+    "cityName": "银川市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "新疆维吾尔自治区发展和改革委员会",
+    "shortName": "新疆发改委",
+    "provinceCode": "650000",
+    "cityName": "乌鲁木齐市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "新疆维吾尔自治区工业和信息化厅",
+    "shortName": "新疆工信厅",
+    "provinceCode": "650000",
+    "cityName": "乌鲁木齐市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "新疆维吾尔自治区科学技术厅",
+    "shortName": "新疆科技厅",
+    "provinceCode": "650000",
+    "cityName": "乌鲁木齐市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "新疆维吾尔自治区财政厅",
+    "shortName": "新疆财政厅",
+    "provinceCode": "650000",
+    "cityName": "乌鲁木齐市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "新疆维吾尔自治区人力资源和社会保障厅",
+    "shortName": "新疆人社厅",
+    "provinceCode": "650000",
+    "cityName": "乌鲁木齐市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "新疆维吾尔自治区商务厅",
+    "shortName": "新疆商务厅",
+    "provinceCode": "650000",
+    "cityName": "乌鲁木齐市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "新疆维吾尔自治区市场监督管理局",
+    "shortName": "新疆市场监管局",
+    "provinceCode": "650000",
+    "cityName": "乌鲁木齐市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "河北省发展和改革委员会",
+    "shortName": "河北发改委",
+    "provinceCode": "130000",
+    "cityName": "石家庄市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "河北省工业和信息化厅",
+    "shortName": "河北工信厅",
+    "provinceCode": "130000",
+    "cityName": "石家庄市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "河北省科学技术厅",
+    "shortName": "河北科技厅",
+    "provinceCode": "130000",
+    "cityName": "石家庄市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "河北省财政厅",
+    "shortName": "河北财政厅",
+    "provinceCode": "130000",
+    "cityName": "石家庄市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "河北省人力资源和社会保障厅",
+    "shortName": "河北人社厅",
+    "provinceCode": "130000",
+    "cityName": "石家庄市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "河北省商务厅",
+    "shortName": "河北商务厅",
+    "provinceCode": "130000",
+    "cityName": "石家庄市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "河北省市场监督管理局",
+    "shortName": "河北市场监管局",
+    "provinceCode": "130000",
+    "cityName": "石家庄市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "山西省发展和改革委员会",
+    "shortName": "山西发改委",
+    "provinceCode": "140000",
+    "cityName": "太原市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "山西省工业和信息化厅",
+    "shortName": "山西工信厅",
+    "provinceCode": "140000",
+    "cityName": "太原市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "山西省科学技术厅",
+    "shortName": "山西科技厅",
+    "provinceCode": "140000",
+    "cityName": "太原市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "山西省财政厅",
+    "shortName": "山西财政厅",
+    "provinceCode": "140000",
+    "cityName": "太原市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "山西省人力资源和社会保障厅",
+    "shortName": "山西人社厅",
+    "provinceCode": "140000",
+    "cityName": "太原市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "山西省商务厅",
+    "shortName": "山西商务厅",
+    "provinceCode": "140000",
+    "cityName": "太原市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "山西省市场监督管理局",
+    "shortName": "山西市场监管局",
+    "provinceCode": "140000",
+    "cityName": "太原市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "辽宁省发展和改革委员会",
+    "shortName": "辽宁发改委",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "辽宁省工业和信息化厅",
+    "shortName": "辽宁工信厅",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "辽宁省科学技术厅",
+    "shortName": "辽宁科技厅",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "辽宁省财政厅",
+    "shortName": "辽宁财政厅",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "辽宁省人力资源和社会保障厅",
+    "shortName": "辽宁人社厅",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "辽宁省商务厅",
+    "shortName": "辽宁商务厅",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "辽宁省市场监督管理局",
+    "shortName": "辽宁市场监管局",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "吉林省发展和改革委员会",
+    "shortName": "吉林发改委",
+    "provinceCode": "220000",
+    "cityName": "长春市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "吉林省工业和信息化厅",
+    "shortName": "吉林工信厅",
+    "provinceCode": "220000",
+    "cityName": "长春市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "吉林省科学技术厅",
+    "shortName": "吉林科技厅",
+    "provinceCode": "220000",
+    "cityName": "长春市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "吉林省财政厅",
+    "shortName": "吉林财政厅",
+    "provinceCode": "220000",
+    "cityName": "长春市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "吉林省人力资源和社会保障厅",
+    "shortName": "吉林人社厅",
+    "provinceCode": "220000",
+    "cityName": "长春市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "吉林省商务厅",
+    "shortName": "吉林商务厅",
+    "provinceCode": "220000",
+    "cityName": "长春市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "吉林省市场监督管理局",
+    "shortName": "吉林市场监管局",
+    "provinceCode": "220000",
+    "cityName": "长春市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "黑龙江省发展和改革委员会",
+    "shortName": "黑龙江发改委",
+    "provinceCode": "230000",
+    "cityName": "哈尔滨市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "黑龙江省工业和信息化厅",
+    "shortName": "黑龙江工信厅",
+    "provinceCode": "230000",
+    "cityName": "哈尔滨市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "黑龙江省科学技术厅",
+    "shortName": "黑龙江科技厅",
+    "provinceCode": "230000",
+    "cityName": "哈尔滨市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "黑龙江省财政厅",
+    "shortName": "黑龙江财政厅",
+    "provinceCode": "230000",
+    "cityName": "哈尔滨市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "黑龙江省人力资源和社会保障厅",
+    "shortName": "黑龙江人社厅",
+    "provinceCode": "230000",
+    "cityName": "哈尔滨市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "黑龙江省商务厅",
+    "shortName": "黑龙江商务厅",
+    "provinceCode": "230000",
+    "cityName": "哈尔滨市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "黑龙江省市场监督管理局",
+    "shortName": "黑龙江市场监管局",
+    "provinceCode": "230000",
+    "cityName": "哈尔滨市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "江苏省发展和改革委员会",
+    "shortName": "江苏发改委",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "江苏省工业和信息化厅",
+    "shortName": "江苏工信厅",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "江苏省科学技术厅",
+    "shortName": "江苏科技厅",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "江苏省财政厅",
+    "shortName": "江苏财政厅",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "江苏省人力资源和社会保障厅",
+    "shortName": "江苏人社厅",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "江苏省商务厅",
+    "shortName": "江苏商务厅",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "江苏省市场监督管理局",
+    "shortName": "江苏市场监管局",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "浙江省发展和改革委员会",
+    "shortName": "浙江发改委",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "浙江省工业和信息化厅",
+    "shortName": "浙江工信厅",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "浙江省科学技术厅",
+    "shortName": "浙江科技厅",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "浙江省财政厅",
+    "shortName": "浙江财政厅",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "浙江省人力资源和社会保障厅",
+    "shortName": "浙江人社厅",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "浙江省商务厅",
+    "shortName": "浙江商务厅",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "浙江省市场监督管理局",
+    "shortName": "浙江市场监管局",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "安徽省发展和改革委员会",
+    "shortName": "安徽发改委",
+    "provinceCode": "340000",
+    "cityName": "合肥市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "安徽省工业和信息化厅",
+    "shortName": "安徽工信厅",
+    "provinceCode": "340000",
+    "cityName": "合肥市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "安徽省科学技术厅",
+    "shortName": "安徽科技厅",
+    "provinceCode": "340000",
+    "cityName": "合肥市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "安徽省财政厅",
+    "shortName": "安徽财政厅",
+    "provinceCode": "340000",
+    "cityName": "合肥市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "安徽省人力资源和社会保障厅",
+    "shortName": "安徽人社厅",
+    "provinceCode": "340000",
+    "cityName": "合肥市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "安徽省商务厅",
+    "shortName": "安徽商务厅",
+    "provinceCode": "340000",
+    "cityName": "合肥市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "安徽省市场监督管理局",
+    "shortName": "安徽市场监管局",
+    "provinceCode": "340000",
+    "cityName": "合肥市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "福建省发展和改革委员会",
+    "shortName": "福建发改委",
+    "provinceCode": "350000",
+    "cityName": "福州市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "福建省工业和信息化厅",
+    "shortName": "福建工信厅",
+    "provinceCode": "350000",
+    "cityName": "福州市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "福建省科学技术厅",
+    "shortName": "福建科技厅",
+    "provinceCode": "350000",
+    "cityName": "福州市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "福建省财政厅",
+    "shortName": "福建财政厅",
+    "provinceCode": "350000",
+    "cityName": "福州市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "福建省人力资源和社会保障厅",
+    "shortName": "福建人社厅",
+    "provinceCode": "350000",
+    "cityName": "福州市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "福建省商务厅",
+    "shortName": "福建商务厅",
+    "provinceCode": "350000",
+    "cityName": "福州市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "福建省市场监督管理局",
+    "shortName": "福建市场监管局",
+    "provinceCode": "350000",
+    "cityName": "福州市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "江西省发展和改革委员会",
+    "shortName": "江西发改委",
+    "provinceCode": "360000",
+    "cityName": "南昌市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "江西省工业和信息化厅",
+    "shortName": "江西工信厅",
+    "provinceCode": "360000",
+    "cityName": "南昌市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "江西省科学技术厅",
+    "shortName": "江西科技厅",
+    "provinceCode": "360000",
+    "cityName": "南昌市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "江西省财政厅",
+    "shortName": "江西财政厅",
+    "provinceCode": "360000",
+    "cityName": "南昌市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "江西省人力资源和社会保障厅",
+    "shortName": "江西人社厅",
+    "provinceCode": "360000",
+    "cityName": "南昌市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "江西省商务厅",
+    "shortName": "江西商务厅",
+    "provinceCode": "360000",
+    "cityName": "南昌市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "江西省市场监督管理局",
+    "shortName": "江西市场监管局",
+    "provinceCode": "360000",
+    "cityName": "南昌市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "山东省发展和改革委员会",
+    "shortName": "山东发改委",
+    "provinceCode": "370000",
+    "cityName": "济南市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "山东省工业和信息化厅",
+    "shortName": "山东工信厅",
+    "provinceCode": "370000",
+    "cityName": "济南市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "山东省科学技术厅",
+    "shortName": "山东科技厅",
+    "provinceCode": "370000",
+    "cityName": "济南市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "山东省财政厅",
+    "shortName": "山东财政厅",
+    "provinceCode": "370000",
+    "cityName": "济南市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "山东省人力资源和社会保障厅",
+    "shortName": "山东人社厅",
+    "provinceCode": "370000",
+    "cityName": "济南市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "山东省商务厅",
+    "shortName": "山东商务厅",
+    "provinceCode": "370000",
+    "cityName": "济南市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "山东省市场监督管理局",
+    "shortName": "山东市场监管局",
+    "provinceCode": "370000",
+    "cityName": "济南市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "河南省发展和改革委员会",
+    "shortName": "河南发改委",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "河南省工业和信息化厅",
+    "shortName": "河南工信厅",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "河南省科学技术厅",
+    "shortName": "河南科技厅",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "河南省财政厅",
+    "shortName": "河南财政厅",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "河南省人力资源和社会保障厅",
+    "shortName": "河南人社厅",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "河南省商务厅",
+    "shortName": "河南商务厅",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "河南省市场监督管理局",
+    "shortName": "河南市场监管局",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "湖北省发展和改革委员会",
+    "shortName": "湖北发改委",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "湖北省工业和信息化厅",
+    "shortName": "湖北工信厅",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "湖北省科学技术厅",
+    "shortName": "湖北科技厅",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "湖北省财政厅",
+    "shortName": "湖北财政厅",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "湖北省人力资源和社会保障厅",
+    "shortName": "湖北人社厅",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "湖北省商务厅",
+    "shortName": "湖北商务厅",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "湖北省市场监督管理局",
+    "shortName": "湖北市场监管局",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "湖南省发展和改革委员会",
+    "shortName": "湖南发改委",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "湖南省工业和信息化厅",
+    "shortName": "湖南工信厅",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "湖南省科学技术厅",
+    "shortName": "湖南科技厅",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "湖南省财政厅",
+    "shortName": "湖南财政厅",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "湖南省人力资源和社会保障厅",
+    "shortName": "湖南人社厅",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "湖南省商务厅",
+    "shortName": "湖南商务厅",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "湖南省市场监督管理局",
+    "shortName": "湖南市场监管局",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "广东省发展和改革委员会",
+    "shortName": "广东发改委",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "广东省工业和信息化厅",
+    "shortName": "广东工信厅",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "广东省科学技术厅",
+    "shortName": "广东科技厅",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "广东省财政厅",
+    "shortName": "广东财政厅",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "广东省人力资源和社会保障厅",
+    "shortName": "广东人社厅",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "广东省商务厅",
+    "shortName": "广东商务厅",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "广东省市场监督管理局",
+    "shortName": "广东市场监管局",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "海南省发展和改革委员会",
+    "shortName": "海南发改委",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "海南省工业和信息化厅",
+    "shortName": "海南工信厅",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "海南省科学技术厅",
+    "shortName": "海南科技厅",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "海南省财政厅",
+    "shortName": "海南财政厅",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "海南省人力资源和社会保障厅",
+    "shortName": "海南人社厅",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "海南省商务厅",
+    "shortName": "海南商务厅",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "海南省市场监督管理局",
+    "shortName": "海南市场监管局",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "四川省发展和改革委员会",
+    "shortName": "四川发改委",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "四川省工业和信息化厅",
+    "shortName": "四川工信厅",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "四川省科学技术厅",
+    "shortName": "四川科技厅",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "四川省财政厅",
+    "shortName": "四川财政厅",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "四川省人力资源和社会保障厅",
+    "shortName": "四川人社厅",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "四川省商务厅",
+    "shortName": "四川商务厅",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "四川省市场监督管理局",
+    "shortName": "四川市场监管局",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "贵州省发展和改革委员会",
+    "shortName": "贵州发改委",
+    "provinceCode": "520000",
+    "cityName": "贵阳市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "贵州省工业和信息化厅",
+    "shortName": "贵州工信厅",
+    "provinceCode": "520000",
+    "cityName": "贵阳市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "贵州省科学技术厅",
+    "shortName": "贵州科技厅",
+    "provinceCode": "520000",
+    "cityName": "贵阳市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "贵州省财政厅",
+    "shortName": "贵州财政厅",
+    "provinceCode": "520000",
+    "cityName": "贵阳市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "贵州省人力资源和社会保障厅",
+    "shortName": "贵州人社厅",
+    "provinceCode": "520000",
+    "cityName": "贵阳市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "贵州省商务厅",
+    "shortName": "贵州商务厅",
+    "provinceCode": "520000",
+    "cityName": "贵阳市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "贵州省市场监督管理局",
+    "shortName": "贵州市场监管局",
+    "provinceCode": "520000",
+    "cityName": "贵阳市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "云南省发展和改革委员会",
+    "shortName": "云南发改委",
+    "provinceCode": "530000",
+    "cityName": "昆明市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "云南省工业和信息化厅",
+    "shortName": "云南工信厅",
+    "provinceCode": "530000",
+    "cityName": "昆明市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "云南省科学技术厅",
+    "shortName": "云南科技厅",
+    "provinceCode": "530000",
+    "cityName": "昆明市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "云南省财政厅",
+    "shortName": "云南财政厅",
+    "provinceCode": "530000",
+    "cityName": "昆明市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "云南省人力资源和社会保障厅",
+    "shortName": "云南人社厅",
+    "provinceCode": "530000",
+    "cityName": "昆明市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "云南省商务厅",
+    "shortName": "云南商务厅",
+    "provinceCode": "530000",
+    "cityName": "昆明市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "云南省市场监督管理局",
+    "shortName": "云南市场监管局",
+    "provinceCode": "530000",
+    "cityName": "昆明市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "陕西省发展和改革委员会",
+    "shortName": "陕西发改委",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "陕西省工业和信息化厅",
+    "shortName": "陕西工信厅",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "陕西省科学技术厅",
+    "shortName": "陕西科技厅",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "陕西省财政厅",
+    "shortName": "陕西财政厅",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "陕西省人力资源和社会保障厅",
+    "shortName": "陕西人社厅",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "陕西省商务厅",
+    "shortName": "陕西商务厅",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "陕西省市场监督管理局",
+    "shortName": "陕西市场监管局",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "甘肃省发展和改革委员会",
+    "shortName": "甘肃发改委",
+    "provinceCode": "620000",
+    "cityName": "兰州市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "甘肃省工业和信息化厅",
+    "shortName": "甘肃工信厅",
+    "provinceCode": "620000",
+    "cityName": "兰州市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "甘肃省科学技术厅",
+    "shortName": "甘肃科技厅",
+    "provinceCode": "620000",
+    "cityName": "兰州市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "甘肃省财政厅",
+    "shortName": "甘肃财政厅",
+    "provinceCode": "620000",
+    "cityName": "兰州市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "甘肃省人力资源和社会保障厅",
+    "shortName": "甘肃人社厅",
+    "provinceCode": "620000",
+    "cityName": "兰州市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "甘肃省商务厅",
+    "shortName": "甘肃商务厅",
+    "provinceCode": "620000",
+    "cityName": "兰州市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "甘肃省市场监督管理局",
+    "shortName": "甘肃市场监管局",
+    "provinceCode": "620000",
+    "cityName": "兰州市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "青海省发展和改革委员会",
+    "shortName": "青海发改委",
+    "provinceCode": "630000",
+    "cityName": "西宁市",
+    "level": "provincial",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "青海省工业和信息化厅",
+    "shortName": "青海工信厅",
+    "provinceCode": "630000",
+    "cityName": "西宁市",
+    "level": "provincial",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "青海省科学技术厅",
+    "shortName": "青海科技厅",
+    "provinceCode": "630000",
+    "cityName": "西宁市",
+    "level": "provincial",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "青海省财政厅",
+    "shortName": "青海财政厅",
+    "provinceCode": "630000",
+    "cityName": "西宁市",
+    "level": "provincial",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "青海省人力资源和社会保障厅",
+    "shortName": "青海人社厅",
+    "provinceCode": "630000",
+    "cityName": "西宁市",
+    "level": "provincial",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "青海省商务厅",
+    "shortName": "青海商务厅",
+    "provinceCode": "630000",
+    "cityName": "西宁市",
+    "level": "provincial",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "青海省市场监督管理局",
+    "shortName": "青海市场监管局",
+    "provinceCode": "630000",
+    "cityName": "西宁市",
+    "level": "provincial",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "成都市发展和改革委员会",
+    "shortName": "成都发改委",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "成都市工业和信息化局",
+    "shortName": "成都工信局",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "成都市科学技术局",
+    "shortName": "成都科技局",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "成都市财政局",
+    "shortName": "成都财政局",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "成都市人力资源和社会保障局",
+    "shortName": "成都人社局",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "成都市商务局",
+    "shortName": "成都商务局",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "成都市市场监督管理局",
+    "shortName": "成都市场监管局",
+    "provinceCode": "510000",
+    "cityName": "成都市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "深圳市发展和改革委员会",
+    "shortName": "深圳发改委",
+    "provinceCode": "440000",
+    "cityName": "深圳市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "深圳市工业和信息化局",
+    "shortName": "深圳工信局",
+    "provinceCode": "440000",
+    "cityName": "深圳市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "深圳市科学技术局",
+    "shortName": "深圳科技局",
+    "provinceCode": "440000",
+    "cityName": "深圳市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "深圳市财政局",
+    "shortName": "深圳财政局",
+    "provinceCode": "440000",
+    "cityName": "深圳市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "深圳市人力资源和社会保障局",
+    "shortName": "深圳人社局",
+    "provinceCode": "440000",
+    "cityName": "深圳市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "深圳市商务局",
+    "shortName": "深圳商务局",
+    "provinceCode": "440000",
+    "cityName": "深圳市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "深圳市市场监督管理局",
+    "shortName": "深圳市场监管局",
+    "provinceCode": "440000",
+    "cityName": "深圳市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "长沙市发展和改革委员会",
+    "shortName": "长沙发改委",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "长沙市工业和信息化局",
+    "shortName": "长沙工信局",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "长沙市科学技术局",
+    "shortName": "长沙科技局",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "长沙市财政局",
+    "shortName": "长沙财政局",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "长沙市人力资源和社会保障局",
+    "shortName": "长沙人社局",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "长沙市商务局",
+    "shortName": "长沙商务局",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "长沙市市场监督管理局",
+    "shortName": "长沙市场监管局",
+    "provinceCode": "430000",
+    "cityName": "长沙市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "东莞市发展和改革委员会",
+    "shortName": "东莞发改委",
+    "provinceCode": "440000",
+    "cityName": "东莞市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "东莞市工业和信息化局",
+    "shortName": "东莞工信局",
+    "provinceCode": "440000",
+    "cityName": "东莞市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "东莞市科学技术局",
+    "shortName": "东莞科技局",
+    "provinceCode": "440000",
+    "cityName": "东莞市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "东莞市财政局",
+    "shortName": "东莞财政局",
+    "provinceCode": "440000",
+    "cityName": "东莞市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "东莞市人力资源和社会保障局",
+    "shortName": "东莞人社局",
+    "provinceCode": "440000",
+    "cityName": "东莞市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "东莞市商务局",
+    "shortName": "东莞商务局",
+    "provinceCode": "440000",
+    "cityName": "东莞市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "东莞市市场监督管理局",
+    "shortName": "东莞市场监管局",
+    "provinceCode": "440000",
+    "cityName": "东莞市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "杭州市发展和改革委员会",
+    "shortName": "杭州发改委",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "杭州市工业和信息化局",
+    "shortName": "杭州工信局",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "杭州市科学技术局",
+    "shortName": "杭州科技局",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "杭州市财政局",
+    "shortName": "杭州财政局",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "杭州市人力资源和社会保障局",
+    "shortName": "杭州人社局",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "杭州市商务局",
+    "shortName": "杭州商务局",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "杭州市市场监督管理局",
+    "shortName": "杭州市场监管局",
+    "provinceCode": "330000",
+    "cityName": "杭州市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "郑州市发展和改革委员会",
+    "shortName": "郑州发改委",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "郑州市工业和信息化局",
+    "shortName": "郑州工信局",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "郑州市科学技术局",
+    "shortName": "郑州科技局",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "郑州市财政局",
+    "shortName": "郑州财政局",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "郑州市人力资源和社会保障局",
+    "shortName": "郑州人社局",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "郑州市商务局",
+    "shortName": "郑州商务局",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "郑州市市场监督管理局",
+    "shortName": "郑州市场监管局",
+    "provinceCode": "410000",
+    "cityName": "郑州市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "佛山市发展和改革委员会",
+    "shortName": "佛山发改委",
+    "provinceCode": "440000",
+    "cityName": "佛山市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "佛山市工业和信息化局",
+    "shortName": "佛山工信局",
+    "provinceCode": "440000",
+    "cityName": "佛山市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "佛山市科学技术局",
+    "shortName": "佛山科技局",
+    "provinceCode": "440000",
+    "cityName": "佛山市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "佛山市财政局",
+    "shortName": "佛山财政局",
+    "provinceCode": "440000",
+    "cityName": "佛山市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "佛山市人力资源和社会保障局",
+    "shortName": "佛山人社局",
+    "provinceCode": "440000",
+    "cityName": "佛山市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "佛山市商务局",
+    "shortName": "佛山商务局",
+    "provinceCode": "440000",
+    "cityName": "佛山市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "佛山市市场监督管理局",
+    "shortName": "佛山市场监管局",
+    "provinceCode": "440000",
+    "cityName": "佛山市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "苏州市发展和改革委员会",
+    "shortName": "苏州发改委",
+    "provinceCode": "320000",
+    "cityName": "苏州市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "苏州市工业和信息化局",
+    "shortName": "苏州工信局",
+    "provinceCode": "320000",
+    "cityName": "苏州市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "苏州市科学技术局",
+    "shortName": "苏州科技局",
+    "provinceCode": "320000",
+    "cityName": "苏州市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "苏州市财政局",
+    "shortName": "苏州财政局",
+    "provinceCode": "320000",
+    "cityName": "苏州市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "苏州市人力资源和社会保障局",
+    "shortName": "苏州人社局",
+    "provinceCode": "320000",
+    "cityName": "苏州市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "苏州市商务局",
+    "shortName": "苏州商务局",
+    "provinceCode": "320000",
+    "cityName": "苏州市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "苏州市市场监督管理局",
+    "shortName": "苏州市场监管局",
+    "provinceCode": "320000",
+    "cityName": "苏州市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "武汉市发展和改革委员会",
+    "shortName": "武汉发改委",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "武汉市工业和信息化局",
+    "shortName": "武汉工信局",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "武汉市科学技术局",
+    "shortName": "武汉科技局",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "武汉市财政局",
+    "shortName": "武汉财政局",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "武汉市人力资源和社会保障局",
+    "shortName": "武汉人社局",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "武汉市商务局",
+    "shortName": "武汉商务局",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "武汉市市场监督管理局",
+    "shortName": "武汉市场监管局",
+    "provinceCode": "420000",
+    "cityName": "武汉市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "南京市发展和改革委员会",
+    "shortName": "南京发改委",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "南京市工业和信息化局",
+    "shortName": "南京工信局",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "南京市科学技术局",
+    "shortName": "南京科技局",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "南京市财政局",
+    "shortName": "南京财政局",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "南京市人力资源和社会保障局",
+    "shortName": "南京人社局",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "南京市商务局",
+    "shortName": "南京商务局",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "南京市市场监督管理局",
+    "shortName": "南京市场监管局",
+    "provinceCode": "320000",
+    "cityName": "南京市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "沈阳市发展和改革委员会",
+    "shortName": "沈阳发改委",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "沈阳市工业和信息化局",
+    "shortName": "沈阳工信局",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "沈阳市科学技术局",
+    "shortName": "沈阳科技局",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "沈阳市财政局",
+    "shortName": "沈阳财政局",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "沈阳市人力资源和社会保障局",
+    "shortName": "沈阳人社局",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "沈阳市商务局",
+    "shortName": "沈阳商务局",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "沈阳市市场监督管理局",
+    "shortName": "沈阳市场监管局",
+    "provinceCode": "210000",
+    "cityName": "沈阳市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "青岛市发展和改革委员会",
+    "shortName": "青岛发改委",
+    "provinceCode": "370000",
+    "cityName": "青岛市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "青岛市工业和信息化局",
+    "shortName": "青岛工信局",
+    "provinceCode": "370000",
+    "cityName": "青岛市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "青岛市科学技术局",
+    "shortName": "青岛科技局",
+    "provinceCode": "370000",
+    "cityName": "青岛市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "青岛市财政局",
+    "shortName": "青岛财政局",
+    "provinceCode": "370000",
+    "cityName": "青岛市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "青岛市人力资源和社会保障局",
+    "shortName": "青岛人社局",
+    "provinceCode": "370000",
+    "cityName": "青岛市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "青岛市商务局",
+    "shortName": "青岛商务局",
+    "provinceCode": "370000",
+    "cityName": "青岛市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "青岛市市场监督管理局",
+    "shortName": "青岛市场监管局",
+    "provinceCode": "370000",
+    "cityName": "青岛市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "广州市发展和改革委员会",
+    "shortName": "广州发改委",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "广州市工业和信息化局",
+    "shortName": "广州工信局",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "广州市科学技术局",
+    "shortName": "广州科技局",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "广州市财政局",
+    "shortName": "广州财政局",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "广州市人力资源和社会保障局",
+    "shortName": "广州人社局",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "广州市商务局",
+    "shortName": "广州商务局",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "广州市市场监督管理局",
+    "shortName": "广州市场监管局",
+    "provinceCode": "440000",
+    "cityName": "广州市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "株洲市发展和改革委员会",
+    "shortName": "株洲发改委",
+    "provinceCode": "430000",
+    "cityName": "株洲市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "株洲市工业和信息化局",
+    "shortName": "株洲工信局",
+    "provinceCode": "430000",
+    "cityName": "株洲市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "株洲市科学技术局",
+    "shortName": "株洲科技局",
+    "provinceCode": "430000",
+    "cityName": "株洲市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "株洲市财政局",
+    "shortName": "株洲财政局",
+    "provinceCode": "430000",
+    "cityName": "株洲市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "株洲市人力资源和社会保障局",
+    "shortName": "株洲人社局",
+    "provinceCode": "430000",
+    "cityName": "株洲市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "株洲市商务局",
+    "shortName": "株洲商务局",
+    "provinceCode": "430000",
+    "cityName": "株洲市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "株洲市市场监督管理局",
+    "shortName": "株洲市场监管局",
+    "provinceCode": "430000",
+    "cityName": "株洲市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "湘潭市发展和改革委员会",
+    "shortName": "湘潭发改委",
+    "provinceCode": "430000",
+    "cityName": "湘潭市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "湘潭市工业和信息化局",
+    "shortName": "湘潭工信局",
+    "provinceCode": "430000",
+    "cityName": "湘潭市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "湘潭市科学技术局",
+    "shortName": "湘潭科技局",
+    "provinceCode": "430000",
+    "cityName": "湘潭市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "湘潭市财政局",
+    "shortName": "湘潭财政局",
+    "provinceCode": "430000",
+    "cityName": "湘潭市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "湘潭市人力资源和社会保障局",
+    "shortName": "湘潭人社局",
+    "provinceCode": "430000",
+    "cityName": "湘潭市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "湘潭市商务局",
+    "shortName": "湘潭商务局",
+    "provinceCode": "430000",
+    "cityName": "湘潭市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "湘潭市市场监督管理局",
+    "shortName": "湘潭市场监管局",
+    "provinceCode": "430000",
+    "cityName": "湘潭市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "衡阳市发展和改革委员会",
+    "shortName": "衡阳发改委",
+    "provinceCode": "430000",
+    "cityName": "衡阳市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "衡阳市工业和信息化局",
+    "shortName": "衡阳工信局",
+    "provinceCode": "430000",
+    "cityName": "衡阳市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "衡阳市科学技术局",
+    "shortName": "衡阳科技局",
+    "provinceCode": "430000",
+    "cityName": "衡阳市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "衡阳市财政局",
+    "shortName": "衡阳财政局",
+    "provinceCode": "430000",
+    "cityName": "衡阳市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "衡阳市人力资源和社会保障局",
+    "shortName": "衡阳人社局",
+    "provinceCode": "430000",
+    "cityName": "衡阳市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "衡阳市商务局",
+    "shortName": "衡阳商务局",
+    "provinceCode": "430000",
+    "cityName": "衡阳市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "衡阳市市场监督管理局",
+    "shortName": "衡阳市场监管局",
+    "provinceCode": "430000",
+    "cityName": "衡阳市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "邵阳市发展和改革委员会",
+    "shortName": "邵阳发改委",
+    "provinceCode": "430000",
+    "cityName": "邵阳市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "邵阳市工业和信息化局",
+    "shortName": "邵阳工信局",
+    "provinceCode": "430000",
+    "cityName": "邵阳市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "邵阳市科学技术局",
+    "shortName": "邵阳科技局",
+    "provinceCode": "430000",
+    "cityName": "邵阳市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "邵阳市财政局",
+    "shortName": "邵阳财政局",
+    "provinceCode": "430000",
+    "cityName": "邵阳市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "邵阳市人力资源和社会保障局",
+    "shortName": "邵阳人社局",
+    "provinceCode": "430000",
+    "cityName": "邵阳市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "邵阳市商务局",
+    "shortName": "邵阳商务局",
+    "provinceCode": "430000",
+    "cityName": "邵阳市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "邵阳市市场监督管理局",
+    "shortName": "邵阳市场监管局",
+    "provinceCode": "430000",
+    "cityName": "邵阳市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "岳阳市发展和改革委员会",
+    "shortName": "岳阳发改委",
+    "provinceCode": "430000",
+    "cityName": "岳阳市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "岳阳市工业和信息化局",
+    "shortName": "岳阳工信局",
+    "provinceCode": "430000",
+    "cityName": "岳阳市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "岳阳市科学技术局",
+    "shortName": "岳阳科技局",
+    "provinceCode": "430000",
+    "cityName": "岳阳市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "岳阳市财政局",
+    "shortName": "岳阳财政局",
+    "provinceCode": "430000",
+    "cityName": "岳阳市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "岳阳市人力资源和社会保障局",
+    "shortName": "岳阳人社局",
+    "provinceCode": "430000",
+    "cityName": "岳阳市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "岳阳市商务局",
+    "shortName": "岳阳商务局",
+    "provinceCode": "430000",
+    "cityName": "岳阳市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "岳阳市市场监督管理局",
+    "shortName": "岳阳市场监管局",
+    "provinceCode": "430000",
+    "cityName": "岳阳市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "常德市发展和改革委员会",
+    "shortName": "常德发改委",
+    "provinceCode": "430000",
+    "cityName": "常德市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "常德市工业和信息化局",
+    "shortName": "常德工信局",
+    "provinceCode": "430000",
+    "cityName": "常德市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "常德市科学技术局",
+    "shortName": "常德科技局",
+    "provinceCode": "430000",
+    "cityName": "常德市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "常德市财政局",
+    "shortName": "常德财政局",
+    "provinceCode": "430000",
+    "cityName": "常德市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "常德市人力资源和社会保障局",
+    "shortName": "常德人社局",
+    "provinceCode": "430000",
+    "cityName": "常德市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "常德市商务局",
+    "shortName": "常德商务局",
+    "provinceCode": "430000",
+    "cityName": "常德市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "常德市市场监督管理局",
+    "shortName": "常德市场监管局",
+    "provinceCode": "430000",
+    "cityName": "常德市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "张家界市发展和改革委员会",
+    "shortName": "张家界发改委",
+    "provinceCode": "430000",
+    "cityName": "张家界市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "张家界市工业和信息化局",
+    "shortName": "张家界工信局",
+    "provinceCode": "430000",
+    "cityName": "张家界市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "张家界市科学技术局",
+    "shortName": "张家界科技局",
+    "provinceCode": "430000",
+    "cityName": "张家界市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "张家界市财政局",
+    "shortName": "张家界财政局",
+    "provinceCode": "430000",
+    "cityName": "张家界市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "张家界市人力资源和社会保障局",
+    "shortName": "张家界人社局",
+    "provinceCode": "430000",
+    "cityName": "张家界市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "张家界市商务局",
+    "shortName": "张家界商务局",
+    "provinceCode": "430000",
+    "cityName": "张家界市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "张家界市市场监督管理局",
+    "shortName": "张家界市场监管局",
+    "provinceCode": "430000",
+    "cityName": "张家界市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "益阳市发展和改革委员会",
+    "shortName": "益阳发改委",
+    "provinceCode": "430000",
+    "cityName": "益阳市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "益阳市工业和信息化局",
+    "shortName": "益阳工信局",
+    "provinceCode": "430000",
+    "cityName": "益阳市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "益阳市科学技术局",
+    "shortName": "益阳科技局",
+    "provinceCode": "430000",
+    "cityName": "益阳市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "益阳市财政局",
+    "shortName": "益阳财政局",
+    "provinceCode": "430000",
+    "cityName": "益阳市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "益阳市人力资源和社会保障局",
+    "shortName": "益阳人社局",
+    "provinceCode": "430000",
+    "cityName": "益阳市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "益阳市商务局",
+    "shortName": "益阳商务局",
+    "provinceCode": "430000",
+    "cityName": "益阳市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "益阳市市场监督管理局",
+    "shortName": "益阳市场监管局",
+    "provinceCode": "430000",
+    "cityName": "益阳市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "郴州市发展和改革委员会",
+    "shortName": "郴州发改委",
+    "provinceCode": "430000",
+    "cityName": "郴州市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "郴州市工业和信息化局",
+    "shortName": "郴州工信局",
+    "provinceCode": "430000",
+    "cityName": "郴州市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "郴州市科学技术局",
+    "shortName": "郴州科技局",
+    "provinceCode": "430000",
+    "cityName": "郴州市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "郴州市财政局",
+    "shortName": "郴州财政局",
+    "provinceCode": "430000",
+    "cityName": "郴州市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "郴州市人力资源和社会保障局",
+    "shortName": "郴州人社局",
+    "provinceCode": "430000",
+    "cityName": "郴州市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "郴州市商务局",
+    "shortName": "郴州商务局",
+    "provinceCode": "430000",
+    "cityName": "郴州市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "郴州市市场监督管理局",
+    "shortName": "郴州市场监管局",
+    "provinceCode": "430000",
+    "cityName": "郴州市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "永州市发展和改革委员会",
+    "shortName": "永州发改委",
+    "provinceCode": "430000",
+    "cityName": "永州市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "永州市工业和信息化局",
+    "shortName": "永州工信局",
+    "provinceCode": "430000",
+    "cityName": "永州市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "永州市科学技术局",
+    "shortName": "永州科技局",
+    "provinceCode": "430000",
+    "cityName": "永州市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "永州市财政局",
+    "shortName": "永州财政局",
+    "provinceCode": "430000",
+    "cityName": "永州市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "永州市人力资源和社会保障局",
+    "shortName": "永州人社局",
+    "provinceCode": "430000",
+    "cityName": "永州市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "永州市商务局",
+    "shortName": "永州商务局",
+    "provinceCode": "430000",
+    "cityName": "永州市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "永州市市场监督管理局",
+    "shortName": "永州市场监管局",
+    "provinceCode": "430000",
+    "cityName": "永州市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "怀化市发展和改革委员会",
+    "shortName": "怀化发改委",
+    "provinceCode": "430000",
+    "cityName": "怀化市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "怀化市工业和信息化局",
+    "shortName": "怀化工信局",
+    "provinceCode": "430000",
+    "cityName": "怀化市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "怀化市科学技术局",
+    "shortName": "怀化科技局",
+    "provinceCode": "430000",
+    "cityName": "怀化市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "怀化市财政局",
+    "shortName": "怀化财政局",
+    "provinceCode": "430000",
+    "cityName": "怀化市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "怀化市人力资源和社会保障局",
+    "shortName": "怀化人社局",
+    "provinceCode": "430000",
+    "cityName": "怀化市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "怀化市商务局",
+    "shortName": "怀化商务局",
+    "provinceCode": "430000",
+    "cityName": "怀化市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "怀化市市场监督管理局",
+    "shortName": "怀化市场监管局",
+    "provinceCode": "430000",
+    "cityName": "怀化市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "娄底市发展和改革委员会",
+    "shortName": "娄底发改委",
+    "provinceCode": "430000",
+    "cityName": "娄底市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "娄底市工业和信息化局",
+    "shortName": "娄底工信局",
+    "provinceCode": "430000",
+    "cityName": "娄底市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "娄底市科学技术局",
+    "shortName": "娄底科技局",
+    "provinceCode": "430000",
+    "cityName": "娄底市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "娄底市财政局",
+    "shortName": "娄底财政局",
+    "provinceCode": "430000",
+    "cityName": "娄底市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "娄底市人力资源和社会保障局",
+    "shortName": "娄底人社局",
+    "provinceCode": "430000",
+    "cityName": "娄底市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "娄底市商务局",
+    "shortName": "娄底商务局",
+    "provinceCode": "430000",
+    "cityName": "娄底市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "娄底市市场监督管理局",
+    "shortName": "娄底市场监管局",
+    "provinceCode": "430000",
+    "cityName": "娄底市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "湘西土家族苗族自治州发展和改革委员会",
+    "shortName": "湘西土家族苗族发改委",
+    "provinceCode": "430000",
+    "cityName": "湘西土家族苗族自治州",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "湘西土家族苗族自治州工业和信息化局",
+    "shortName": "湘西土家族苗族工信局",
+    "provinceCode": "430000",
+    "cityName": "湘西土家族苗族自治州",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "湘西土家族苗族自治州科学技术局",
+    "shortName": "湘西土家族苗族科技局",
+    "provinceCode": "430000",
+    "cityName": "湘西土家族苗族自治州",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "湘西土家族苗族自治州财政局",
+    "shortName": "湘西土家族苗族财政局",
+    "provinceCode": "430000",
+    "cityName": "湘西土家族苗族自治州",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "湘西土家族苗族自治州人力资源和社会保障局",
+    "shortName": "湘西土家族苗族人社局",
+    "provinceCode": "430000",
+    "cityName": "湘西土家族苗族自治州",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "湘西土家族苗族自治州商务局",
+    "shortName": "湘西土家族苗族商务局",
+    "provinceCode": "430000",
+    "cityName": "湘西土家族苗族自治州",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "湘西土家族苗族自治州市场监督管理局",
+    "shortName": "湘西土家族苗族市场监管局",
+    "provinceCode": "430000",
+    "cityName": "湘西土家族苗族自治州",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "韶关市发展和改革委员会",
+    "shortName": "韶关发改委",
+    "provinceCode": "440000",
+    "cityName": "韶关市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "韶关市工业和信息化局",
+    "shortName": "韶关工信局",
+    "provinceCode": "440000",
+    "cityName": "韶关市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "韶关市科学技术局",
+    "shortName": "韶关科技局",
+    "provinceCode": "440000",
+    "cityName": "韶关市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "韶关市财政局",
+    "shortName": "韶关财政局",
+    "provinceCode": "440000",
+    "cityName": "韶关市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "韶关市人力资源和社会保障局",
+    "shortName": "韶关人社局",
+    "provinceCode": "440000",
+    "cityName": "韶关市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "韶关市商务局",
+    "shortName": "韶关商务局",
+    "provinceCode": "440000",
+    "cityName": "韶关市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "韶关市市场监督管理局",
+    "shortName": "韶关市场监管局",
+    "provinceCode": "440000",
+    "cityName": "韶关市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "珠海市发展和改革委员会",
+    "shortName": "珠海发改委",
+    "provinceCode": "440000",
+    "cityName": "珠海市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "珠海市工业和信息化局",
+    "shortName": "珠海工信局",
+    "provinceCode": "440000",
+    "cityName": "珠海市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "珠海市科学技术局",
+    "shortName": "珠海科技局",
+    "provinceCode": "440000",
+    "cityName": "珠海市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "珠海市财政局",
+    "shortName": "珠海财政局",
+    "provinceCode": "440000",
+    "cityName": "珠海市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "珠海市人力资源和社会保障局",
+    "shortName": "珠海人社局",
+    "provinceCode": "440000",
+    "cityName": "珠海市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "珠海市商务局",
+    "shortName": "珠海商务局",
+    "provinceCode": "440000",
+    "cityName": "珠海市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "珠海市市场监督管理局",
+    "shortName": "珠海市场监管局",
+    "provinceCode": "440000",
+    "cityName": "珠海市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "汕头市发展和改革委员会",
+    "shortName": "汕头发改委",
+    "provinceCode": "440000",
+    "cityName": "汕头市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "汕头市工业和信息化局",
+    "shortName": "汕头工信局",
+    "provinceCode": "440000",
+    "cityName": "汕头市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "汕头市科学技术局",
+    "shortName": "汕头科技局",
+    "provinceCode": "440000",
+    "cityName": "汕头市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "汕头市财政局",
+    "shortName": "汕头财政局",
+    "provinceCode": "440000",
+    "cityName": "汕头市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "汕头市人力资源和社会保障局",
+    "shortName": "汕头人社局",
+    "provinceCode": "440000",
+    "cityName": "汕头市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "汕头市商务局",
+    "shortName": "汕头商务局",
+    "provinceCode": "440000",
+    "cityName": "汕头市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "汕头市市场监督管理局",
+    "shortName": "汕头市场监管局",
+    "provinceCode": "440000",
+    "cityName": "汕头市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "江门市发展和改革委员会",
+    "shortName": "江门发改委",
+    "provinceCode": "440000",
+    "cityName": "江门市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "江门市工业和信息化局",
+    "shortName": "江门工信局",
+    "provinceCode": "440000",
+    "cityName": "江门市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "江门市科学技术局",
+    "shortName": "江门科技局",
+    "provinceCode": "440000",
+    "cityName": "江门市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "江门市财政局",
+    "shortName": "江门财政局",
+    "provinceCode": "440000",
+    "cityName": "江门市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "江门市人力资源和社会保障局",
+    "shortName": "江门人社局",
+    "provinceCode": "440000",
+    "cityName": "江门市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "江门市商务局",
+    "shortName": "江门商务局",
+    "provinceCode": "440000",
+    "cityName": "江门市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "江门市市场监督管理局",
+    "shortName": "江门市场监管局",
+    "provinceCode": "440000",
+    "cityName": "江门市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "湛江市发展和改革委员会",
+    "shortName": "湛江发改委",
+    "provinceCode": "440000",
+    "cityName": "湛江市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "湛江市工业和信息化局",
+    "shortName": "湛江工信局",
+    "provinceCode": "440000",
+    "cityName": "湛江市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "湛江市科学技术局",
+    "shortName": "湛江科技局",
+    "provinceCode": "440000",
+    "cityName": "湛江市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "湛江市财政局",
+    "shortName": "湛江财政局",
+    "provinceCode": "440000",
+    "cityName": "湛江市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "湛江市人力资源和社会保障局",
+    "shortName": "湛江人社局",
+    "provinceCode": "440000",
+    "cityName": "湛江市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "湛江市商务局",
+    "shortName": "湛江商务局",
+    "provinceCode": "440000",
+    "cityName": "湛江市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "湛江市市场监督管理局",
+    "shortName": "湛江市场监管局",
+    "provinceCode": "440000",
+    "cityName": "湛江市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "茂名市发展和改革委员会",
+    "shortName": "茂名发改委",
+    "provinceCode": "440000",
+    "cityName": "茂名市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "茂名市工业和信息化局",
+    "shortName": "茂名工信局",
+    "provinceCode": "440000",
+    "cityName": "茂名市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "茂名市科学技术局",
+    "shortName": "茂名科技局",
+    "provinceCode": "440000",
+    "cityName": "茂名市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "茂名市财政局",
+    "shortName": "茂名财政局",
+    "provinceCode": "440000",
+    "cityName": "茂名市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "茂名市人力资源和社会保障局",
+    "shortName": "茂名人社局",
+    "provinceCode": "440000",
+    "cityName": "茂名市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "茂名市商务局",
+    "shortName": "茂名商务局",
+    "provinceCode": "440000",
+    "cityName": "茂名市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "茂名市市场监督管理局",
+    "shortName": "茂名市场监管局",
+    "provinceCode": "440000",
+    "cityName": "茂名市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "肇庆市发展和改革委员会",
+    "shortName": "肇庆发改委",
+    "provinceCode": "440000",
+    "cityName": "肇庆市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "肇庆市工业和信息化局",
+    "shortName": "肇庆工信局",
+    "provinceCode": "440000",
+    "cityName": "肇庆市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "肇庆市科学技术局",
+    "shortName": "肇庆科技局",
+    "provinceCode": "440000",
+    "cityName": "肇庆市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "肇庆市财政局",
+    "shortName": "肇庆财政局",
+    "provinceCode": "440000",
+    "cityName": "肇庆市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "肇庆市人力资源和社会保障局",
+    "shortName": "肇庆人社局",
+    "provinceCode": "440000",
+    "cityName": "肇庆市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "肇庆市商务局",
+    "shortName": "肇庆商务局",
+    "provinceCode": "440000",
+    "cityName": "肇庆市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "肇庆市市场监督管理局",
+    "shortName": "肇庆市场监管局",
+    "provinceCode": "440000",
+    "cityName": "肇庆市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "惠州市发展和改革委员会",
+    "shortName": "惠州发改委",
+    "provinceCode": "440000",
+    "cityName": "惠州市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "惠州市工业和信息化局",
+    "shortName": "惠州工信局",
+    "provinceCode": "440000",
+    "cityName": "惠州市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "惠州市科学技术局",
+    "shortName": "惠州科技局",
+    "provinceCode": "440000",
+    "cityName": "惠州市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "惠州市财政局",
+    "shortName": "惠州财政局",
+    "provinceCode": "440000",
+    "cityName": "惠州市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "惠州市人力资源和社会保障局",
+    "shortName": "惠州人社局",
+    "provinceCode": "440000",
+    "cityName": "惠州市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "惠州市商务局",
+    "shortName": "惠州商务局",
+    "provinceCode": "440000",
+    "cityName": "惠州市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "惠州市市场监督管理局",
+    "shortName": "惠州市场监管局",
+    "provinceCode": "440000",
+    "cityName": "惠州市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "梅州市发展和改革委员会",
+    "shortName": "梅州发改委",
+    "provinceCode": "440000",
+    "cityName": "梅州市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "梅州市工业和信息化局",
+    "shortName": "梅州工信局",
+    "provinceCode": "440000",
+    "cityName": "梅州市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "梅州市科学技术局",
+    "shortName": "梅州科技局",
+    "provinceCode": "440000",
+    "cityName": "梅州市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "梅州市财政局",
+    "shortName": "梅州财政局",
+    "provinceCode": "440000",
+    "cityName": "梅州市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "梅州市人力资源和社会保障局",
+    "shortName": "梅州人社局",
+    "provinceCode": "440000",
+    "cityName": "梅州市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "梅州市商务局",
+    "shortName": "梅州商务局",
+    "provinceCode": "440000",
+    "cityName": "梅州市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "梅州市市场监督管理局",
+    "shortName": "梅州市场监管局",
+    "provinceCode": "440000",
+    "cityName": "梅州市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "汕尾市发展和改革委员会",
+    "shortName": "汕尾发改委",
+    "provinceCode": "440000",
+    "cityName": "汕尾市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "汕尾市工业和信息化局",
+    "shortName": "汕尾工信局",
+    "provinceCode": "440000",
+    "cityName": "汕尾市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "汕尾市科学技术局",
+    "shortName": "汕尾科技局",
+    "provinceCode": "440000",
+    "cityName": "汕尾市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "汕尾市财政局",
+    "shortName": "汕尾财政局",
+    "provinceCode": "440000",
+    "cityName": "汕尾市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "汕尾市人力资源和社会保障局",
+    "shortName": "汕尾人社局",
+    "provinceCode": "440000",
+    "cityName": "汕尾市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "汕尾市商务局",
+    "shortName": "汕尾商务局",
+    "provinceCode": "440000",
+    "cityName": "汕尾市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "汕尾市市场监督管理局",
+    "shortName": "汕尾市场监管局",
+    "provinceCode": "440000",
+    "cityName": "汕尾市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "河源市发展和改革委员会",
+    "shortName": "河源发改委",
+    "provinceCode": "440000",
+    "cityName": "河源市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "河源市工业和信息化局",
+    "shortName": "河源工信局",
+    "provinceCode": "440000",
+    "cityName": "河源市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "河源市科学技术局",
+    "shortName": "河源科技局",
+    "provinceCode": "440000",
+    "cityName": "河源市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "河源市财政局",
+    "shortName": "河源财政局",
+    "provinceCode": "440000",
+    "cityName": "河源市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "河源市人力资源和社会保障局",
+    "shortName": "河源人社局",
+    "provinceCode": "440000",
+    "cityName": "河源市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "河源市商务局",
+    "shortName": "河源商务局",
+    "provinceCode": "440000",
+    "cityName": "河源市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "河源市市场监督管理局",
+    "shortName": "河源市场监管局",
+    "provinceCode": "440000",
+    "cityName": "河源市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "阳江市发展和改革委员会",
+    "shortName": "阳江发改委",
+    "provinceCode": "440000",
+    "cityName": "阳江市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "阳江市工业和信息化局",
+    "shortName": "阳江工信局",
+    "provinceCode": "440000",
+    "cityName": "阳江市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "阳江市科学技术局",
+    "shortName": "阳江科技局",
+    "provinceCode": "440000",
+    "cityName": "阳江市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "阳江市财政局",
+    "shortName": "阳江财政局",
+    "provinceCode": "440000",
+    "cityName": "阳江市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "阳江市人力资源和社会保障局",
+    "shortName": "阳江人社局",
+    "provinceCode": "440000",
+    "cityName": "阳江市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "阳江市商务局",
+    "shortName": "阳江商务局",
+    "provinceCode": "440000",
+    "cityName": "阳江市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "阳江市市场监督管理局",
+    "shortName": "阳江市场监管局",
+    "provinceCode": "440000",
+    "cityName": "阳江市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "清远市发展和改革委员会",
+    "shortName": "清远发改委",
+    "provinceCode": "440000",
+    "cityName": "清远市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "清远市工业和信息化局",
+    "shortName": "清远工信局",
+    "provinceCode": "440000",
+    "cityName": "清远市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "清远市科学技术局",
+    "shortName": "清远科技局",
+    "provinceCode": "440000",
+    "cityName": "清远市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "清远市财政局",
+    "shortName": "清远财政局",
+    "provinceCode": "440000",
+    "cityName": "清远市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "清远市人力资源和社会保障局",
+    "shortName": "清远人社局",
+    "provinceCode": "440000",
+    "cityName": "清远市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "清远市商务局",
+    "shortName": "清远商务局",
+    "provinceCode": "440000",
+    "cityName": "清远市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "清远市市场监督管理局",
+    "shortName": "清远市场监管局",
+    "provinceCode": "440000",
+    "cityName": "清远市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "中山市发展和改革委员会",
+    "shortName": "中山发改委",
+    "provinceCode": "440000",
+    "cityName": "中山市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "中山市工业和信息化局",
+    "shortName": "中山工信局",
+    "provinceCode": "440000",
+    "cityName": "中山市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "中山市科学技术局",
+    "shortName": "中山科技局",
+    "provinceCode": "440000",
+    "cityName": "中山市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "中山市财政局",
+    "shortName": "中山财政局",
+    "provinceCode": "440000",
+    "cityName": "中山市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "中山市人力资源和社会保障局",
+    "shortName": "中山人社局",
+    "provinceCode": "440000",
+    "cityName": "中山市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "中山市商务局",
+    "shortName": "中山商务局",
+    "provinceCode": "440000",
+    "cityName": "中山市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "中山市市场监督管理局",
+    "shortName": "中山市场监管局",
+    "provinceCode": "440000",
+    "cityName": "中山市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "潮州市发展和改革委员会",
+    "shortName": "潮州发改委",
+    "provinceCode": "440000",
+    "cityName": "潮州市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "潮州市工业和信息化局",
+    "shortName": "潮州工信局",
+    "provinceCode": "440000",
+    "cityName": "潮州市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "潮州市科学技术局",
+    "shortName": "潮州科技局",
+    "provinceCode": "440000",
+    "cityName": "潮州市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "潮州市财政局",
+    "shortName": "潮州财政局",
+    "provinceCode": "440000",
+    "cityName": "潮州市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "潮州市人力资源和社会保障局",
+    "shortName": "潮州人社局",
+    "provinceCode": "440000",
+    "cityName": "潮州市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "潮州市商务局",
+    "shortName": "潮州商务局",
+    "provinceCode": "440000",
+    "cityName": "潮州市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "潮州市市场监督管理局",
+    "shortName": "潮州市场监管局",
+    "provinceCode": "440000",
+    "cityName": "潮州市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "揭阳市发展和改革委员会",
+    "shortName": "揭阳发改委",
+    "provinceCode": "440000",
+    "cityName": "揭阳市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "揭阳市工业和信息化局",
+    "shortName": "揭阳工信局",
+    "provinceCode": "440000",
+    "cityName": "揭阳市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "揭阳市科学技术局",
+    "shortName": "揭阳科技局",
+    "provinceCode": "440000",
+    "cityName": "揭阳市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "揭阳市财政局",
+    "shortName": "揭阳财政局",
+    "provinceCode": "440000",
+    "cityName": "揭阳市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "揭阳市人力资源和社会保障局",
+    "shortName": "揭阳人社局",
+    "provinceCode": "440000",
+    "cityName": "揭阳市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "揭阳市商务局",
+    "shortName": "揭阳商务局",
+    "provinceCode": "440000",
+    "cityName": "揭阳市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "揭阳市市场监督管理局",
+    "shortName": "揭阳市场监管局",
+    "provinceCode": "440000",
+    "cityName": "揭阳市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "云浮市发展和改革委员会",
+    "shortName": "云浮发改委",
+    "provinceCode": "440000",
+    "cityName": "云浮市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "云浮市工业和信息化局",
+    "shortName": "云浮工信局",
+    "provinceCode": "440000",
+    "cityName": "云浮市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "云浮市科学技术局",
+    "shortName": "云浮科技局",
+    "provinceCode": "440000",
+    "cityName": "云浮市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "云浮市财政局",
+    "shortName": "云浮财政局",
+    "provinceCode": "440000",
+    "cityName": "云浮市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "云浮市人力资源和社会保障局",
+    "shortName": "云浮人社局",
+    "provinceCode": "440000",
+    "cityName": "云浮市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "云浮市商务局",
+    "shortName": "云浮商务局",
+    "provinceCode": "440000",
+    "cityName": "云浮市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "云浮市市场监督管理局",
+    "shortName": "云浮市场监管局",
+    "provinceCode": "440000",
+    "cityName": "云浮市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "海口市发展和改革委员会",
+    "shortName": "海口发改委",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "海口市工业和信息化局",
+    "shortName": "海口工信局",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "海口市科学技术局",
+    "shortName": "海口科技局",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "海口市财政局",
+    "shortName": "海口财政局",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "海口市人力资源和社会保障局",
+    "shortName": "海口人社局",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "海口市商务局",
+    "shortName": "海口商务局",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "海口市市场监督管理局",
+    "shortName": "海口市场监管局",
+    "provinceCode": "460000",
+    "cityName": "海口市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "三亚市发展和改革委员会",
+    "shortName": "三亚发改委",
+    "provinceCode": "460000",
+    "cityName": "三亚市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "三亚市工业和信息化局",
+    "shortName": "三亚工信局",
+    "provinceCode": "460000",
+    "cityName": "三亚市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "三亚市科学技术局",
+    "shortName": "三亚科技局",
+    "provinceCode": "460000",
+    "cityName": "三亚市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "三亚市财政局",
+    "shortName": "三亚财政局",
+    "provinceCode": "460000",
+    "cityName": "三亚市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "三亚市人力资源和社会保障局",
+    "shortName": "三亚人社局",
+    "provinceCode": "460000",
+    "cityName": "三亚市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "三亚市商务局",
+    "shortName": "三亚商务局",
+    "provinceCode": "460000",
+    "cityName": "三亚市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "三亚市市场监督管理局",
+    "shortName": "三亚市场监管局",
+    "provinceCode": "460000",
+    "cityName": "三亚市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "三沙市发展和改革委员会",
+    "shortName": "三沙发改委",
+    "provinceCode": "460000",
+    "cityName": "三沙市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "三沙市工业和信息化局",
+    "shortName": "三沙工信局",
+    "provinceCode": "460000",
+    "cityName": "三沙市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "三沙市科学技术局",
+    "shortName": "三沙科技局",
+    "provinceCode": "460000",
+    "cityName": "三沙市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "三沙市财政局",
+    "shortName": "三沙财政局",
+    "provinceCode": "460000",
+    "cityName": "三沙市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "三沙市人力资源和社会保障局",
+    "shortName": "三沙人社局",
+    "provinceCode": "460000",
+    "cityName": "三沙市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "三沙市商务局",
+    "shortName": "三沙商务局",
+    "provinceCode": "460000",
+    "cityName": "三沙市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "三沙市市场监督管理局",
+    "shortName": "三沙市场监管局",
+    "provinceCode": "460000",
+    "cityName": "三沙市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "儋州市发展和改革委员会",
+    "shortName": "儋州发改委",
+    "provinceCode": "460000",
+    "cityName": "儋州市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "儋州市工业和信息化局",
+    "shortName": "儋州工信局",
+    "provinceCode": "460000",
+    "cityName": "儋州市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "儋州市科学技术局",
+    "shortName": "儋州科技局",
+    "provinceCode": "460000",
+    "cityName": "儋州市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "儋州市财政局",
+    "shortName": "儋州财政局",
+    "provinceCode": "460000",
+    "cityName": "儋州市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "儋州市人力资源和社会保障局",
+    "shortName": "儋州人社局",
+    "provinceCode": "460000",
+    "cityName": "儋州市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "儋州市商务局",
+    "shortName": "儋州商务局",
+    "provinceCode": "460000",
+    "cityName": "儋州市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "儋州市市场监督管理局",
+    "shortName": "儋州市场监管局",
+    "provinceCode": "460000",
+    "cityName": "儋州市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "西安市发展和改革委员会",
+    "shortName": "西安发改委",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "西安市工业和信息化局",
+    "shortName": "西安工信局",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "西安市科学技术局",
+    "shortName": "西安科技局",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "西安市财政局",
+    "shortName": "西安财政局",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "西安市人力资源和社会保障局",
+    "shortName": "西安人社局",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "西安市商务局",
+    "shortName": "西安商务局",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "西安市市场监督管理局",
+    "shortName": "西安市场监管局",
+    "provinceCode": "610000",
+    "cityName": "西安市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "铜川市发展和改革委员会",
+    "shortName": "铜川发改委",
+    "provinceCode": "610000",
+    "cityName": "铜川市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "铜川市工业和信息化局",
+    "shortName": "铜川工信局",
+    "provinceCode": "610000",
+    "cityName": "铜川市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "铜川市科学技术局",
+    "shortName": "铜川科技局",
+    "provinceCode": "610000",
+    "cityName": "铜川市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "铜川市财政局",
+    "shortName": "铜川财政局",
+    "provinceCode": "610000",
+    "cityName": "铜川市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "铜川市人力资源和社会保障局",
+    "shortName": "铜川人社局",
+    "provinceCode": "610000",
+    "cityName": "铜川市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "铜川市商务局",
+    "shortName": "铜川商务局",
+    "provinceCode": "610000",
+    "cityName": "铜川市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "铜川市市场监督管理局",
+    "shortName": "铜川市场监管局",
+    "provinceCode": "610000",
+    "cityName": "铜川市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "宝鸡市发展和改革委员会",
+    "shortName": "宝鸡发改委",
+    "provinceCode": "610000",
+    "cityName": "宝鸡市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "宝鸡市工业和信息化局",
+    "shortName": "宝鸡工信局",
+    "provinceCode": "610000",
+    "cityName": "宝鸡市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "宝鸡市科学技术局",
+    "shortName": "宝鸡科技局",
+    "provinceCode": "610000",
+    "cityName": "宝鸡市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "宝鸡市财政局",
+    "shortName": "宝鸡财政局",
+    "provinceCode": "610000",
+    "cityName": "宝鸡市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "宝鸡市人力资源和社会保障局",
+    "shortName": "宝鸡人社局",
+    "provinceCode": "610000",
+    "cityName": "宝鸡市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "宝鸡市商务局",
+    "shortName": "宝鸡商务局",
+    "provinceCode": "610000",
+    "cityName": "宝鸡市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "宝鸡市市场监督管理局",
+    "shortName": "宝鸡市场监管局",
+    "provinceCode": "610000",
+    "cityName": "宝鸡市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "咸阳市发展和改革委员会",
+    "shortName": "咸阳发改委",
+    "provinceCode": "610000",
+    "cityName": "咸阳市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "咸阳市工业和信息化局",
+    "shortName": "咸阳工信局",
+    "provinceCode": "610000",
+    "cityName": "咸阳市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "咸阳市科学技术局",
+    "shortName": "咸阳科技局",
+    "provinceCode": "610000",
+    "cityName": "咸阳市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "咸阳市财政局",
+    "shortName": "咸阳财政局",
+    "provinceCode": "610000",
+    "cityName": "咸阳市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "咸阳市人力资源和社会保障局",
+    "shortName": "咸阳人社局",
+    "provinceCode": "610000",
+    "cityName": "咸阳市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "咸阳市商务局",
+    "shortName": "咸阳商务局",
+    "provinceCode": "610000",
+    "cityName": "咸阳市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "咸阳市市场监督管理局",
+    "shortName": "咸阳市场监管局",
+    "provinceCode": "610000",
+    "cityName": "咸阳市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "渭南市发展和改革委员会",
+    "shortName": "渭南发改委",
+    "provinceCode": "610000",
+    "cityName": "渭南市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "渭南市工业和信息化局",
+    "shortName": "渭南工信局",
+    "provinceCode": "610000",
+    "cityName": "渭南市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "渭南市科学技术局",
+    "shortName": "渭南科技局",
+    "provinceCode": "610000",
+    "cityName": "渭南市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "渭南市财政局",
+    "shortName": "渭南财政局",
+    "provinceCode": "610000",
+    "cityName": "渭南市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "渭南市人力资源和社会保障局",
+    "shortName": "渭南人社局",
+    "provinceCode": "610000",
+    "cityName": "渭南市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "渭南市商务局",
+    "shortName": "渭南商务局",
+    "provinceCode": "610000",
+    "cityName": "渭南市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "渭南市市场监督管理局",
+    "shortName": "渭南市场监管局",
+    "provinceCode": "610000",
+    "cityName": "渭南市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "延安市发展和改革委员会",
+    "shortName": "延安发改委",
+    "provinceCode": "610000",
+    "cityName": "延安市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "延安市工业和信息化局",
+    "shortName": "延安工信局",
+    "provinceCode": "610000",
+    "cityName": "延安市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "延安市科学技术局",
+    "shortName": "延安科技局",
+    "provinceCode": "610000",
+    "cityName": "延安市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "延安市财政局",
+    "shortName": "延安财政局",
+    "provinceCode": "610000",
+    "cityName": "延安市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "延安市人力资源和社会保障局",
+    "shortName": "延安人社局",
+    "provinceCode": "610000",
+    "cityName": "延安市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "延安市商务局",
+    "shortName": "延安商务局",
+    "provinceCode": "610000",
+    "cityName": "延安市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "延安市市场监督管理局",
+    "shortName": "延安市场监管局",
+    "provinceCode": "610000",
+    "cityName": "延安市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "汉中市发展和改革委员会",
+    "shortName": "汉中发改委",
+    "provinceCode": "610000",
+    "cityName": "汉中市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "汉中市工业和信息化局",
+    "shortName": "汉中工信局",
+    "provinceCode": "610000",
+    "cityName": "汉中市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "汉中市科学技术局",
+    "shortName": "汉中科技局",
+    "provinceCode": "610000",
+    "cityName": "汉中市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "汉中市财政局",
+    "shortName": "汉中财政局",
+    "provinceCode": "610000",
+    "cityName": "汉中市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "汉中市人力资源和社会保障局",
+    "shortName": "汉中人社局",
+    "provinceCode": "610000",
+    "cityName": "汉中市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "汉中市商务局",
+    "shortName": "汉中商务局",
+    "provinceCode": "610000",
+    "cityName": "汉中市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "汉中市市场监督管理局",
+    "shortName": "汉中市场监管局",
+    "provinceCode": "610000",
+    "cityName": "汉中市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "榆林市发展和改革委员会",
+    "shortName": "榆林发改委",
+    "provinceCode": "610000",
+    "cityName": "榆林市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "榆林市工业和信息化局",
+    "shortName": "榆林工信局",
+    "provinceCode": "610000",
+    "cityName": "榆林市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "榆林市科学技术局",
+    "shortName": "榆林科技局",
+    "provinceCode": "610000",
+    "cityName": "榆林市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "榆林市财政局",
+    "shortName": "榆林财政局",
+    "provinceCode": "610000",
+    "cityName": "榆林市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "榆林市人力资源和社会保障局",
+    "shortName": "榆林人社局",
+    "provinceCode": "610000",
+    "cityName": "榆林市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "榆林市商务局",
+    "shortName": "榆林商务局",
+    "provinceCode": "610000",
+    "cityName": "榆林市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "榆林市市场监督管理局",
+    "shortName": "榆林市场监管局",
+    "provinceCode": "610000",
+    "cityName": "榆林市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "安康市发展和改革委员会",
+    "shortName": "安康发改委",
+    "provinceCode": "610000",
+    "cityName": "安康市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "安康市工业和信息化局",
+    "shortName": "安康工信局",
+    "provinceCode": "610000",
+    "cityName": "安康市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "安康市科学技术局",
+    "shortName": "安康科技局",
+    "provinceCode": "610000",
+    "cityName": "安康市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "安康市财政局",
+    "shortName": "安康财政局",
+    "provinceCode": "610000",
+    "cityName": "安康市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "安康市人力资源和社会保障局",
+    "shortName": "安康人社局",
+    "provinceCode": "610000",
+    "cityName": "安康市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "安康市商务局",
+    "shortName": "安康商务局",
+    "provinceCode": "610000",
+    "cityName": "安康市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "安康市市场监督管理局",
+    "shortName": "安康市场监管局",
+    "provinceCode": "610000",
+    "cityName": "安康市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  },
+  {
+    "name": "商洛市发展和改革委员会",
+    "shortName": "商洛发改委",
+    "provinceCode": "610000",
+    "cityName": "商洛市",
+    "level": "municipal",
+    "functionTags": [
+      "产业",
+      "审批"
+    ]
+  },
+  {
+    "name": "商洛市工业和信息化局",
+    "shortName": "商洛工信局",
+    "provinceCode": "610000",
+    "cityName": "商洛市",
+    "level": "municipal",
+    "functionTags": [
+      "工业",
+      "制造业"
+    ]
+  },
+  {
+    "name": "商洛市科学技术局",
+    "shortName": "商洛科技局",
+    "provinceCode": "610000",
+    "cityName": "商洛市",
+    "level": "municipal",
+    "functionTags": [
+      "科技",
+      "创新"
+    ]
+  },
+  {
+    "name": "商洛市财政局",
+    "shortName": "商洛财政局",
+    "provinceCode": "610000",
+    "cityName": "商洛市",
+    "level": "municipal",
+    "functionTags": [
+      "补贴",
+      "资金"
+    ]
+  },
+  {
+    "name": "商洛市人力资源和社会保障局",
+    "shortName": "商洛人社局",
+    "provinceCode": "610000",
+    "cityName": "商洛市",
+    "level": "municipal",
+    "functionTags": [
+      "人才",
+      "就业"
+    ]
+  },
+  {
+    "name": "商洛市商务局",
+    "shortName": "商洛商务局",
+    "provinceCode": "610000",
+    "cityName": "商洛市",
+    "level": "municipal",
+    "functionTags": [
+      "招商",
+      "外贸"
+    ]
+  },
+  {
+    "name": "商洛市市场监督管理局",
+    "shortName": "商洛市场监管局",
+    "provinceCode": "610000",
+    "cityName": "商洛市",
+    "level": "municipal",
+    "functionTags": [
+      "监管",
+      "信用"
+    ]
+  }
+]

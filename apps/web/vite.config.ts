@@ -15,6 +15,10 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // ngrok / cloudflared tunnel 给外人 demo 用 — 允许 ngrok host 访问 dev server
+    // 默认 Vite 4+ 拒绝非 localhost host(防 DNS rebinding)
+    host: true,
+    allowedHosts: ['.ngrok-free.dev', '.ngrok-free.app', '.ngrok.app', '.ngrok.io', '.trycloudflare.com', 'localhost'],
     proxy: {
       '/api': {
         target: 'http://localhost:3001',

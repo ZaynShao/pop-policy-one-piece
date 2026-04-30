@@ -37,6 +37,9 @@ export interface Visit {
   cityName: string;
   lng: number;
   lat: number;
+  // K 模块 — 双轨,可空
+  orgId: string | null;
+  contactId: string | null;
   // 系统
   visitorId: string;
   createdAt: string;
@@ -56,6 +59,8 @@ export interface CreateVisitInput {
   outcomeSummary?: string;
   color?: VisitStatusColor;
   followUp?: boolean;
+  orgId?: string | null;
+  contactId?: string | null;
   // 地理(必填,用于 city center lookup)
   provinceCode: string;
   cityName: string;
@@ -85,6 +90,8 @@ export interface UpdateVisitInput {
   color?: VisitStatusColor;
   followUp?: boolean;
   // 不允许改 provinceCode / cityName —— 改了会动 lng/lat 影响散点位置
+  orgId?: string | null;
+  contactId?: string | null;
 }
 
 export interface CityListResponse {

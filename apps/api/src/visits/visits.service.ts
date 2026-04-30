@@ -11,6 +11,8 @@ import { VisitEntity } from './entities/visit.entity';
 import { PinEntity } from '../pins/entities/pin.entity';
 import { CommentEntity } from '../comments/entities/comment.entity';
 import { UserEntity } from '../users/entities/user.entity';
+import { GovOrgEntity } from '../gov-orgs/entities/gov-org.entity';
+import { GovContactsService } from '../gov-contacts/gov-contacts.service';
 import { CreateVisitDto } from './dtos/create-visit.dto';
 import { UpdateVisitDto } from './dtos/update-visit.dto';
 import { renderAutoComment } from './comment-template';
@@ -44,6 +46,8 @@ export class VisitsService {
     @InjectRepository(PinEntity) private readonly pinsRepo: Repository<PinEntity>,
     @InjectRepository(CommentEntity) private readonly commentsRepo: Repository<CommentEntity>,
     @InjectRepository(UserEntity) private readonly usersRepo: Repository<UserEntity>,
+    @InjectRepository(GovOrgEntity) private readonly orgsRepo: Repository<GovOrgEntity>,
+    private readonly contactsService: GovContactsService,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -82,7 +86,8 @@ export class VisitsService {
     return v;
   }
 
-  async create(dto: CreateVisitDto, visitorId: string): Promise<VisitEntity> {
+  async create(dto: CreateVisitDto, currentUser: AuthenticatedUser): Promise<VisitEntity> {
+    const visitorId = currentUser.id;
     const status = dto.status ?? 'completed';
 
     if (status === 'cancelled') {
@@ -111,6 +116,28 @@ export class VisitsService {
       );
     }
 
+    // K 模块 — orgId 校验 + auto-upsert contact
+    let orgId: string | null = dto.orgId ?? null;
+    let contactId: string | null = dto.contactId ?? null;
+
+    if (orgId) {
+      const org = await this.orgsRepo.findOne({ where: { id: orgId } });
+      if (!org || org.deletedAt) {
+        throw new BadRequestException('机构不存在或已删除');
+      }
+    }
+
+    if (contactId) {
+      // 显式给 contactId,跳过 upsert(校验交给 FK 兜底)
+    } else if (orgId && dto.contactPerson) {
+      contactId = await this.contactsService.upsertByOrgAndName({
+        orgId,
+        name: dto.contactPerson,
+        title: dto.contactTitle ?? null,
+        user: currentUser,
+      });
+    }
+
     const visit = this.repo.create({
       status,
       parentPinId: dto.parentPinId ?? null,
@@ -128,6 +155,8 @@ export class VisitsService {
       lng: center.lng,
       lat: center.lat,
       visitorId,
+      orgId,
+      contactId,
     });
     return this.repo.save(visit);
   }
@@ -155,11 +184,11 @@ export class VisitsService {
 
     // completed 状态白名单:不切 status 时只允许 color
     if (prev.status === 'completed' && !dto.status) {
-      const allowedKeys = new Set(['color']);
+      const allowedKeys = new Set(['color', 'orgId', 'contactId']);
       const dtoKeys = Object.keys(dto).filter((k) => dto[k as keyof UpdateVisitDto] !== undefined);
       const violation = dtoKeys.find((k) => !allowedKeys.has(k));
       if (violation) {
-        throw new BadRequestException('已完成拜访只允许改 color');
+        throw new BadRequestException('已完成拜访只允许改 color / orgId / contactId');
       }
     }
 
@@ -180,6 +209,33 @@ export class VisitsService {
     if (dto.outcomeSummary !== undefined) prev.outcomeSummary = dto.outcomeSummary;
     if (dto.color !== undefined) prev.color = dto.color;
     if (dto.followUp !== undefined) prev.followUp = dto.followUp;
+
+    // K 模块 — 防止 cross-org 不一致(同时改 orgId + contactId 时校验配对)
+    if (
+      dto.orgId !== undefined && dto.orgId !== null &&
+      dto.contactId !== undefined && dto.contactId !== null
+    ) {
+      const contact = await this.contactsService.findOne(dto.contactId);
+      if (contact.orgId !== dto.orgId) {
+        throw new BadRequestException('联系人不属于所选机构');
+      }
+    }
+
+    // K 模块 — orgId 改了 → 自动清 contactId(防止跨机构残留)
+    if (dto.orgId !== undefined) {
+      if (dto.orgId !== null) {
+        const org = await this.orgsRepo.findOne({ where: { id: dto.orgId } });
+        if (!org || org.deletedAt) {
+          throw new BadRequestException('机构不存在或已删除');
+        }
+      }
+      const orgChanged = prev.orgId !== dto.orgId;
+      prev.orgId = dto.orgId;
+      if (orgChanged && dto.contactId === undefined) {
+        prev.contactId = null;
+      }
+    }
+    if (dto.contactId !== undefined) prev.contactId = dto.contactId;
 
     // β.2.5/β.3 触发条件:planned → completed + parentPinId NOT NULL
     const triggerAutoComment = (

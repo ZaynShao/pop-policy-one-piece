@@ -6,6 +6,7 @@ import {
   IsString,
   IsUUID,
   MaxLength,
+  ValidateIf,
 } from 'class-validator';
 
 export class UpdateVisitDto {
@@ -37,4 +38,10 @@ export class UpdateVisitDto {
   color?: 'red' | 'yellow' | 'green' | 'blue' | null;
 
   @IsOptional() @IsBoolean() followUp?: boolean;
+
+  @IsOptional() @ValidateIf((_, v) => v !== null) @IsUUID()
+  orgId?: string | null;
+
+  @IsOptional() @ValidateIf((_, v) => v !== null) @IsUUID()
+  contactId?: string | null;
 }
