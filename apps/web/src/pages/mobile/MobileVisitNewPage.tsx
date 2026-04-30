@@ -77,7 +77,7 @@ async function postVisit(input: CreateVisitInput): Promise<void> {
 }
 
 /**
- * 移动端 — 已拜访录入(R2.7: GPS 禁用 + 省市下拉 + 语音录入 + LLM 自动填表)
+ * 移动端 — 已拜访录入(GPS 反查省市 + 省市下拉 + 语音录入 + LLM 自动填表)
  */
 export function MobileVisitNewPage() {
   const navigate = useNavigate();
@@ -88,6 +88,55 @@ export function MobileVisitNewPage() {
   const [voiceHasRun, setVoiceHasRun] = useState(false);
   const [matchedOrgId, setMatchedOrgId] = useState<string | null>(null);
   const [matchedOrgName, setMatchedOrgName] = useState<string | null>(null);
+  const [gpsLoading, setGpsLoading] = useState(false);
+  const [gpsHint, setGpsHint] = useState<string | null>(null);
+
+  // 一键 GPS 定位 — 拿 lng/lat 后调后端 /regions/reverse 反查省市,直接 setFieldsValue
+  const handleGpsLocate = () => {
+    if (!navigator.geolocation) {
+      setGpsHint('当前浏览器不支持 GPS');
+      return;
+    }
+    setGpsLoading(true);
+    setGpsHint(null);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        try {
+          const { longitude, latitude } = pos.coords;
+          const r = await fetch(
+            `/api/v1/regions/reverse?lng=${longitude}&lat=${latitude}`,
+            { headers: authHeaders() },
+          );
+          if (!r.ok) throw new Error(`reverse-geocode HTTP ${r.status}`);
+          const j = await r.json();
+          const { provinceCode, provinceName, cityName } = j.data ?? {};
+          if (!provinceCode || !cityName) throw new Error('未匹配到省市');
+          form.setFieldsValue({ provinceCode, cityName });
+          setGpsHint(`✓ 已定位到 ${provinceName} / ${cityName}`);
+          message.success(`已定位:${provinceName} / ${cityName}`);
+        } catch (e) {
+          setGpsHint(`定位失败:${(e as Error).message},请下方手选省市`);
+          message.error('GPS 反查失败,请手选');
+        } finally {
+          setGpsLoading(false);
+        }
+      },
+      (err) => {
+        setGpsLoading(false);
+        const msg =
+          err.code === err.PERMISSION_DENIED
+            ? 'GPS 权限被拒绝,请下方手选省市'
+            : err.code === err.POSITION_UNAVAILABLE
+              ? 'GPS 信号不可用,请下方手选省市'
+              : err.code === err.TIMEOUT
+                ? 'GPS 超时,请下方手选省市'
+                : `GPS 失败:${err.message}`;
+        setGpsHint(msg);
+        message.warning(msg);
+      },
+      { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 },
+    );
+  };
 
   const { data: cityList } = useQuery({
     queryKey: ['cities'],
@@ -320,29 +369,32 @@ export function MobileVisitNewPage() {
         />
       )}
 
-      {/* GPS 按钮 — R2.6 暂时禁用 */}
+      {/* GPS 一键定位 — HTTPS 上线后启用,失败 fallback 到下方手选 */}
       <div style={{ marginBottom: 16 }}>
         <Button
           type="primary"
           size="large"
           block
           icon={<EnvironmentOutlined />}
-          disabled
+          loading={gpsLoading}
+          onClick={handleGpsLocate}
           style={{ height: 56, fontSize: 16 }}
         >
           一键定位(GPS)
         </Button>
-        <Text
-          type="secondary"
-          style={{
-            fontSize: 12,
-            display: 'block',
-            textAlign: 'center',
-            marginTop: 6,
-          }}
-        >
-          GPS 暂未启用,请下方手选省市
-        </Text>
+        {gpsHint && (
+          <Text
+            type={gpsHint.startsWith('✓') ? 'success' : 'secondary'}
+            style={{
+              fontSize: 12,
+              display: 'block',
+              textAlign: 'center',
+              marginTop: 6,
+            }}
+          >
+            {gpsHint}
+          </Text>
+        )}
       </div>
 
       {/* 表单 */}
