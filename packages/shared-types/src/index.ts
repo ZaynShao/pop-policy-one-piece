@@ -15,3 +15,5 @@ export * from './dtos/user.dto';
 export * from './dtos/voice.dto';
 export * from './dtos/gov-org.dto';
 export * from './dtos/gov-contact.dto';
+export * from './enums/policy-level';
+export * from './dtos/policy.dto';

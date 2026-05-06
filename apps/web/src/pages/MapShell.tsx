@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { Button, Checkbox, DatePicker, Select, Space, Tag, Tooltip, Typography } from 'antd';
+import { Button, Checkbox, DatePicker, Select, Space, Tooltip, Typography } from 'antd';
 import {
   LeftOutlined,
   PlusOutlined,
@@ -10,16 +10,16 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import type { Dayjs } from 'dayjs';
 import { MapCanvas } from '@/components/MapCanvas';
-import type { ThemeOverlay } from '@/components/MapCanvas';
 import { VisitDetailDrawer } from '@/components/VisitDetailDrawer';
 import { VisitFormModal } from '@/components/VisitFormModal';
 import { PinFormModal } from '@/components/PinFormModal';
 import { PinDetailDrawer } from '@/components/PinDetailDrawer';
-import { PolicyRegionDrawer } from '@/components/PolicyRegionDrawer';
-import { fetchThemes, fetchTheme } from '@/api/themes';
+import { PolicyListDrawer } from '@/components/PolicyListDrawer';
+import { fetchPolicyDistribution, fetchPolicyTopics } from '@/api/policies';
 import { fetchUsers } from '@/api/users';
-import type { Theme, ThemeWithCoverage, UserRoleCode } from '@pop/shared-types';
-import { palette } from '@/tokens';
+import type { UserRoleCode } from '@pop/shared-types';
+import { regionCodeToName } from '@/lib/region-names';
+import { getTopicColorScale, palette } from '@/tokens';
 
 const { Title, Paragraph } = Typography;
 
@@ -56,19 +56,24 @@ export function MapShell() {
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [pinModalOpen, setPinModalOpen] = useState(false);
   const [visitModalOpen, setVisitModalOpen] = useState(false);
-  const [selectedThemeIds, setSelectedThemeIds] = useState<string[]>([]);
-  // B7-B9 政策大盘交互升级
   const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null);
-  const [chart, setChart] = useState<unknown | null>(null);
+  // P0 染色图层 — 政策主题(单选,跟 themes 涂层并列在左面板)
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [policyDrawerMode, setPolicyDrawerMode] = useState<'national' | 'region' | null>(null);
   // 属地大盘左面板筛选(用户拍 — 时间窗口 / 区划 / 角色)
   const [localDateRange, setLocalDateRange] = useState<[Dayjs | null, Dayjs | null] | null>(null);
   const [localProvinceCodes, setLocalProvinceCodes] = useState<string[]>([]);
   const [localRoleCodes, setLocalRoleCodes] = useState<UserRoleCode[]>([]);
 
-  // 切大盘 / 下钻 都清浮起 + 关抽屉
+  // 切大盘 / 下钻 / 切主题 都清浮起;选了政策主题时自动开 national drawer
   useEffect(() => {
     setSelectedRegionCode(null);
-  }, [isPolicy, currentProvinceCode]);
+    if (isPolicy && selectedTopic) {
+      setPolicyDrawerMode('national');
+    } else {
+      setPolicyDrawerMode(null);
+    }
+  }, [isPolicy, currentProvinceCode, selectedTopic]);
 
   // 拉 users 给「角色筛选」下拉用 + filter visit/pin 时反查 user→role
   const usersQuery = useQuery({
@@ -83,30 +88,52 @@ export function MapShell() {
     userRoleMap[u.id] = u.roleCode;
   }
 
-  // 拉 published themes 给 Select options(只在 isPolicy 时拉)
-  const publishedThemes = useQuery({
-    queryKey: ['themes', 'published'],
-    queryFn: () => fetchThemes({ status: 'published' }),
+  // 政策主题下拉 — 政策大盘左面板的可选项
+  const policyTopicsQuery = useQuery({
+    queryKey: ['policy-topics'],
+    queryFn: fetchPolicyTopics,
     enabled: isPolicy,
+    staleTime: 5 * 60_000,
   });
+  const policyTopics = policyTopicsQuery.data?.data ?? [];
 
-  // 拉每个选中 theme 的完整信息(含 coverage)
-  const themeOverlaysData = useQuery({
-    queryKey: ['theme-overlays', selectedThemeIds],
-    queryFn: async () => {
-      if (selectedThemeIds.length === 0) return [];
-      const fetched = await Promise.all(selectedThemeIds.map((id) => fetchTheme(id)));
-      return fetched.map((r) => r.data);
-    },
-    enabled: isPolicy && selectedThemeIds.length > 0,
+  // 选中政策主题时拉 distribution
+  const distributionQuery = useQuery({
+    queryKey: ['policy-distribution', selectedTopic],
+    queryFn: () => fetchPolicyDistribution(selectedTopic!),
+    enabled: isPolicy && !!selectedTopic,
+    staleTime: 60_000,
   });
+  const policyDistribution = distributionQuery.data?.data ?? null;
 
-  const themeOverlays: ThemeOverlay[] = (themeOverlaysData.data ?? []).map((t: ThemeWithCoverage) => ({
-    themeId: t.id,
-    themeTitle: t.title,
-    template: t.template,
-    coverage: t.coverage,
-  }));
+  // 当前主题色阶 — 按字典序 index 从 10 色相池分配(≤ 10 个主题不撞色)
+  const currentTopicScale = useMemo(
+    () => (selectedTopic ? getTopicColorScale(selectedTopic, policyTopics) : null),
+    [selectedTopic, policyTopics],
+  );
+
+  // 点击地图 region:选了政策主题 → drawer 切到 region;否则什么都不发生
+  const handlePolicyRegionSelect = (code: string | null): void => {
+    setSelectedRegionCode(code);
+    if (!selectedTopic) return;
+    if (!code) {
+      setPolicyDrawerMode('national');
+      return;
+    }
+    setPolicyDrawerMode('region');
+  };
+
+  // 政策 drawer 的 region 信息(map state → drawer prop)
+  const drawerRegion = useMemo(() => {
+    if (policyDrawerMode !== 'region' || !selectedRegionCode) {
+      return { regionCode: null as string | null, cityName: null as string | null };
+    }
+    if (!currentProvinceCode) {
+      return { regionCode: selectedRegionCode, cityName: null };
+    }
+    const cityName = regionCodeToName(selectedRegionCode);
+    return { regionCode: currentProvinceCode, cityName: cityName ?? null };
+  }, [policyDrawerMode, selectedRegionCode, currentProvinceCode]);
 
   return (
     <div
@@ -125,11 +152,11 @@ export function MapShell() {
           onProvinceChange={setCurrentProvinceCode}
           onVisitClick={setSelectedVisitId}
           onPinClick={setSelectedPinId}
-          themeOverlays={isPolicy ? themeOverlays : undefined}
+          policyColoring={isPolicy && selectedTopic ? policyDistribution : null}
+          policyColorScale={isPolicy && selectedTopic ? currentTopicScale : null}
           showLocalLayers={!isPolicy}
           selectedRegionCode={isPolicy ? selectedRegionCode : null}
-          onRegionSelect={isPolicy ? setSelectedRegionCode : undefined}
-          onChartReady={setChart}
+          onRegionSelect={isPolicy ? handlePolicyRegionSelect : undefined}
           localDateRange={
             !isPolicy && localDateRange && localDateRange[0] && localDateRange[1]
               ? [localDateRange[0].format('YYYY-MM-DD'), localDateRange[1].format('YYYY-MM-DD')]
@@ -150,7 +177,7 @@ export function MapShell() {
             left: 16,
             top: 16,
             bottom: 16,
-            width: 280,
+            width: 360,
             padding: 16,
             zIndex: 10,
             display: 'flex',
@@ -163,96 +190,90 @@ export function MapShell() {
           }}
         >
           <Title level={5} style={{ color: palette.primary, marginTop: 0 }}>
-            {isPolicy ? '政策大盘 · 涂层勾选' : '属地大盘 · 热力筛选'}
+            {isPolicy ? '政策大盘' : '属地大盘 · 热力筛选'}
           </Title>
           {isPolicy ? (
             <>
-              <Paragraph style={{ color: palette.textMuted, fontSize: 12, marginBottom: 8 }}>
-                勾选后在地图上叠加覆盖(最多 3 层)
+              <Paragraph style={{ color: palette.textMuted, fontSize: 12, marginBottom: 10 }}>
+                选一个主题 → 各省/市按政策数染色 + 国家级浮窗
               </Paragraph>
-              <Space size={6} style={{ marginBottom: 12 }}>
-                <Button
-                  size="small"
-                  onClick={() => {
-                    const ids = (publishedThemes.data?.data ?? []).slice(0, 3).map((t: Theme) => t.id);
-                    setSelectedThemeIds(ids);
-                  }}
-                >
-                  全选
-                </Button>
-                <Button size="small" onClick={() => setSelectedThemeIds([])}>
-                  清空
-                </Button>
-              </Space>
-              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {(publishedThemes.data?.data ?? []).map((t: Theme) => {
-                  const isSel = selectedThemeIds.includes(t.id);
-                  const themeColor = t.template === 'main' ? '#52c41a' : '#ff4d4f';
-                  const reachLimit = !isSel && selectedThemeIds.length >= 3;
-                  return (
-                    <div
-                      key={t.id}
-                      onClick={() => {
-                        if (reachLimit) return;
-                        setSelectedThemeIds((prev) =>
-                          prev.includes(t.id) ? prev.filter((x) => x !== t.id) : [...prev, t.id],
-                        );
-                      }}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: 8,
-                        padding: 10,
-                        borderRadius: 8,
-                        background: isSel
-                          ? `${themeColor}22`
-                          : 'rgba(0, 212, 255, 0.03)',
-                        border: `1px solid ${isSel ? `${themeColor}aa` : 'rgba(0, 212, 255, 0.08)'}`,
-                        cursor: reachLimit ? 'not-allowed' : 'pointer',
-                        opacity: reachLimit ? 0.45 : 1,
-                        boxShadow: isSel ? `0 0 12px ${themeColor}33` : 'none',
-                        transition: 'all 0.2s',
-                      }}
-                    >
-                      <Checkbox checked={isSel} disabled={reachLimit} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <Space size={6} wrap>
-                          <span
-                            style={{
-                              width: 10,
-                              height: 10,
-                              borderRadius: '50%',
-                              background: themeColor,
-                              boxShadow: `0 0 6px ${themeColor}`,
-                              display: 'inline-block',
-                            }}
-                          />
-                          <Typography.Text
-                            strong
-                            style={{ fontSize: 13, color: palette.textBase }}
-                          >
-                            {t.title}
-                          </Typography.Text>
-                          <Tag
-                            color={t.template === 'main' ? 'green' : 'red'}
-                            style={{ fontSize: 10, margin: 0, lineHeight: '16px' }}
-                          >
-                            {t.template === 'main' ? '主线' : '风险'}
-                          </Tag>
-                        </Space>
-                        {t.regionScope && (
-                          <div style={{ fontSize: 11, color: palette.textMuted, marginTop: 4, lineHeight: 1.5 }}>
-                            {t.regionScope}
-                          </div>
-                        )}
+              <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {policyTopics.map((topic) => {
+                    const isSel = selectedTopic === topic;
+                    const scale = getTopicColorScale(topic, policyTopics);
+                    const accent = scale[3]; // 中亮档作为 checkbox accent(亮一点更清楚)
+                    return (
+                      <div
+                        key={topic}
+                        onClick={() => setSelectedTopic(isSel ? null : topic)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 6,
+                          padding: '8px 8px', borderRadius: 8,
+                          background: isSel ? `${accent}22` : `${accent}0a`,
+                          border: `1px solid ${isSel ? `${accent}cc` : `${accent}33`}`,
+                          cursor: 'pointer',
+                          boxShadow: isSel ? `0 0 12px ${accent}55` : 'none',
+                          transition: 'all 0.2s',
+                          minWidth: 0,
+                        }}
+                      >
+                        <Checkbox checked={isSel} />
+                        <span style={{
+                          width: 8, height: 8, borderRadius: '50%',
+                          background: accent, boxShadow: `0 0 6px ${accent}`,
+                          flexShrink: 0,
+                        }} />
+                        <Typography.Text strong style={{
+                          fontSize: 12, color: palette.textBase,
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                          flex: 1, minWidth: 0,
+                        }}>
+                          {topic}
+                        </Typography.Text>
                       </div>
-                    </div>
-                  );
-                })}
-                {(publishedThemes.data?.data ?? []).length === 0 && (
-                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                    暂无已发布主题
+                    );
+                  })}
+
+                </div>
+
+                {selectedTopic && distributionQuery.isLoading && (
+                  <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                    加载分布中…
                   </Typography.Text>
+                )}
+
+                {/* 色阶图例 — 选中主题时显示该主题色阶 */}
+                {selectedTopic && policyDistribution && currentTopicScale && (
+                  <div style={{
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                    background: `${currentTopicScale[2]}10`,
+                    border: `1px solid ${currentTopicScale[2]}33`,
+                  }}>
+                    <Typography.Text style={{ fontSize: 11, color: palette.textMuted, display: 'block', marginBottom: 6 }}>
+                      {selectedTopic} · 色阶图例(政策数)
+                    </Typography.Text>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', rowGap: 4, columnGap: 8 }}>
+                      {[
+                        { c: currentTopicScale[0], label: '1 – 2 条' },
+                        { c: currentTopicScale[1], label: '3 – 5 条' },
+                        { c: currentTopicScale[2], label: '6 – 10 条' },
+                        { c: currentTopicScale[3], label: '11 – 20 条' },
+                        { c: currentTopicScale[4], label: '21 条以上' },
+                      ].map((b) => (
+                        <Space key={b.label} size={6}>
+                          <span style={{
+                            display: 'inline-block', width: 16, height: 10, borderRadius: 2,
+                            background: b.c, boxShadow: `0 0 6px ${b.c}66`,
+                          }} />
+                          <Typography.Text style={{ fontSize: 11, color: palette.textBase }}>
+                            {b.label}
+                          </Typography.Text>
+                        </Space>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             </>
@@ -343,7 +364,7 @@ export function MapShell() {
           style={{
             position: 'absolute',
             // 开:贴面板右边缘(16 + 280 = 296);收:贴视口左边缘(0,把手露出来)
-            left: siderOpen ? 16 + 280 : 0,
+            left: siderOpen ? 16 + 360 : 0,
             top: '50%',
             transform: 'translateY(-50%)',
             width: 28,
@@ -414,13 +435,17 @@ export function MapShell() {
         onClose={() => setSelectedPinId(null)}
       />
 
-      {/* B7-B9:政策大盘 region 抽屉(属地大盘不渲染) */}
-      {isPolicy && (
-        <PolicyRegionDrawer
-          regionCode={selectedRegionCode}
-          selectedThemeIds={selectedThemeIds}
-          chart={chart}
-          onClose={() => setSelectedRegionCode(null)}
+      {/* P0 政策染色 drawer — 选中政策主题时自动开 national,点 region 切到 region */}
+      {isPolicy && selectedTopic && (
+        <PolicyListDrawer
+          topic={selectedTopic}
+          mode={policyDrawerMode}
+          regionCode={drawerRegion.regionCode}
+          cityName={drawerRegion.cityName}
+          onClose={() => {
+            setPolicyDrawerMode(null);
+            setSelectedRegionCode(null);
+          }}
         />
       )}
 

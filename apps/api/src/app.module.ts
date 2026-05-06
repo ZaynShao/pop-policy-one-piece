@@ -16,6 +16,7 @@ import { ThemesModule } from './themes/themes.module';
 import { VoiceModule } from './voice/voice.module';
 import { GovOrgsModule } from './gov-orgs/gov-orgs.module';
 import { GovContactsModule } from './gov-contacts/gov-contacts.module';
+import { PoliciesModule } from './policies/policies.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { GovContactsModule } from './gov-contacts/gov-contacts.module';
     VoiceModule,
     GovOrgsModule,
     GovContactsModule,
+    PoliciesModule,
   ],
   providers: [
     // 全局 JWT 守卫,@Public() 可跳过
