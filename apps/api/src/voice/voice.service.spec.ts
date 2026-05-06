@@ -5,6 +5,7 @@ import axios from 'axios';
 import { VoiceService } from './voice.service';
 import { GovOrgEntity } from '../gov-orgs/entities/gov-org.entity';
 import * as aliyunAsr from './aliyun-asr';
+import { AliyunTokenManager } from './aliyun-token-manager';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -18,7 +19,6 @@ describe('VoiceService', () => {
   beforeEach(async () => {
     process.env.MINIMAX_API_KEY = 'sk-test';
     process.env.ALI_NLS_APP_KEY = 'app-test';
-    process.env.ALI_NLS_TOKEN = 'token-test';
 
     orgsRepo = {
       findOne: jest.fn().mockResolvedValue(null),
@@ -30,10 +30,16 @@ describe('VoiceService', () => {
       })),
     };
 
+    const tokenManagerMock = {
+      isConfigured: () => true,
+      getToken: jest.fn().mockResolvedValue('mock-token'),
+    };
+
     const module = await Test.createTestingModule({
       providers: [
         VoiceService,
         { provide: getRepositoryToken(GovOrgEntity), useValue: orgsRepo },
+        { provide: AliyunTokenManager, useValue: tokenManagerMock },
       ],
     }).compile();
     service = module.get(VoiceService);
@@ -48,7 +54,6 @@ describe('VoiceService', () => {
   afterEach(() => {
     delete process.env.MINIMAX_API_KEY;
     delete process.env.ALI_NLS_APP_KEY;
-    delete process.env.ALI_NLS_TOKEN;
   });
 
   function mockMiniMax(content: string) {
@@ -159,10 +164,15 @@ describe('VoiceService', () => {
 
   it('throws InternalServerErrorException when MINIMAX_API_KEY missing', async () => {
     delete process.env.MINIMAX_API_KEY;
+    const tokenManagerMock = {
+      isConfigured: () => true,
+      getToken: jest.fn().mockResolvedValue('mock-token'),
+    };
     const module = await Test.createTestingModule({
       providers: [
         VoiceService,
         { provide: getRepositoryToken(GovOrgEntity), useValue: orgsRepo },
+        { provide: AliyunTokenManager, useValue: tokenManagerMock },
       ],
     }).compile();
     const localService = module.get(VoiceService);
