@@ -65,11 +65,13 @@ export function MapShell() {
   const [localProvinceCodes, setLocalProvinceCodes] = useState<string[]>([]);
   const [localRoleCodes, setLocalRoleCodes] = useState<UserRoleCode[]>([]);
 
-  // 切大盘 / 下钻 / 切主题 都清浮起;选了政策主题时自动开 national drawer
+  // 切大盘 / 下钻 / 切主题 都清浮起;按 currentProvinceCode 决定 drawer mode:
+  //   - 全国视图(无下钻):national —— 显示该主题国家级政策
+  //   - 省下钻视图:region(regionCode=currentProvinceCode)—— 显示该省全部政策
   useEffect(() => {
     setSelectedRegionCode(null);
     if (isPolicy && selectedTopic) {
-      setPolicyDrawerMode('national');
+      setPolicyDrawerMode(currentProvinceCode ? 'region' : 'national');
     } else {
       setPolicyDrawerMode(null);
     }
@@ -124,15 +126,21 @@ export function MapShell() {
   };
 
   // 政策 drawer 的 region 信息(map state → drawer prop)
+  // - 全国视图点省份:regionCode=省 code, cityName=null
+  // - 省下钻未点市:regionCode=currentProvinceCode, cityName=null(整省政策)
+  // - 省下钻点市:  regionCode=currentProvinceCode, cityName=市名
   const drawerRegion = useMemo(() => {
-    if (policyDrawerMode !== 'region' || !selectedRegionCode) {
+    if (policyDrawerMode !== 'region') {
       return { regionCode: null as string | null, cityName: null as string | null };
     }
-    if (!currentProvinceCode) {
-      return { regionCode: selectedRegionCode, cityName: null };
+    if (selectedRegionCode && currentProvinceCode) {
+      const cityName = regionCodeToName(selectedRegionCode);
+      return { regionCode: currentProvinceCode, cityName: cityName ?? null };
     }
-    const cityName = regionCodeToName(selectedRegionCode);
-    return { regionCode: currentProvinceCode, cityName: cityName ?? null };
+    if (currentProvinceCode) {
+      return { regionCode: currentProvinceCode, cityName: null };
+    }
+    return { regionCode: selectedRegionCode, cityName: null };
   }, [policyDrawerMode, selectedRegionCode, currentProvinceCode]);
 
   return (
