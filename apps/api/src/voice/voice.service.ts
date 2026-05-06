@@ -17,6 +17,7 @@ import type {
 import { GovOrgEntity } from '../gov-orgs/entities/gov-org.entity';
 import { buildVoicePrompt } from './prompt';
 import { transcribeAudioWithAliyunNls } from './aliyun-asr';
+import { AliyunTokenManager } from './aliyun-token-manager';
 
 const TIMEOUT_MS = 15_000;
 const VALID_COLORS = ['red', 'yellow', 'green'] as const;
@@ -31,10 +32,10 @@ export class VoiceService {
     process.env.MINIMAX_BASE_URL ?? 'https://api.minimaxi.com/v1';
   private readonly model = 'MiniMax-M2.7-highspeed';
   private readonly nlsAppKey = process.env.ALI_NLS_APP_KEY ?? '';
-  private readonly nlsToken = process.env.ALI_NLS_TOKEN ?? '';
 
   constructor(
     @InjectRepository(GovOrgEntity) private readonly orgsRepo: Repository<GovOrgEntity>,
+    private readonly tokenManager: AliyunTokenManager,
   ) {}
 
   async parseVisit(
@@ -46,8 +47,10 @@ export class VoiceService {
       this.logger.error('MINIMAX_API_KEY not configured');
       throw new InternalServerErrorException('AI 服务未配置');
     }
-    if (!this.nlsAppKey || !this.nlsToken) {
-      this.logger.error('ALI_NLS_APP_KEY / ALI_NLS_TOKEN not configured');
+    if (!this.nlsAppKey || !this.tokenManager.isConfigured()) {
+      this.logger.error(
+        'ALI_NLS_APP_KEY / ALI_NLS_AK_ID / ALI_NLS_AK_SECRET not configured',
+      );
       throw new InternalServerErrorException('语音识别服务未配置');
     }
 
@@ -61,16 +64,39 @@ export class VoiceService {
     }
 
     // 2. 阿里云 NLS 一句话识别: mp3 → transcript
+    //    Token 由 AliyunTokenManager 自动签发 + 缓存;若 Aliyun 拒掉(40000001),强制重签重试一次。
     let transcript: string;
     try {
-      transcript = await transcribeAudioWithAliyunNls(
-        mp3,
-        this.nlsAppKey,
-        this.nlsToken,
-      );
+      const token = await this.tokenManager.getToken();
+      transcript = await transcribeAudioWithAliyunNls(mp3, this.nlsAppKey, token);
     } catch (e) {
-      this.logger.error(`aliyun ASR failed: ${(e as Error).message}`);
-      throw new BadGatewayException('语音识别失败');
+      const msg = (e as Error).message;
+      const isTokenInvalid =
+        msg.includes('40000001') ||
+        msg.includes('TokenInvalid') ||
+        msg.includes('token') ||
+        msg.includes('Token');
+      if (isTokenInvalid) {
+        this.logger.warn(
+          `aliyun ASR rejected token, force-refresh and retry once: ${msg}`,
+        );
+        try {
+          const freshToken = await this.tokenManager.getToken(true);
+          transcript = await transcribeAudioWithAliyunNls(
+            mp3,
+            this.nlsAppKey,
+            freshToken,
+          );
+        } catch (e2) {
+          this.logger.error(
+            `aliyun ASR failed after token refresh: ${(e2 as Error).message}`,
+          );
+          throw new BadGatewayException('语音识别失败');
+        }
+      } else {
+        this.logger.error(`aliyun ASR failed: ${msg}`);
+        throw new BadGatewayException('语音识别失败');
+      }
     }
 
     if (!transcript || transcript.trim().length < MIN_TRANSCRIPT_CHARS) {
