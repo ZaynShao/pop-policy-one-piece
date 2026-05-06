@@ -14,7 +14,8 @@
     "migration:run": "npm run typeorm -- migration:run",
     "migration:revert": "npm run typeorm -- migration:revert",
     "migration:show": "npm run typeorm -- migration:show",
-    "seed:gov-orgs:gen": "npx ts-node -r tsconfig-paths/register src/seeds/gen-gov-orgs.ts"
+    "seed:gov-orgs:gen": "npx ts-node -r tsconfig-paths/register src/seeds/gen-gov-orgs.ts",
+    "policies:import": "npx ts-node -r tsconfig-paths/register src/policies/import.ts"
   },
   "dependencies": {
     "@casl/ability": "^6.7.1",
