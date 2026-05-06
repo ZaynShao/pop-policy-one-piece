@@ -10,17 +10,14 @@ import {
 import { useQuery } from '@tanstack/react-query';
 import type { Dayjs } from 'dayjs';
 import { MapCanvas } from '@/components/MapCanvas';
-import type { ThemeOverlay } from '@/components/MapCanvas';
 import { VisitDetailDrawer } from '@/components/VisitDetailDrawer';
 import { VisitFormModal } from '@/components/VisitFormModal';
 import { PinFormModal } from '@/components/PinFormModal';
 import { PinDetailDrawer } from '@/components/PinDetailDrawer';
-import { PolicyRegionDrawer } from '@/components/PolicyRegionDrawer';
 import { PolicyListDrawer } from '@/components/PolicyListDrawer';
-import { fetchThemes, fetchTheme } from '@/api/themes';
 import { fetchPolicyDistribution, fetchPolicyTopics } from '@/api/policies';
 import { fetchUsers } from '@/api/users';
-import type { Theme, ThemeWithCoverage, UserRoleCode } from '@pop/shared-types';
+import type { UserRoleCode } from '@pop/shared-types';
 import { regionCodeToName } from '@/lib/region-names';
 import { getTopicColorScale, palette } from '@/tokens';
 
@@ -59,10 +56,7 @@ export function MapShell() {
   const [selectedPinId, setSelectedPinId] = useState<string | null>(null);
   const [pinModalOpen, setPinModalOpen] = useState(false);
   const [visitModalOpen, setVisitModalOpen] = useState(false);
-  const [selectedThemeIds, setSelectedThemeIds] = useState<string[]>([]);
-  // B7-B9 政策大盘交互升级
   const [selectedRegionCode, setSelectedRegionCode] = useState<string | null>(null);
-  const [chart, setChart] = useState<unknown | null>(null);
   // P0 染色图层 — 政策主题(单选,跟 themes 涂层并列在左面板)
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [policyDrawerMode, setPolicyDrawerMode] = useState<'national' | 'region' | null>(null);
@@ -94,32 +88,7 @@ export function MapShell() {
     userRoleMap[u.id] = u.roleCode;
   }
 
-  // 拉 published themes 给 Select options(只在 isPolicy 时拉)
-  const publishedThemes = useQuery({
-    queryKey: ['themes', 'published'],
-    queryFn: () => fetchThemes({ status: 'published' }),
-    enabled: isPolicy,
-  });
-
-  // 拉每个选中 theme 的完整信息(含 coverage)
-  const themeOverlaysData = useQuery({
-    queryKey: ['theme-overlays', selectedThemeIds],
-    queryFn: async () => {
-      if (selectedThemeIds.length === 0) return [];
-      const fetched = await Promise.all(selectedThemeIds.map((id) => fetchTheme(id)));
-      return fetched.map((r) => r.data);
-    },
-    enabled: isPolicy && selectedThemeIds.length > 0,
-  });
-
-  const themeOverlays: ThemeOverlay[] = (themeOverlaysData.data ?? []).map((t: ThemeWithCoverage) => ({
-    themeId: t.id,
-    themeTitle: t.title,
-    template: t.template,
-    coverage: t.coverage,
-  }));
-
-  // 政策主题下拉 — 5 个主题作为 checkbox 加进左面板
+  // 政策主题下拉 — 政策大盘左面板的可选项
   const policyTopicsQuery = useQuery({
     queryKey: ['policy-topics'],
     queryFn: fetchPolicyTopics,
@@ -143,14 +112,11 @@ export function MapShell() {
     [selectedTopic, policyTopics],
   );
 
-  // 点击地图 region 行为分流:
-  // - 选了政策主题 → 切到 region drawer(显示该地区政策)
-  // - 没选 → 走旧 themes 涂层 drawer(原 K 模块行为)
+  // 点击地图 region:选了政策主题 → drawer 切到 region;否则什么都不发生
   const handlePolicyRegionSelect = (code: string | null): void => {
     setSelectedRegionCode(code);
-    if (!selectedTopic) return; // 走旧 themes drawer
+    if (!selectedTopic) return;
     if (!code) {
-      // 取消选中:回到 national drawer
       setPolicyDrawerMode('national');
       return;
     }
@@ -186,13 +152,11 @@ export function MapShell() {
           onProvinceChange={setCurrentProvinceCode}
           onVisitClick={setSelectedVisitId}
           onPinClick={setSelectedPinId}
-          themeOverlays={isPolicy && !selectedTopic ? themeOverlays : undefined}
           policyColoring={isPolicy && selectedTopic ? policyDistribution : null}
           policyColorScale={isPolicy && selectedTopic ? currentTopicScale : null}
           showLocalLayers={!isPolicy}
           selectedRegionCode={isPolicy ? selectedRegionCode : null}
           onRegionSelect={isPolicy ? handlePolicyRegionSelect : undefined}
-          onChartReady={setChart}
           localDateRange={
             !isPolicy && localDateRange && localDateRange[0] && localDateRange[1]
               ? [localDateRange[0].format('YYYY-MM-DD'), localDateRange[1].format('YYYY-MM-DD')]
@@ -230,16 +194,10 @@ export function MapShell() {
           </Title>
           {isPolicy ? (
             <>
-              <Paragraph style={{ color: palette.textMuted, fontSize: 12, marginBottom: 8 }}>
-                政策主题(单选,染色 + 国家级浮窗)/ 主题涂层(多选,最多 3 层)
+              <Paragraph style={{ color: palette.textMuted, fontSize: 12, marginBottom: 10 }}>
+                选一个主题 → 各省/市按政策数染色 + 国家级浮窗
               </Paragraph>
-              <Space size={6} style={{ marginBottom: 10 }}>
-                <Button size="small" onClick={() => { setSelectedTopic(null); setSelectedThemeIds([]); }}>
-                  清空
-                </Button>
-              </Space>
               <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {/* 政策主题 + themes 涂层 — 双列 grid */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   {policyTopics.map((topic) => {
                     const isSel = selectedTopic === topic;
@@ -277,49 +235,6 @@ export function MapShell() {
                     );
                   })}
 
-                  {/* themes 涂层(K 模块原 demo) */}
-                  {(publishedThemes.data?.data ?? []).map((t: Theme) => {
-                    const isSel = selectedThemeIds.includes(t.id);
-                    const themeColor = t.template === 'main' ? '#52c41a' : '#ff4d4f';
-                    const reachLimit = !isSel && selectedThemeIds.length >= 3;
-                    const disabled = !!selectedTopic;
-                    return (
-                      <div
-                        key={t.id}
-                        onClick={() => {
-                          if (reachLimit || disabled) return;
-                          setSelectedThemeIds((prev) =>
-                            prev.includes(t.id) ? prev.filter((x) => x !== t.id) : [...prev, t.id],
-                          );
-                        }}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 6,
-                          padding: '8px 8px', borderRadius: 8,
-                          background: isSel ? `${themeColor}22` : 'rgba(0, 212, 255, 0.03)',
-                          border: `1px solid ${isSel ? `${themeColor}aa` : 'rgba(0, 212, 255, 0.08)'}`,
-                          cursor: disabled || reachLimit ? 'not-allowed' : 'pointer',
-                          opacity: disabled ? 0.35 : reachLimit ? 0.45 : 1,
-                          boxShadow: isSel ? `0 0 12px ${themeColor}33` : 'none',
-                          transition: 'all 0.2s',
-                          minWidth: 0,
-                        }}
-                      >
-                        <Checkbox checked={isSel} disabled={disabled || reachLimit} />
-                        <span style={{
-                          width: 8, height: 8, borderRadius: '50%',
-                          background: themeColor, boxShadow: `0 0 6px ${themeColor}`,
-                          flexShrink: 0,
-                        }} />
-                        <Typography.Text strong style={{
-                          fontSize: 12, color: palette.textBase,
-                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                          flex: 1, minWidth: 0,
-                        }}>
-                          {t.title}
-                        </Typography.Text>
-                      </div>
-                    );
-                  })}
                 </div>
 
                 {selectedTopic && distributionQuery.isLoading && (
@@ -519,16 +434,6 @@ export function MapShell() {
         pinId={selectedPinId}
         onClose={() => setSelectedPinId(null)}
       />
-
-      {/* 旧 K 模块 themes drawer — 只在未选政策主题时(原 B7-B9 行为) */}
-      {isPolicy && !selectedTopic && (
-        <PolicyRegionDrawer
-          regionCode={selectedRegionCode}
-          selectedThemeIds={selectedThemeIds}
-          chart={chart}
-          onClose={() => setSelectedRegionCode(null)}
-        />
-      )}
 
       {/* P0 政策染色 drawer — 选中政策主题时自动开 national,点 region 切到 region */}
       {isPolicy && selectedTopic && (

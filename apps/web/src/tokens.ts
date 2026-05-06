@@ -27,17 +27,19 @@ export const palette = {
   // 5 档基于 tailwind 700/600/500/400/200(深→亮),跨度大保证可识别
   policyColoring: {
     none: 'rgba(13, 31, 50, 0.85)',
+    // 前 5 位按色环 ~50-90° 间隔分布,保证 ≤5 主题色相区分度最大
+    // 后 5 位补全到 10,新主题 11-20 通过 hash mod 复用
     scales: [
-      ['#0e7490', '#0891b2', '#06b6d4', '#22d3ee', '#a5f3fc'], // cyan
-      ['#7c3aed', '#9333ea', '#a855f7', '#c084fc', '#e9d5ff'], // purple
-      ['#0f766e', '#0d9488', '#14b8a6', '#2dd4bf', '#99f6e4'], // teal
-      ['#a21caf', '#c026d3', '#d946ef', '#e879f9', '#f5d0fe'], // fuchsia
-      ['#4338ca', '#4f46e5', '#6366f1', '#818cf8', '#c7d2fe'], // indigo
-      ['#be123c', '#e11d48', '#f43f5e', '#fb7185', '#fecdd3'], // rose
-      ['#047857', '#059669', '#10b981', '#34d399', '#a7f3d0'], // emerald
-      ['#be185d', '#db2777', '#ec4899', '#f472b6', '#fbcfe8'], // pink
-      ['#6d28d9', '#7c3aed', '#8b5cf6', '#a78bfa', '#ddd6fe'], // violet
-      ['#0369a1', '#0284c7', '#0ea5e9', '#38bdf8', '#bae6fd'], // sky
+      ['#047857', '#059669', '#10b981', '#34d399', '#a7f3d0'], // emerald  150°
+      ['#0369a1', '#0284c7', '#0ea5e9', '#38bdf8', '#bae6fd'], // sky      200°
+      ['#4338ca', '#4f46e5', '#6366f1', '#818cf8', '#c7d2fe'], // indigo   240°
+      ['#a21caf', '#c026d3', '#d946ef', '#e879f9', '#f5d0fe'], // fuchsia  290°
+      ['#be123c', '#e11d48', '#f43f5e', '#fb7185', '#fecdd3'], // rose     350°
+      ['#0e7490', '#0891b2', '#06b6d4', '#22d3ee', '#a5f3fc'], // cyan     180°
+      ['#0f766e', '#0d9488', '#14b8a6', '#2dd4bf', '#99f6e4'], // teal     170°
+      ['#7c3aed', '#9333ea', '#a855f7', '#c084fc', '#e9d5ff'], // purple   270°
+      ['#6d28d9', '#7c3aed', '#8b5cf6', '#a78bfa', '#ddd6fe'], // violet   260°
+      ['#be185d', '#db2777', '#ec4899', '#f472b6', '#fbcfe8'], // pink     330°
     ] as ReadonlyArray<readonly [string, string, string, string, string]>,
   },
 } as const;

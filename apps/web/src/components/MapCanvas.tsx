@@ -430,15 +430,15 @@ export function MapCanvas({
     };
     const out: PolicyRegion[] = [];
 
-    // 玻璃风格 styling:低 opacity + 低 alpha border + 弱 shadow,匹配 tokens.bgPanel/border 风格
+    // 玻璃风格 styling:fill 半透看到底图,border 接近不透明清晰勾勒轮廓
+    // alpha 16进制:'40' = 25% / 'cc' = 80% / '66' = 40%
     const buildItem = (name: string, count: number, color: string): PolicyRegion => ({
       name,
       itemStyle: {
-        areaColor: color,
-        opacity: 0.55,
-        borderColor: `${color}55`,
-        borderWidth: 0.8,
-        shadowColor: color,
+        areaColor: `${color}40`,        // 25% — fill 透,看到底图细节
+        borderColor: `${color}cc`,       // 80% — border 高对比清晰
+        borderWidth: 1.2,
+        shadowColor: `${color}66`,       // 40% — 弱光晕
         shadowBlur: 4,
       },
       label: {
@@ -518,12 +518,11 @@ export function MapCanvas({
         },
         itemStyle: directMuniBaseColor
           ? {
-              // 直辖市下钻:用 byCity 总 count 染整省底色(geo 默认色覆盖所有区)
-              areaColor: directMuniBaseColor.color,
-              opacity: 0.55,
-              borderColor: `${directMuniBaseColor.color}55`,
-              borderWidth: 0.8,
-              shadowColor: directMuniBaseColor.color,
+              // 直辖市下钻:整省底色(geo 默认色覆盖所有区);跟 buildItem 同 fill/border alpha
+              areaColor: `${directMuniBaseColor.color}40`,
+              borderColor: `${directMuniBaseColor.color}cc`,
+              borderWidth: 1.2,
+              shadowColor: `${directMuniBaseColor.color}66`,
               shadowBlur: 4,
             }
           : {
