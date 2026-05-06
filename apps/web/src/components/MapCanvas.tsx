@@ -212,9 +212,9 @@ export function MapCanvas({
     setLoaded(null);
     setZoom(ZOOM_DEFAULT);
     const task: Promise<LoadedInfo> = provinceCode
-      ? loadProvinceMap(provinceCode).then((geo) => ({
+      ? loadProvinceMap(provinceCode).then(() => ({
           key: `province_${provinceCode}`,
-          name: geo.features[0]?.properties?.name ?? '省份',
+          name: regionCodeToName(provinceCode) ?? '省份',
         }))
       : loadChinaMap().then(() => ({ key: 'china', name: '中国' }));
     task
@@ -383,10 +383,7 @@ export function MapCanvas({
    * 政策染色 regions — 基于 PolicyDistribution 分段染色
    *
    * - 全国视图:byProvince 染色,key=province name
-   * - 省内视图(普通省):byCity filter,染色到具体市
-   * - 省内视图(直辖市):byCity 数据 cityName='北京市/上海市/...',
-   *     省级 GeoJSON 是区级 polygon,name 不匹配 → 走 `directMuniBaseColor`
-   *     在 geo.itemStyle.areaColor 默认色染整个省(见 option.geo)
+   * - 省内视图:byCity filter,染色到具体市/区(直辖市自身名条目跳过 — 见 DIRECT_MUNI_SELF_NAMES)
    * - 染色 styling 匹配玻璃风格:低 opacity + 弱 border + 弱 shadow
    * - 数字标注白字带阴影
    */
@@ -402,23 +399,14 @@ export function MapCanvas({
     };
   }, [policyColorScale]);
 
-  /** 直辖市下钻底色 — 省级 GeoJSON 是区级 polygon,数据无区级分布 → 整省统一染色 */
-  const directMuniBaseColor = useMemo(() => {
-    if (!policyColoring || !provinceCode) return null;
-    const DIRECT_MUNI_NAMES: Record<string, string> = {
-      '110000': '北京市',
-      '120000': '天津市',
-      '310000': '上海市',
-      '500000': '重庆市',
-    };
-    const muniName = DIRECT_MUNI_NAMES[provinceCode];
-    if (!muniName) return null;
-    const entry = policyColoring.byCity.find(
-      (c) => c.provinceCode === provinceCode && c.cityName === muniName,
-    );
-    if (!entry || entry.count <= 0) return null;
-    return { color: bucketColor(entry.count), count: entry.count };
-  }, [policyColoring, provinceCode, bucketColor]);
+  /** 直辖市自身名映射 — byCity 里 cityName=自身名(如"上海市") 表示直辖市省级政策,
+   *  下钻视图按区染色,需跳过该条目(它代表整个直辖市,不属于任何具体区)。 */
+  const DIRECT_MUNI_SELF_NAMES: Record<string, string> = {
+    '110000': '北京市',
+    '120000': '天津市',
+    '310000': '上海市',
+    '500000': '重庆市',
+  };
 
   const policyRegions = useMemo(() => {
     if (!policyColoring) return [];
@@ -460,18 +448,20 @@ export function MapCanvas({
         if (!color) continue;
         out.push(buildItem(name, item.count, color));
       }
-    } else if (!directMuniBaseColor) {
-      // 普通省下钻:byCity 染到具体市
+    } else {
+      // 省下钻:byCity 染到具体市/区
+      // 直辖市跳过 cityName=自身名 的条目(那是省级政策,不属于任何具体区)
+      const muniSelfName = DIRECT_MUNI_SELF_NAMES[provinceCode];
       for (const item of policyColoring.byCity) {
         if (item.provinceCode !== provinceCode) continue;
+        if (muniSelfName && item.cityName === muniSelfName) continue;
         const color = bucketColor(item.count);
         if (!color) continue;
         out.push(buildItem(item.cityName, item.count, color));
       }
     }
-    // 直辖市下钻:不在这儿染区,走 geo.itemStyle 默认色(见 option.geo)
     return out;
-  }, [policyColoring, bucketColor, provinceCode, directMuniBaseColor]);
+  }, [policyColoring, bucketColor, provinceCode]);
 
   const liftedRegions = useMemo(() => {
     // 染色 mode 下用 policyRegions;否则用 themeOverlays 的 overlayRegions
@@ -516,22 +506,13 @@ export function MapCanvas({
           fontSize: 10,
           color: 'rgba(139, 163, 199, 0.55)',
         },
-        itemStyle: directMuniBaseColor
-          ? {
-              // 直辖市下钻:整省底色(geo 默认色覆盖所有区);跟 buildItem 同 fill/border alpha
-              areaColor: `${directMuniBaseColor.color}40`,
-              borderColor: `${directMuniBaseColor.color}cc`,
-              borderWidth: 1.2,
-              shadowColor: `${directMuniBaseColor.color}66`,
-              shadowBlur: 4,
-            }
-          : {
-              areaColor: 'rgba(13, 31, 53, 0.85)',
-              borderColor: 'rgba(0, 212, 255, 0.28)',
-              borderWidth: 0.8,
-              shadowColor: 'rgba(0, 212, 255, 0.15)',
-              shadowBlur: 8,
-            },
+        itemStyle: {
+          areaColor: 'rgba(13, 31, 53, 0.85)',
+          borderColor: 'rgba(0, 212, 255, 0.28)',
+          borderWidth: 0.8,
+          shadowColor: 'rgba(0, 212, 255, 0.15)',
+          shadowBlur: 8,
+        },
         emphasis: {
           label: { show: true, color: '#e6f4ff', fontWeight: 600, fontSize: 11 },
           itemStyle: {
@@ -577,7 +558,7 @@ export function MapCanvas({
           : []),
       ],
     };
-  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, liftedRegions, overlayDotSeries, showLocalLayers, directMuniBaseColor]);
+  }, [loaded, provinceCode, zoom, scatterData, pinsScatterData, liftedRegions, overlayDotSeries, showLocalLayers]);
 
   const onEvents = {
     click: (params: { componentType?: string; name?: string; data?: { visitId?: string; pinId?: string } }) => {
