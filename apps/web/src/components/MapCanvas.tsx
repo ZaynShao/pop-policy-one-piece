@@ -660,6 +660,19 @@ export function MapCanvas({
         </div>
       )}
 
+      {/* 政策大盘 — 省下钻空数据提示(byCity 没有该省条目时显示) */}
+      {provinceCode && loaded && policyColoring && policyRegions.length === 0 && (
+        <div style={{
+          position: 'absolute', left: '50%', bottom: 24, transform: 'translateX(-50%)', zIndex: 5,
+          padding: '10px 18px', background: palette.bgPanel, border: `1px solid ${palette.border}`,
+          borderRadius: 10, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.35)',
+          color: palette.textMuted, fontSize: 13,
+        }}>
+          本省暂无市/区粒度政策 — 请看右侧政策清单
+        </div>
+      )}
+
       {/* 右侧 zoom slider */}
       {loaded && (
         <div style={{
