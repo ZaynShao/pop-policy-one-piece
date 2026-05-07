@@ -47,7 +47,7 @@ export function TodayPanel() {
         ) : visits.length === 0 ? (
           <Empty
             description="今天还没新建拜访或计划"
-            imageStyle={{ height: 40 }}
+            styles={{ image: { height: 40 } }}
             style={{ margin: '8px 0' }}
           />
         ) : (
@@ -78,7 +78,7 @@ export function TodayPanel() {
         ) : pins.length === 0 ? (
           <Empty
             description="今天还没新建图钉"
-            imageStyle={{ height: 40 }}
+            styles={{ image: { height: 40 } }}
             style={{ margin: '8px 0' }}
           />
         ) : (
