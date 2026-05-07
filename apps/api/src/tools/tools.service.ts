@@ -68,4 +68,33 @@ export class ToolsService {
     });
     return this.repo.save(t);
   }
+
+  async publish(id: string, user: AuthenticatedUser): Promise<ToolEntity> {
+    return this.transition(id, user, 'draft', 'published');
+  }
+
+  async archive(id: string, user: AuthenticatedUser): Promise<ToolEntity> {
+    return this.transition(id, user, 'published', 'archived');
+  }
+
+  async restore(id: string, user: AuthenticatedUser): Promise<ToolEntity> {
+    return this.transition(id, user, 'archived', 'published');
+  }
+
+  private async transition(
+    id: string,
+    user: AuthenticatedUser,
+    from: ToolStatus,
+    to: ToolStatus,
+  ): Promise<ToolEntity> {
+    const t = await this.findOne(id);
+    if (t.creatorId !== user.id) {
+      throw new ForbiddenException('只能修改自己创建的工具');
+    }
+    if (t.status !== from) {
+      throw new BadRequestException(`状态机:${from} → ${to} 不允许 (current=${t.status})`);
+    }
+    t.status = to;
+    return this.repo.save(t);
+  }
 }
