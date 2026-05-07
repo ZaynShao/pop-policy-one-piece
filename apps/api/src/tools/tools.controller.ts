@@ -6,12 +6,14 @@ import { CreateToolDto } from './dtos/create-tool.dto';
 import { UpdateToolDto } from './dtos/update-tool.dto';
 import { BindingsService } from './bindings.service';
 import { CreateBindingDto } from './dtos/create-binding.dto';
+import { CascadingMatchService } from './cascading-match.service';
 
 @Controller('tools')
 export class ToolsController {
   constructor(
     private readonly service: ToolsService,
     private readonly bindings: BindingsService,
+    private readonly cascading: CascadingMatchService,
   ) {}
 
   @Get()
@@ -21,6 +23,13 @@ export class ToolsController {
     @Query('creatorId') creatorId?: string,
   ) {
     return { data: await this.service.list({ status, type, creatorId }) };
+  }
+
+  @Get('by-point')
+  async byPoint(@Query('visitId') visitId?: string, @Query('pinId') pinId?: string) {
+    if (visitId) return { data: await this.cascading.matchByVisit(visitId) };
+    if (pinId) return { data: await this.cascading.matchByPin(pinId) };
+    return { data: { groups: {} } };
   }
 
   @Get(':id')
