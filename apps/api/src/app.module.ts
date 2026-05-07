@@ -11,6 +11,7 @@ import { RegionsModule } from './regions/regions.module';
 import { UsersModule } from './users/users.module';
 import { VisitsModule } from './visits/visits.module';
 import { PinsModule } from './pins/pins.module';
+import { ToolsModule } from './tools/tools.module';
 import { CommentsModule } from './comments/comments.module';
 import { ThemesModule } from './themes/themes.module';
 import { VoiceModule } from './voice/voice.module';
@@ -41,6 +42,7 @@ import { PoliciesModule } from './policies/policies.module';
     RegionsModule,
     VisitsModule,
     PinsModule,
+    ToolsModule,
     CommentsModule,
     ThemesModule,
     VoiceModule,
