@@ -8,7 +8,10 @@ import { PinEntity } from '../pins/entities/pin.entity';
 import { ToolsService } from './tools.service';
 import { BindingsService } from './bindings.service';
 import { CascadingMatchService } from './cascading-match.service';
+import { ConsumptionService } from './consumption.service';
 import { ToolsController } from './tools.controller';
+import { MeConsumptionsController } from './me-consumptions.controller';
+import { ExternalMockModule } from '../external-mock/external-mock.module';
 
 @Module({
   imports: [
@@ -16,9 +19,10 @@ import { ToolsController } from './tools.controller';
       ToolEntity, ToolBindingEntity, ToolConsumptionLogEntity,
       VisitEntity, PinEntity,
     ]),
+    ExternalMockModule,
   ],
-  providers: [ToolsService, BindingsService, CascadingMatchService],
-  controllers: [ToolsController],
-  exports: [ToolsService, BindingsService, CascadingMatchService],
+  providers: [ToolsService, BindingsService, CascadingMatchService, ConsumptionService],
+  controllers: [ToolsController, MeConsumptionsController],
+  exports: [ToolsService, BindingsService, CascadingMatchService, ConsumptionService],
 })
 export class ToolsModule {}

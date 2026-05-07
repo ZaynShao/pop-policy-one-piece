@@ -7,6 +7,7 @@ import { UpdateToolDto } from './dtos/update-tool.dto';
 import { BindingsService } from './bindings.service';
 import { CreateBindingDto } from './dtos/create-binding.dto';
 import { CascadingMatchService } from './cascading-match.service';
+import { ConsumptionService } from './consumption.service';
 
 @Controller('tools')
 export class ToolsController {
@@ -14,6 +15,7 @@ export class ToolsController {
     private readonly service: ToolsService,
     private readonly bindings: BindingsService,
     private readonly cascading: CascadingMatchService,
+    private readonly consumption: ConsumptionService,
   ) {}
 
   @Get()
@@ -80,5 +82,28 @@ export class ToolsController {
   async deleteBinding(@Param('bid') bid: string) {
     await this.bindings.delete(bid);
     return { ok: true };
+  }
+
+  @Post(':id/download')
+  async download(
+    @Param('id') id: string,
+    @Body() ctx: { contextPinId?: string; contextVisitId?: string; contextRegionCode?: string },
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return { data: await this.consumption.download(id, user, ctx) };
+  }
+
+  @Post(':id/invoke')
+  async invoke(
+    @Param('id') id: string,
+    @Body() ctx: { contextPinId?: string; contextVisitId?: string; contextRegionCode?: string },
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return { data: await this.consumption.invoke(id, user, ctx) };
+  }
+
+  @Get(':id/consumptions')
+  async listToolConsumptions(@Param('id') id: string) {
+    return { data: await this.consumption.listForTool(id) };
   }
 }
