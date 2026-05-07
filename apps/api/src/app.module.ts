@@ -18,6 +18,7 @@ import { VoiceModule } from './voice/voice.module';
 import { GovOrgsModule } from './gov-orgs/gov-orgs.module';
 import { GovContactsModule } from './gov-contacts/gov-contacts.module';
 import { PoliciesModule } from './policies/policies.module';
+import { ExternalMockModule } from './external-mock/external-mock.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { PoliciesModule } from './policies/policies.module';
     GovOrgsModule,
     GovContactsModule,
     PoliciesModule,
+    ExternalMockModule,
   ],
   providers: [
     // 全局 JWT 守卫,@Public() 可跳过
