@@ -43,7 +43,7 @@ export function AppShell() {
   const userMenu = {
     items: [
       { key: 'profile', icon: <EditOutlined />, label: '修改资料', onClick: () => setProfileOpen(true) },
-      { key: 'me', icon: <UserOutlined />, label: '个人中心', onClick: () => navigate('/me') },
+      { key: 'me', icon: <UserOutlined />, label: '个人工作台', onClick: () => navigate('/me') },
       { type: 'divider' as const },
       { key: 'logout', icon: <LogoutOutlined />, label: '登出', onClick: logout, danger: true },
     ],

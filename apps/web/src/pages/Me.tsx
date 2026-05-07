@@ -1,8 +1,11 @@
 import { Card, Descriptions, Tabs, Typography } from 'antd';
 import { useAuthStore } from '@/stores/auth';
 import { palette } from '@/tokens';
+import { TodayPanel } from '@/components/me/TodayPanel';
+import { MyItemsPanel } from '@/components/me/MyItemsPanel';
+import { MyConsumptionsPanel } from '@/components/me/MyConsumptionsPanel';
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Text } = Typography;
 
 const ROLE_LABEL: Record<string, string> = {
   sys_admin: '系统管理员',
@@ -13,8 +16,14 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 /**
- * R2-④ 个人中心(全角色)— 顶部水平 Tabs 3 项。
- * UI-LAYOUT-V1 §3.4 + §6.1:1571-1574。
+ * 个人工作台 — G6 落地后 4 tab:
+ *   today      F1 当日动作
+ *   items      F2 我的条目
+ *   consumptions F4 我的消费记录(stub,等 G1)
+ *   profile    F6 基本资料(原有)
+ *
+ * F3 我的产出(中台 GA 专用)目前不做(中台 GA 角色虚位,见 spec 2026-05-07)。
+ * F5 待办事项 P1,不做。
  */
 export function Me() {
   const user = useAuthStore((s) => s.user);
@@ -24,11 +33,26 @@ export function Me() {
     <div style={{ padding: 24, height: 'calc(100vh - 64px)', overflow: 'auto' }}>
       <Card className="glass-panel">
         <Title level={2} style={{ color: palette.primary, marginTop: 0 }}>
-          个人中心
+          个人工作台
         </Title>
         <Tabs
-          defaultActiveKey="profile"
+          defaultActiveKey="today"
           items={[
+            {
+              key: 'today',
+              label: '当日动作',
+              children: <TodayPanel />,
+            },
+            {
+              key: 'items',
+              label: '我的条目',
+              children: <MyItemsPanel />,
+            },
+            {
+              key: 'consumptions',
+              label: '我的消费记录',
+              children: <MyConsumptionsPanel />,
+            },
             {
               key: 'profile',
               label: '基本资料',
@@ -42,24 +66,6 @@ export function Me() {
                   </Descriptions.Item>
                   <Descriptions.Item label="邮箱">{user.email}</Descriptions.Item>
                 </Descriptions>
-              ),
-            },
-            {
-              key: 'notifications',
-              label: '通知设置',
-              children: (
-                <Paragraph style={{ color: palette.textMuted }}>
-                  站内 / 邮件偏好 stub · V0.4+ 实施
-                </Paragraph>
-              ),
-            },
-            {
-              key: 'activity',
-              label: '最近活动',
-              children: (
-                <Paragraph style={{ color: palette.textMuted }}>
-                  本人最近 N 条 AuditLog 视图(只读) stub · V0.4+ 实施
-                </Paragraph>
               ),
             },
           ]}
