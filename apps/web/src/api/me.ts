@@ -31,3 +31,5 @@ export async function fetchMyTodayItems(currentUserId: string): Promise<MyItems>
     pins: all.pins.filter((x) => dayjs(x.createdAt).isAfter(start)),
   };
 }
+
+export { fetchMyConsumptions } from './tools';
