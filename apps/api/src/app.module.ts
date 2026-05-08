@@ -11,12 +11,14 @@ import { RegionsModule } from './regions/regions.module';
 import { UsersModule } from './users/users.module';
 import { VisitsModule } from './visits/visits.module';
 import { PinsModule } from './pins/pins.module';
+import { ToolsModule } from './tools/tools.module';
 import { CommentsModule } from './comments/comments.module';
 import { ThemesModule } from './themes/themes.module';
 import { VoiceModule } from './voice/voice.module';
 import { GovOrgsModule } from './gov-orgs/gov-orgs.module';
 import { GovContactsModule } from './gov-contacts/gov-contacts.module';
 import { PoliciesModule } from './policies/policies.module';
+import { ExternalMockModule } from './external-mock/external-mock.module';
 
 @Module({
   imports: [
@@ -41,12 +43,14 @@ import { PoliciesModule } from './policies/policies.module';
     RegionsModule,
     VisitsModule,
     PinsModule,
+    ToolsModule,
     CommentsModule,
     ThemesModule,
     VoiceModule,
     GovOrgsModule,
     GovContactsModule,
     PoliciesModule,
+    ExternalMockModule,
   ],
   providers: [
     // 全局 JWT 守卫,@Public() 可跳过
