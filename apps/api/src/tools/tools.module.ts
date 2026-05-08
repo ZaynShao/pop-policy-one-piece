@@ -10,6 +10,7 @@ import { ToolsService } from './tools.service';
 import { BindingsService } from './bindings.service';
 import { CascadingMatchService } from './cascading-match.service';
 import { ConsumptionService } from './consumption.service';
+import { OssService } from './oss.service';
 import { ToolPoolSeederService } from '../seeds/tool-pool-seeder.service';
 import { ToolsController } from './tools.controller';
 import { MeConsumptionsController } from './me-consumptions.controller';
@@ -24,8 +25,8 @@ import { ExternalMockModule } from '../external-mock/external-mock.module';
     ]),
     ExternalMockModule,
   ],
-  providers: [ToolsService, BindingsService, CascadingMatchService, ConsumptionService, ToolPoolSeederService],
+  providers: [ToolsService, BindingsService, CascadingMatchService, ConsumptionService, OssService, ToolPoolSeederService],
   controllers: [ToolsController, MeConsumptionsController],
-  exports: [ToolsService, BindingsService, CascadingMatchService, ConsumptionService],
+  exports: [ToolsService, BindingsService, CascadingMatchService, ConsumptionService, OssService],
 })
 export class ToolsModule {}

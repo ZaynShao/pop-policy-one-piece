@@ -8,6 +8,7 @@ import { BindingsService } from './bindings.service';
 import { CreateBindingDto } from './dtos/create-binding.dto';
 import { CascadingMatchService } from './cascading-match.service';
 import { ConsumptionService } from './consumption.service';
+import { OssService } from './oss.service';
 
 @Controller('tools')
 export class ToolsController {
@@ -16,6 +17,7 @@ export class ToolsController {
     private readonly bindings: BindingsService,
     private readonly cascading: CascadingMatchService,
     private readonly consumption: ConsumptionService,
+    private readonly oss: OssService,
   ) {}
 
   @Get()
@@ -32,6 +34,11 @@ export class ToolsController {
     if (visitId) return { data: await this.cascading.matchByVisit(visitId) };
     if (pinId) return { data: await this.cascading.matchByPin(pinId) };
     return { data: { groups: {} } };
+  }
+
+  @Post('upload-url')
+  async uploadUrl(@Body() body: { filename: string; contentType: string }) {
+    return { data: this.oss.generateUploadUrl(body.filename, body.contentType) };
   }
 
   @Get(':id')
