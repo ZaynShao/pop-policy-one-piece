@@ -12,9 +12,11 @@ import type {
   GovOrg,
   GovContact,
 } from '@pop/shared-types';
+import { UserRoleCode } from '@pop/shared-types';
 import { authHeaders } from '@/lib/api';
 import { fetchGovOrgs, createGovOrg } from '@/api/gov-orgs';
 import { fetchGovContacts } from '@/api/gov-contacts';
+import { fetchUsers } from '@/api/users';
 
 const { TextArea } = Input;
 
@@ -42,6 +44,7 @@ interface FormValues {
   outcomeSummary?: string;
   color?: VisitStatusColor;
   followUp: boolean;
+  accompaniedBy?: string[];
 }
 
 async function fetchCities(): Promise<CityListResponse> {
@@ -98,6 +101,21 @@ export function VisitFormModal({
     enabled: !!watchedOrgId,
   });
 
+  // 随行人:拉 users(过滤掉 sysadmin),作为多选 tag 模式的预设选项;
+  // 用户也可以直接输入任意名字(antd Select mode="tags")。
+  const { data: userList } = useQuery({
+    queryKey: ['users', 'visit-form-accompany'],
+    queryFn: fetchUsers,
+    staleTime: 60_000,
+  });
+  const accompanyOptions = useMemo(
+    () =>
+      (userList?.data ?? [])
+        .filter((u) => u.roleCode !== UserRoleCode.SysAdmin)
+        .map((u) => ({ label: u.displayName, value: u.displayName })),
+    [userList],
+  );
+
   const provinceOptions = useMemo(
     () => (cityList?.data ?? []).map((p) => ({ label: p.provinceName, value: p.provinceCode })),
     [cityList],
@@ -125,6 +143,7 @@ export function VisitFormModal({
         outcomeSummary: editing.outcomeSummary ?? undefined,
         color: editing.color === 'blue' ? undefined : editing.color ?? undefined,
         followUp: editing.followUp,
+        accompaniedBy: editing.accompaniedBy ?? [],
       });
     } else {
       form.resetFields();
@@ -135,6 +154,7 @@ export function VisitFormModal({
         visitDate: dayjs(),
         color: 'green',
         followUp: false,
+        accompaniedBy: [],
       });
     }
   }, [open, editing, defaultStatus, presetProvinceCode, presetCityName, form]);
@@ -184,6 +204,7 @@ export function VisitFormModal({
         outcomeSummary: !isPlanned ? values.outcomeSummary : undefined,
         color: !isPlanned ? values.color : undefined,
         followUp: !isPlanned ? values.followUp : undefined,
+        accompaniedBy: values.accompaniedBy ?? [],
         ...(presetParentPinId && !editing ? { parentPinId: presetParentPinId } : {}),
       };
 
@@ -382,6 +403,18 @@ export function VisitFormModal({
             </Form.Item>
           </>
         )}
+
+        {/* 随行人:planned/completed 都支持。tags 模式 — 既能从已知用户选,也能直接打字加自定义名 */}
+        <Form.Item label="随行人" name="accompaniedBy">
+          <Select
+            mode="tags"
+            allowClear
+            options={accompanyOptions}
+            placeholder="可选,从已有用户挑或直接输入名字(回车确认),最多 10 人"
+            maxTagCount="responsive"
+            tokenSeparators={[',', '，', ' ']}
+          />
+        </Form.Item>
       </Form>
     </Modal>
   );

@@ -272,6 +272,14 @@ export function VisitDetailDrawer({ visitId, onClose }: Props) {
                 <Descriptions.Item label="标题">
                   {visit.title ?? <Text type="secondary">—</Text>}
                 </Descriptions.Item>
+                <Descriptions.Item label="拜访人">
+                  {visit.visitorName ?? <Text type="secondary">—</Text>}
+                </Descriptions.Item>
+                <Descriptions.Item label="随行人">
+                  {visit.accompaniedBy && visit.accompaniedBy.length > 0
+                    ? visit.accompaniedBy.join('、')
+                    : <Text type="secondary">—</Text>}
+                </Descriptions.Item>
                 <Descriptions.Item label="计划日期">
                   {visit.plannedDate ?? <Text type="secondary">—</Text>}
                 </Descriptions.Item>
@@ -292,6 +300,14 @@ export function VisitDetailDrawer({ visitId, onClose }: Props) {
             {/* ── completed 详情 ── */}
             {visit.status === 'completed' && (
               <Descriptions column={1} size="small" bordered>
+                <Descriptions.Item label="拜访人">
+                  {visit.visitorName ?? <Text type="secondary">—</Text>}
+                </Descriptions.Item>
+                <Descriptions.Item label="随行人">
+                  {visit.accompaniedBy && visit.accompaniedBy.length > 0
+                    ? visit.accompaniedBy.join('、')
+                    : <Text type="secondary">—</Text>}
+                </Descriptions.Item>
                 <Descriptions.Item label="拜访日期">
                   {visit.visitDate ?? <Text type="secondary">—</Text>}
                 </Descriptions.Item>
@@ -337,6 +353,9 @@ export function VisitDetailDrawer({ visitId, onClose }: Props) {
               <Descriptions column={1} size="small" bordered>
                 <Descriptions.Item label="标题">
                   {visit.title ?? <Text type="secondary">—</Text>}
+                </Descriptions.Item>
+                <Descriptions.Item label="拜访人">
+                  {visit.visitorName ?? <Text type="secondary">—</Text>}
                 </Descriptions.Item>
                 <Descriptions.Item label="计划日期">
                   {visit.plannedDate ?? <Text type="secondary">—</Text>}

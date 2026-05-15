@@ -1,4 +1,6 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsDateString,
   IsEnum,
@@ -44,4 +46,12 @@ export class UpdateVisitDto {
 
   @IsOptional() @ValidateIf((_, v) => v !== null) @IsUUID()
   contactId?: string | null;
+
+  // 随行人(2026-05-12)— planned 或 completed 都可改
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(64, { each: true })
+  accompaniedBy?: string[];
 }
