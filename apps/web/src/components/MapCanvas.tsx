@@ -21,6 +21,12 @@ import { authHeaders } from '@/lib/api';
 import { palette } from '@/tokens';
 import { regionCodeToLngLat } from '@/lib/region-centers';
 import { cityNameToCode, regionCodeToName } from '@/lib/region-names';
+import {
+  decayLightnessByAge,
+  daysAgoFromISO,
+  layoutCluster,
+  groupByCoord,
+} from '@/lib/visitMarker';
 
 export interface ThemeOverlay {
   themeId: string;
@@ -225,34 +231,59 @@ export function MapCanvas({
 
   // 属地大盘 visit 筛选 — 时间(visitDate / plannedDate)/ 区划(provinceCode)/ 角色(visitor.roleCode)
   // 没传或空数组 = 不过滤
+  // 2026-05-18:同坐标蜂窝堆叠 + 时间 lightness 衰减,见 lib/visitMarker.ts
   const scatterData = useMemo(() => {
     const [from, to] = localDateRange ?? [null, null];
-    return visits
-      .filter((v) => {
-        // 1. 下钻省过滤(沿用旧逻辑)
-        if (provinceCode && v.provinceCode !== provinceCode) return false;
-        // 2. 区划筛选(空 = 全部)
-        if (localProvinceCodes.length > 0 && !localProvinceCodes.includes(v.provinceCode)) return false;
-        // 3. 角色筛选(空 = 全部)
-        if (localRoleCodes.length > 0) {
-          const role = userRoleMap[v.visitorId];
-          if (!role || !localRoleCodes.includes(role)) return false;
-        }
-        // 4. 时间窗口 — Visit 用 visitDate(completed)或 plannedDate(planned)
-        if (from || to) {
-          const dateStr = v.visitDate ?? v.plannedDate;
-          if (!dateStr) return false; // 没日期的(罕见)排除
-          if (from && dateStr < from) return false;
-          if (to && dateStr > to) return false;
-        }
-        return true;
-      })
-      .map((v) => ({
+    const filtered = visits.filter((v) => {
+      if (provinceCode && v.provinceCode !== provinceCode) return false;
+      if (localProvinceCodes.length > 0 && !localProvinceCodes.includes(v.provinceCode)) return false;
+      if (localRoleCodes.length > 0) {
+        const role = userRoleMap[v.visitorId];
+        if (!role || !localRoleCodes.includes(role)) return false;
+      }
+      if (from || to) {
+        const dateStr = v.visitDate ?? v.plannedDate;
+        if (!dateStr) return false;
+        if (from && dateStr < from) return false;
+        if (to && dateStr > to) return false;
+      }
+      return true;
+    });
+
+    // 蜂窝布局参数:省下钻视图点更大,组半径上限也放大
+    const baseSize = provinceCode ? 14 : 8;
+    const minSize = provinceCode ? 4 : 3;
+    const maxClusterRadius = provinceCode ? 36 : 24;
+
+    // 按 (lng,lat) 量化分组 → 每组算蜂窝偏移 + 自适应尺寸
+    const groups = groupByCoord(filtered);
+    const layoutByIdx = new Map<number, { offsetX: number; offsetY: number; size: number }>();
+    groups.forEach((indices) => {
+      // 组内按时间倒序:最新的放中心(daysAgo 最小者在中心)
+      const sorted = [...indices].sort((a, b) => {
+        const da = daysAgoFromISO(filtered[a].visitDate ?? filtered[a].plannedDate);
+        const db = daysAgoFromISO(filtered[b].visitDate ?? filtered[b].plannedDate);
+        return da - db;
+      });
+      const points = layoutCluster(sorted.length, { baseSize, minSize, maxClusterRadius });
+      sorted.forEach((origIdx, i) => layoutByIdx.set(origIdx, points[i]));
+    });
+
+    return filtered.map((v, idx) => {
+      const layout = layoutByIdx.get(idx)!;
+      const daysAgo = daysAgoFromISO(v.visitDate ?? v.plannedDate);
+      const baseColor = visitColorByRow(v);
+      // cancelled 已是 rgba 灰(非 hex),跳过衰减
+      const color = baseColor.startsWith('#') ? decayLightnessByAge(baseColor, daysAgo) : baseColor;
+      return {
         value: [v.lng, v.lat, 1],
-        itemStyle: { color: visitColorByRow(v) },
+        itemStyle: { color },
+        symbolOffset: [layout.offsetX, layout.offsetY],
+        symbolSize: layout.size,
         name: `${v.cityName} · ${v.visitDate} · ${COLOR_LABEL[(v.color ?? 'green') as 'red' | 'yellow' | 'green']}`,
         visitId: v.id,
-      }));
+      };
+    });
   }, [visits, provinceCode, localDateRange, localProvinceCodes, localRoleCodes, userRoleMap]);
 
   // Pin 筛选 — 同样 3 维(创建人 role / provinceCode / createdAt)
