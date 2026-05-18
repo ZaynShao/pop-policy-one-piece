@@ -40,8 +40,12 @@ export interface Visit {
   // K 模块 — 双轨,可空
   orgId: string | null;
   contactId: string | null;
+  // 随行人(2026-05-12 新增)— 字符串数组,既可以从 user displayName 选(过滤掉 sysadmin),
+  // 也可以自定义任意名字。存名字快照(用户改名后历史拜访保留旧名)。
+  accompaniedBy: string[];
   // 系统
   visitorId: string;
+  visitorName: string | null;        // leftJoin user.displayName ?? username,展示用
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;          // V0.7 软删除(对称 Pin)
@@ -61,6 +65,7 @@ export interface CreateVisitInput {
   followUp?: boolean;
   orgId?: string | null;
   contactId?: string | null;
+  accompaniedBy?: string[];
   // 地理(必填,用于 city center lookup)
   provinceCode: string;
   cityName: string;
@@ -92,6 +97,7 @@ export interface UpdateVisitInput {
   // 不允许改 provinceCode / cityName —— 改了会动 lng/lat 影响散点位置
   orgId?: string | null;
   contactId?: string | null;
+  accompaniedBy?: string[];
 }
 
 export interface CityListResponse {

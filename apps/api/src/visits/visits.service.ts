@@ -51,12 +51,25 @@ export class VisitsService {
     private readonly dataSource: DataSource,
   ) {}
 
+  /**
+   * 把 visitor relation 平铺成 visitorName(displayName ?? username ?? null),
+   * 并去掉 visitor 子对象避免泄露整份 user 行 — 同时让 wire shape 跟
+   * shared-types 的 Visit 严格对齐(VisitsTab / VisitDetailDrawer 直接读)。
+   */
+  private attachVisitorName(
+    v: VisitEntity,
+  ): VisitEntity & { visitorName: string | null } {
+    const visitorName = v.visitor?.displayName ?? v.visitor?.username ?? null;
+    const { visitor: _visitor, ...rest } = v;
+    return { ...(rest as VisitEntity), visitorName };
+  }
+
   async list(filter?: {
     status?: VisitStatus;
     parentPinId?: string;
     withDeleted?: boolean;
     currentUser?: AuthenticatedUser;
-  }): Promise<VisitEntity[]> {
+  }): Promise<Array<VisitEntity & { visitorName: string | null }>> {
     if (filter?.withDeleted) {
       if (!filter.currentUser || !VISIT_TRASH_ALLOWED_ROLES.has(filter.currentUser.roleCode)) {
         throw new ForbiddenException('只有管理员/负责人/PMO 可以查看回收站');
@@ -65,28 +78,40 @@ export class VisitsService {
       const where: Record<string, unknown> = { deletedAt: Not(IsNull()) };
       if (filter.status) where.status = filter.status;
       if (filter.parentPinId) where.parentPinId = filter.parentPinId;
-      return this.repo.find({
+      const rows = await this.repo.find({
         withDeleted: true,
         where,
         order: { deletedAt: 'DESC' },
+        relations: { visitor: true },
       });
+      return rows.map((v) => this.attachVisitorName(v));
     }
     const where: Record<string, unknown> = {};
     if (filter?.status) where.status = filter.status;
     if (filter?.parentPinId) where.parentPinId = filter.parentPinId;
-    return this.repo.find({
+    const rows = await this.repo.find({
       where: Object.keys(where).length > 0 ? where : undefined,
       order: { visitDate: 'DESC', createdAt: 'DESC' },
+      relations: { visitor: true },
     });
+    return rows.map((v) => this.attachVisitorName(v));
   }
 
-  async findOne(id: string): Promise<VisitEntity> {
-    const v = await this.repo.findOne({ where: { id } });
+  /** 内部用 — 返回原始 entity(含 visitor relation),给 update/softDelete 复用 */
+  private async loadOne(id: string): Promise<VisitEntity> {
+    const v = await this.repo.findOne({ where: { id }, relations: { visitor: true } });
     if (!v) throw new NotFoundException(`Visit ${id} not found`);
     return v;
   }
 
-  async create(dto: CreateVisitDto, currentUser: AuthenticatedUser): Promise<VisitEntity> {
+  async findOne(id: string): Promise<VisitEntity & { visitorName: string | null }> {
+    return this.attachVisitorName(await this.loadOne(id));
+  }
+
+  async create(
+    dto: CreateVisitDto,
+    currentUser: AuthenticatedUser,
+  ): Promise<VisitEntity & { visitorName: string | null }> {
     const visitorId = currentUser.id;
     const status = dto.status ?? 'completed';
 
@@ -150,6 +175,7 @@ export class VisitsService {
       outcomeSummary: dto.outcomeSummary ?? null,
       color: dto.color ?? null,
       followUp: dto.followUp ?? false,
+      accompaniedBy: dto.accompaniedBy ?? [],
       provinceCode: dto.provinceCode,
       cityName: dto.cityName,
       lng: center.lng,
@@ -158,10 +184,15 @@ export class VisitsService {
       orgId,
       contactId,
     });
-    return this.repo.save(visit);
+    const saved = await this.repo.save(visit);
+    return { ...saved, visitorName: currentUser.displayName ?? null };
   }
 
-  async update(id: string, dto: UpdateVisitDto, currentUserId: string): Promise<VisitEntity> {
+  async update(
+    id: string,
+    dto: UpdateVisitDto,
+    currentUserId: string,
+  ): Promise<VisitEntity & { visitorName: string | null }> {
     const prev = await this.findOne(id);
     const prevStatus = prev.status;
     const newStatus = (dto.status ?? prev.status) as VisitStatus;
@@ -182,13 +213,13 @@ export class VisitsService {
       prev.status = newStatus;
     }
 
-    // completed 状态白名单:不切 status 时只允许 color
+    // completed 状态白名单:不切 status 时只允许 color / orgId / contactId / accompaniedBy
     if (prev.status === 'completed' && !dto.status) {
-      const allowedKeys = new Set(['color', 'orgId', 'contactId']);
+      const allowedKeys = new Set(['color', 'orgId', 'contactId', 'accompaniedBy']);
       const dtoKeys = Object.keys(dto).filter((k) => dto[k as keyof UpdateVisitDto] !== undefined);
       const violation = dtoKeys.find((k) => !allowedKeys.has(k));
       if (violation) {
-        throw new BadRequestException('已完成拜访只允许改 color / orgId / contactId');
+        throw new BadRequestException('已完成拜访只允许改 color / orgId / contactId / accompaniedBy');
       }
     }
 
@@ -209,6 +240,7 @@ export class VisitsService {
     if (dto.outcomeSummary !== undefined) prev.outcomeSummary = dto.outcomeSummary;
     if (dto.color !== undefined) prev.color = dto.color;
     if (dto.followUp !== undefined) prev.followUp = dto.followUp;
+    if (dto.accompaniedBy !== undefined) prev.accompaniedBy = dto.accompaniedBy;
 
     // K 模块 — 防止 cross-org 不一致(同时改 orgId + contactId 时校验配对)
     if (
@@ -245,7 +277,8 @@ export class VisitsService {
     );
 
     if (!triggerAutoComment) {
-      return this.repo.save(prev);
+      const saved = await this.repo.save(prev);
+      return { ...saved, visitorName: prev.visitorName };
     }
 
     // 拿 visitor displayName(fallback username)
@@ -272,7 +305,7 @@ export class VisitsService {
         linkedVisitId: saved.id,
         createdBy: prev.visitorId,
       });
-      return saved;
+      return { ...saved, visitorName: prev.visitorName };
     });
   }
 
@@ -286,7 +319,8 @@ export class VisitsService {
     if (!VISIT_DELETE_ALLOWED_ROLES.has(currentUser.roleCode)) {
       throw new ForbiddenException('只有管理员/负责人/PMO 可以删除拜访');
     }
-    const visit = await this.findOne(id);
+    // 这里要原始 entity 实例(softRemove 需要),不能走 attachVisitorName 后的 plain object
+    const visit = await this.loadOne(id);
     await this.repo.softRemove(visit);
   }
 
@@ -294,13 +328,20 @@ export class VisitsService {
    * 还原软删 Visit — deleted_at 置 NULL,其他字段不动
    * 权限白名单:sys_admin / lead / pmo
    */
-  async restore(id: string, currentUser: AuthenticatedUser): Promise<VisitEntity> {
+  async restore(
+    id: string,
+    currentUser: AuthenticatedUser,
+  ): Promise<VisitEntity & { visitorName: string | null }> {
     if (!VISIT_TRASH_ALLOWED_ROLES.has(currentUser.roleCode)) {
       throw new ForbiddenException('只有管理员/负责人/PMO 可以还原拜访');
     }
     const visit = await this.repo.findOne({ where: { id }, withDeleted: true });
     if (!visit) throw new NotFoundException(`Visit ${id} not found`);
     await this.repo.restore(id);
-    return this.repo.findOneOrFail({ where: { id } });
+    const restored = await this.repo.findOneOrFail({
+      where: { id },
+      relations: { visitor: true },
+    });
+    return this.attachVisitorName(restored);
   }
 }

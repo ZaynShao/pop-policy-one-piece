@@ -86,6 +86,12 @@ export function VisitsTab() {
       defaultSortOrder: 'descend' as const,
     },
     { title: '城市', width: 120, render: (_: unknown, r: Visit) => r.cityName },
+    {
+      title: '拜访人',
+      dataIndex: 'visitorName' as const,
+      width: 110,
+      render: (n: string | null) => n ?? <Text type="secondary">—</Text>,
+    },
   ];
 
   const activeColumns = [

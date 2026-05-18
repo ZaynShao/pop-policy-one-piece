@@ -16,17 +16,19 @@ import {
 import { EnvironmentOutlined, LogoutOutlined } from '@ant-design/icons';
 import dayjs, { type Dayjs } from 'dayjs';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import type {
-  CreateVisitInput,
-  CityListResponse,
-  VoiceParsedFields,
-  VoiceParseVisitContext,
+import {
+  UserRoleCode,
+  type CreateVisitInput,
+  type CityListResponse,
+  type VoiceParsedFields,
+  type VoiceParseVisitContext,
 } from '@pop/shared-types';
 import { authHeaders } from '@/lib/api';
 import { useAuthStore } from '@/stores/auth';
 import { palette } from '@/tokens';
 import { VoiceRecorderButton } from '@/components/VoiceRecorderButton';
 import { fetchGovOrg } from '@/api/gov-orgs';
+import { fetchUsers } from '@/api/users';
 
 const { Title, Text } = Typography;
 
@@ -40,6 +42,7 @@ interface FormValues {
   outcomeSummary: string;
   color: 'red' | 'yellow' | 'green';
   followUp: boolean;
+  accompaniedBy?: string[];
 }
 
 const REQUIRED_FOR_SUBMIT: (keyof FormValues)[] = [
@@ -144,6 +147,20 @@ export function MobileVisitNewPage() {
     staleTime: Infinity,
   });
 
+  // 随行人:拉 users 作为预设选项,过滤掉 sysadmin
+  const { data: userList } = useQuery({
+    queryKey: ['users', 'visit-form-accompany'],
+    queryFn: fetchUsers,
+    staleTime: 60_000,
+  });
+  const accompanyOptions = useMemo(
+    () =>
+      (userList?.data ?? [])
+        .filter((u) => u.roleCode !== UserRoleCode.SysAdmin)
+        .map((u) => ({ label: u.displayName, value: u.displayName })),
+    [userList],
+  );
+
   const provinceOptions = useMemo(
     () =>
       (cityList?.data ?? []).map((p) => ({
@@ -174,6 +191,7 @@ export function MobileVisitNewPage() {
         provinceCode: vs.provinceCode,
         cityName: vs.cityName,
         orgId: matchedOrgId,  // K 模块 — 移动端只能从语音 fuzzy match 拿,不主动选
+        accompaniedBy: vs.accompaniedBy ?? [],
       };
       await postVisit(input);
     },
@@ -518,6 +536,17 @@ export function MobileVisitNewPage() {
           valuePropName="checked"
         >
           <Switch />
+        </Form.Item>
+
+        <Form.Item label="随行人(可选)" name="accompaniedBy">
+          <Select
+            mode="tags"
+            allowClear
+            options={accompanyOptions}
+            placeholder="挑用户或直接输入名字,最多 10 人"
+            maxTagCount="responsive"
+            tokenSeparators={[',', '，', ' ']}
+          />
         </Form.Item>
 
         <Button

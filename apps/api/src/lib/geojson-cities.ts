@@ -89,6 +89,13 @@ export async function loadGeoJsonCities(): Promise<void> {
 
     try {
       const raw = await readFile(join(GEOJSON_DIR, file), 'utf-8');
+      // sniff:710000.json/810000/820000 是当年下 GeoJSON 时阿里云 OSS 错误响应
+      // (<?xml ... <Error><Code>NoSuchKey ...),不是真 GeoJSON。
+      // 静默跳过,不报噪音错误。
+      const head = raw.trimStart().slice(0, 16);
+      if (head.startsWith('<?xml') || head.startsWith('<Error')) {
+        continue;
+      }
       const geo = JSON.parse(raw) as CityGeoJsonFC;
       const cities: string[] = [];
       const provinceName = lookupProvinceName(code);

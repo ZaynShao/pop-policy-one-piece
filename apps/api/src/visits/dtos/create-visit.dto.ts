@@ -1,4 +1,6 @@
 import {
+  ArrayMaxSize,
+  IsArray,
   IsBoolean,
   IsDateString,
   IsEnum,
@@ -43,6 +45,14 @@ export class CreateVisitDto {
 
   @IsOptional() @IsUUID() orgId?: string;
   @IsOptional() @IsUUID() contactId?: string;
+
+  // 随行人:0~10 个字符串(挑用户 displayName 或自定义名字均可)
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(10)
+  @IsString({ each: true })
+  @MaxLength(64, { each: true })
+  accompaniedBy?: string[];
 
   // 地理(必填,用于 city center lookup)
   @IsString() @IsNotEmpty() @MaxLength(6) provinceCode!: string;

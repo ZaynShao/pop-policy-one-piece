@@ -91,6 +91,10 @@ export class VisitEntity {
   @Column({ type: 'boolean', default: false, name: 'follow_up' })
   followUp!: boolean;
 
+  // 随行人(2026-05-12 新增)— text[],默认 {} 空数组,planned/completed 都可填
+  @Column({ type: 'text', array: true, default: () => "'{}'", name: 'accompanied_by' })
+  accompaniedBy!: string[];
+
   // 地理字段(NOT NULL — 创建时由 city center lookup 强制填)
   @Column({ type: 'varchar', length: 6, name: 'province_code' })
   provinceCode!: string;
