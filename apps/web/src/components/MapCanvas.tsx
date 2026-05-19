@@ -269,21 +269,28 @@ export function MapCanvas({
       sorted.forEach((origIdx, i) => layoutByIdx.set(origIdx, points[i]));
     });
 
-    return filtered.map((v, idx) => {
-      const layout = layoutByIdx.get(idx)!;
-      const daysAgo = daysAgoFromISO(v.visitDate ?? v.plannedDate);
-      const baseColor = visitColorByRow(v);
-      // cancelled 已是 rgba 灰(非 hex),跳过衰减
-      const color = baseColor.startsWith('#') ? decayLightnessByAge(baseColor, daysAgo) : baseColor;
-      return {
-        value: [v.lng, v.lat, 1],
-        itemStyle: { color },
-        symbolOffset: [layout.offsetX, layout.offsetY],
-        symbolSize: layout.size,
-        name: `${v.cityName} · ${v.visitDate} · ${COLOR_LABEL[(v.color ?? 'green') as 'red' | 'yellow' | 'green']}`,
-        visitId: v.id,
-      };
-    });
+    // echarts 同 series 内后画的在上 → 按距中心远→近排序(中心最后画)
+    // 保证视觉上中心点(最新 visit)永远不被外环边缘盖住
+    return filtered
+      .map((v, idx) => {
+        const layout = layoutByIdx.get(idx)!;
+        const daysAgo = daysAgoFromISO(v.visitDate ?? v.plannedDate);
+        const baseColor = visitColorByRow(v);
+        // cancelled 已是 rgba 灰(非 hex),跳过衰减
+        const color = baseColor.startsWith('#') ? decayLightnessByAge(baseColor, daysAgo) : baseColor;
+        const distSq = layout.offsetX * layout.offsetX + layout.offsetY * layout.offsetY;
+        return {
+          value: [v.lng, v.lat, 1],
+          itemStyle: { color },
+          symbolOffset: [layout.offsetX, layout.offsetY],
+          symbolSize: layout.size,
+          name: `${v.cityName} · ${v.visitDate} · ${COLOR_LABEL[(v.color ?? 'green') as 'red' | 'yellow' | 'green']}`,
+          visitId: v.id,
+          _distSq: distSq,
+        };
+      })
+      .sort((a, b) => b._distSq - a._distSq)
+      .map(({ _distSq: _, ...rest }) => rest);
   }, [visits, provinceCode, localDateRange, localProvinceCodes, localRoleCodes, userRoleMap]);
 
   // Pin 筛选 — 同样 3 维(创建人 role / provinceCode / createdAt)

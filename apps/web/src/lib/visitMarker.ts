@@ -1,15 +1,17 @@
 /**
- * 拜访点视觉算法(2026-05-18 新增,需求口径见 HANDOFF-2026-05-18 后续 PR)
+ * 拜访点视觉算法(2026-05-18 新增 / 2026-05-19 调参 — 间距更紧 + 衰减更陡)
  *
  * 两个独立纯函数:
  * 1. decayLightnessByAge(hex, daysAgo) — 按时间衰减 HSL.L
  *    - 0-14d:  原色(×1.0)
- *    - 14-60d: 线性插值 ×1.0 → ×0.6
- *    - 60d+:   ×0.4
- *    - L 下限 20% 防变黑
+ *    - 14-60d: 线性插值 ×1.0 → ×0.45(原 ×0.6,衰减更陡)
+ *    - 60-120d: 线性插值 ×0.45 → ×0.22
+ *    - 120d+:  ×0.22
+ *    - L 下限 12% 防变黑(原 20%)
  *
  * 2. layoutCluster(n, baseSize, opts) — 同坐标多点蜂窝堆叠
- *    - 圆心距 = size × 1.18 → 任意两两重叠面积 ≤ 30% πr²(几何反推)
+ *    - 圆心距 = size × 0.9(原 1.18,2026-05-19 owner 决定更紧)
+ *      → 任意两两重叠面积 ≈ 45% πr²(d/2r=0.45 几何反推)
  *    - 六边形紧密堆积:第 0 层 1 个 + 第 k 层 6k 个
  *    - 密集时按比例缩小 size,触底 minSize 兜底
  *    - 输出像素 [offsetX, offsetY],配合 echarts data-item 级 symbolOffset(zoom 无关)
@@ -17,8 +19,8 @@
 
 // ============ 颜色衰减 ============
 
-const PADDING_FACTOR = 1.18; // 圆心距 / r,使两两重叠 ≤30%
-const MIN_LIGHTNESS = 20;    // L 下限(0-100)
+const PADDING_FACTOR = 0.9;  // 圆心距 / size,使两两重叠 ≈45%(owner 2026-05-19 拍板更紧)
+const MIN_LIGHTNESS = 12;    // L 下限(0-100,原 20)
 
 /** hex(#rrggbb)→ HSL(h:0-360, s/l:0-100) */
 function hexToHsl(hex: string): [number, number, number] {
@@ -66,8 +68,8 @@ export function decayLightnessByAge(hex: string, daysAgo: number): string {
   const d = Math.max(0, daysAgo);
   let factor: number;
   if (d <= 14)      factor = 1;
-  else if (d <= 60) factor = 1 - (0.4 * (d - 14)) / 46; // 14→60 线性到 0.6
-  else              factor = 0.6 - 0.2 * Math.min(1, (d - 60) / 60); // 60→120 线性到 0.4 再固定
+  else if (d <= 60) factor = 1 - (0.55 * (d - 14)) / 46; // 14→60 线性到 0.45
+  else              factor = 0.45 - 0.23 * Math.min(1, (d - 60) / 60); // 60→120 线性到 0.22 再固定
 
   const [h, s, l] = hexToHsl(hex);
   const newL = Math.max(MIN_LIGHTNESS, l * factor);
